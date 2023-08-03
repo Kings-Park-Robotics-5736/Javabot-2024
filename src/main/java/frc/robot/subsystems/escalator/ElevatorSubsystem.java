@@ -14,7 +14,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Types.Limits;
 import frc.robot.Types.PidConstants;
 
-
 public class ElevatorSubsystem extends SubsystemBase {
 
     private WPI_TalonSRX m_motor;
@@ -35,7 +34,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     private final TrapezoidProfile.Constraints m_constraints = new TrapezoidProfile.Constraints(100, 100);
     private final ProfiledPIDController m_controller = new ProfiledPIDController(0.5, 0.0, 0.007, m_constraints, kDt);
 
-    public ElevatorSubsystem(PidConstants pidValues,Limits limits, byte deviceId, String _name) {
+    public ElevatorSubsystem(PidConstants pidValues, Limits limits, byte deviceId, String _name) {
 
         m_motor = new WPI_TalonSRX(deviceId);
         m_motor.configFactoryDefault();
@@ -51,6 +50,14 @@ public class ElevatorSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
 
+    }
+
+    public Boolean IsElevatorUp() {
+        return m_encoder.get() < m_limits.low + 10;
+    }
+
+    public Boolean IsElevatorDown() {
+        return m_encoder.get() > m_limits.high - 10;
     }
 
     /**
@@ -85,6 +92,8 @@ public class ElevatorSubsystem extends SubsystemBase {
         setSpeed(0);
     }
 
+
+    
     private void resetEncoder() {
         m_encoder.reset();
     }
@@ -134,9 +143,10 @@ public class ElevatorSubsystem extends SubsystemBase {
         return isFinished;
     }
 
-    //on this motor, negative speed is up with more negative (lower) encoder counts
-    private Boolean isWithinLimits(){
-        return (m_motor.get() < 0 && m_encoder.get() > m_limits.low) || (m_motor.get() > 0 && m_encoder.get() < m_limits.high);
+    // on this motor, negative speed is up with more negative (lower) encoder counts
+    private Boolean isWithinLimits() {
+        return (m_motor.get() < 0 && m_encoder.get() > m_limits.low)
+                || (m_motor.get() > 0 && m_encoder.get() < m_limits.high);
     }
 
     /**

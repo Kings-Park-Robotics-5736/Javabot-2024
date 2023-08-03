@@ -16,7 +16,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Types.FeedForwardConstants;
+import frc.robot.Types.Limits;
 import frc.robot.Types.PidConstants;
+
 
 
 public class EscalatorSubsystem extends SubsystemBase {
@@ -26,17 +28,20 @@ public class EscalatorSubsystem extends SubsystemBase {
     private RelativeEncoder m_encoder;
     private ElevatorFeedforward m_feedforward;
     private final String m_name;
+    private PidConstants m_pidValues;
+
+    private Limits m_limits;
 
     private TrapezoidProfile profile;
     private double startTime = 0;
     private int staleCounter = 0;
     private double lastPosition = 0;
 
-    private final double kStaleTolerance = .5;
-    private final double kDiffThreshold = 0.15;
-    private final int kStaleThreshold = 10;
+    private final double kStaleTolerance = .75;
+    private final double kDiffThreshold = 0.25;
+    private final int kStaleThreshold = 5;
 
-    public EscalatorSubsystem(PidConstants pidValues, FeedForwardConstants ffValues, byte deviceId, String _name) {
+    public EscalatorSubsystem(PidConstants pidValues,Limits limits, FeedForwardConstants ffValues, byte deviceId, String _name) {
 
         m_motor = new CANSparkMax(deviceId, MotorType.kBrushless);
         m_motor.restoreFactoryDefaults();
@@ -44,6 +49,8 @@ public class EscalatorSubsystem extends SubsystemBase {
 
         m_pidController = m_motor.getPIDController();
         m_encoder = m_motor.getEncoder();
+        m_pidValues=pidValues;
+        m_limits = limits;
 
         m_name = _name;
 
@@ -54,16 +61,36 @@ public class EscalatorSubsystem extends SubsystemBase {
         m_pidController.setFF(0);
         m_pidController.setOutputRange(-1, 1);
         m_feedforward = new ElevatorFeedforward(ffValues.ks, ffValues.kg, ffValues.kv, ffValues.ka);
-
+        //optional code to tune pids from smart dashboard
+        /*SmartDashboard.putNumber("P Gain", pidValues.p);
+        SmartDashboard.putNumber("I Gain", pidValues.i);
+        SmartDashboard.putNumber("D Gain", pidValues.d);*/
     }
 
     @Override
     public void periodic() {
 
+        //optional code to tune pids from smart dashboard
+       /* double p = SmartDashboard.getNumber("P Gain", 0);
+        double i = SmartDashboard.getNumber("I Gain", 0);
+        double d = SmartDashboard.getNumber("D Gain", 0);
+        if((p != m_pidValues.p)) { m_pidController.setP(p); m_pidValues.p = p; }
+        if((i != m_pidValues.i)) { m_pidController.setI(i); m_pidValues.i = i; }
+        if((d != m_pidValues.d)) { m_pidController.setD(d); m_pidValues.d = d; }
+        */
     }
 
     public void stopEscalator() {
         setSpeed(0);
+    }
+
+
+    public Boolean IsEscalatorUp() {
+        return m_encoder.getPosition() > m_limits.high-3;
+    }
+
+    public Boolean IsEscalatorDown() {
+        return m_encoder.getPosition() < m_limits.low+3;
     }
 
     /**
@@ -73,8 +100,7 @@ public class EscalatorSubsystem extends SubsystemBase {
      */
     public Command RunEscalatorManualSpeedCommand(DoubleSupplier getSpeed) {
         return new FunctionalCommand(
-                () -> {
-                },
+                () -> {},
                 () -> setSpeed(getSpeed.getAsDouble()),
                 (interrupted) -> stopEscalator(),
                 () -> false, this);
@@ -93,6 +119,16 @@ public class EscalatorSubsystem extends SubsystemBase {
                 () -> isFinished(), this);
     }
 
+    public Command ResetEscalatorEncoderCommand() {
+        return this.runOnce(() -> resetEncoder());
+    }
+
+
+    
+    private void resetEncoder() {
+        m_encoder.setPosition(0);
+    }
+
     /**
      * 
      * Set the speed of the intake motor (-1 to 1)
@@ -109,7 +145,7 @@ public class EscalatorSubsystem extends SubsystemBase {
      * @param setpoint of the motor, in absolute rotations
      */
     private void InitMotionProfile(double setpoint) {
-        profile = new TrapezoidProfile(new TrapezoidProfile.Constraints(60, 150),
+        profile = new TrapezoidProfile(new TrapezoidProfile.Constraints(120, 150),
                 new TrapezoidProfile.State(setpoint, 0),
                 new TrapezoidProfile.State(m_encoder.getPosition(), 0));
 
@@ -145,7 +181,7 @@ public class EscalatorSubsystem extends SubsystemBase {
     }
 
     private Boolean isFinished() {
-        var isFinished = profile.isFinished(Timer.getFPGATimestamp() - startTime) && escalatorReachedTarget();
+        var isFinished =  escalatorReachedTarget();// &&profile.isFinished(Timer.getFPGATimestamp() - startTime);
         SmartDashboard.putBoolean("isfinished " + m_name, isFinished);
         return isFinished;
     }

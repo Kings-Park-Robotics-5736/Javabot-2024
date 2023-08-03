@@ -1,12 +1,16 @@
 package frc.robot;
 
+
+/**
+ * @brief A class for creating convenience type wrappers to allow us to more easily pass around values.
+ */
 public final class Types {
   public static final class PidConstants {
-    public final double p;
-    public final double i;
-    public final double d;
+    public  double p; 
+    public  double i;
+    public  double d;
 
-    PidConstants(double _p, double _i, double _d) {
+    public PidConstants(double _p, double _i, double _d) {
       p = _p;
       i = _i;
       d = _d;
@@ -19,10 +23,10 @@ public final class Types {
     public final double ka;
     public final double kg;
 
-    FeedForwardConstants(double _ks, double _kv, double _ka) {
+    public FeedForwardConstants(double _ks, double _kv, double _ka) {
       this(_ks, _kv, _ka, 0);
     }
-    FeedForwardConstants(double _ks, double _kv, double _ka, double _kg) {
+    public FeedForwardConstants(double _ks, double _kv, double _ka, double _kg) {
       ks = _ks;
       kv = _kv;
       ka = _ka;

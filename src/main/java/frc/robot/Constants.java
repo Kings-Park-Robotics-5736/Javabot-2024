@@ -76,6 +76,11 @@ public final class Constants {
     public static final double kvVoltSecondsPerMeterTurning = 0.3749;
     public static final double kaVoltSecondsSquaredPerMeterTurning = 0.1142;
 
+    public static final double ksVoltsDrive = .22125;
+    public static final double kvVoltsDrive = 2.1898;
+    public static final double kaVoltsDrive = 0.58667;
+    public static final double kPDrive = 1.8044;
+
     public static final double kMaxSpeedMetersPerSecond = 3;
   }
 
@@ -89,11 +94,11 @@ public final class Constants {
 
     public static final double kPModuleTurningController = 7.9245;
 
-    public static final double kPModuleDriveController = 1;
   }
 
   public static final class OIConstants {
     public static final int kDriverControllerPort = 0;
+    public static final int kActionControllerPort = 1;
   }
 
   public static final class AutoConstants {
@@ -102,9 +107,9 @@ public final class Constants {
     public static final double kMaxAngularSpeedRadiansPerSecond = Math.PI;
     public static final double kMaxAngularSpeedRadiansPerSecondSquared = Math.PI;
 
-    public static final double kPXController = 1;
-    public static final double kPYController = 1;
-    public static final double kPThetaController = 1;
+    public static final double kPXController = 5;
+    public static final double kPYController = 5;
+    public static final double kPThetaController = 5;
 
     // Constraint for the motion profiled robot angle controller
     public static final TrapezoidProfile.Constraints kThetaControllerConstraints = new TrapezoidProfile.Constraints(
@@ -129,10 +134,11 @@ public final class Constants {
   }
 
   public static final class EscalatorConstants {
-    public static final PidConstants pidValues = new PidConstants(0.0030091, .0001, 0.000032531);
-    public static final FeedForwardConstants ffValues = new FeedForwardConstants(0.22422, 0.12805, 0.0043311, 0.13405);
+    public static final PidConstants pidValues = new PidConstants(0.06, .0001, 0.0);
+    public static final FeedForwardConstants ffValues = new FeedForwardConstants(0.27419, 0.12313, 0.0026, 0.11545);
 
     public static final byte deviceId = 1;
+    public static final Limits limits = new Limits(0, 62);
 
   }
 
@@ -141,7 +147,7 @@ public final class Constants {
 
     public static final byte deviceId = 9;
 
-    public static final Limits limits = new Limits(-63, -1);
+    public static final Limits limits = new Limits(0, 60);
 
   }
 

@@ -88,6 +88,10 @@ public class DriveSubsystem extends SubsystemBase {
             m_rearRight.getPosition()
         });
     SmartDashboard.putString("DB/String 5", m_odometry.getPoseMeters().toString());
+
+    SmartDashboard.putNumber("Rotation",m_gyro.getRotation2d().getDegrees());
+
+    
   }
 
   @Override
@@ -157,6 +161,14 @@ public class DriveSubsystem extends SubsystemBase {
     m_frontRight.setDesiredState(desiredStates[1]);
     m_rearLeft.setDesiredState(desiredStates[2]);
     m_rearRight.setDesiredState(desiredStates[3]);
+  }
+
+
+  public void forceStop(){
+    m_frontLeft.forceStop();
+    m_frontRight.forceStop();
+    m_rearLeft.forceStop();
+    m_rearRight.forceStop();
   }
 
   /** Resets the drive encoders to currently read a position of 0. */

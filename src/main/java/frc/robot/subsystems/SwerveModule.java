@@ -17,15 +17,18 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.ModuleConstants;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 
 public class SwerveModule {
 
   private final WPI_TalonFX m_driveMotor;
+  private final int m_id;
   private final WPI_TalonFX m_turningMotor;
 
   private final WPI_CANCoder m_turningEncoder;
-  private final PIDController m_drivePIDController = new PIDController(ModuleConstants.kPModuleDriveController, 0, 0);
-
+  private final PIDController m_drivePIDController = new PIDController(DriveConstants.kPDrive, 0, 0);
+  private final PIDController m_turnPIDController = new PIDController(5, 0, 0);
   // Using a TrapezoidProfile PIDController to allow for smooth turning
   private final ProfiledPIDController m_turningPIDController = new ProfiledPIDController(
       ModuleConstants.kPModuleTurningController,
@@ -35,7 +38,7 @@ public class SwerveModule {
           ModuleConstants.kMaxModuleAngularSpeedRadiansPerSecond,
           ModuleConstants.kMaxModuleAngularAccelerationRadiansPerSecondSquared));
 
-  private final SimpleMotorFeedforward m_driveFeedforward = new SimpleMotorFeedforward(1, 3);
+  private final SimpleMotorFeedforward m_driveFeedforward = new SimpleMotorFeedforward(DriveConstants.ksVoltsDrive , DriveConstants.kvVoltsDrive,DriveConstants.kaVoltsDrive);
 
   private final SimpleMotorFeedforward m_turnFeedforward = new SimpleMotorFeedforward(DriveConstants.ksVoltsTurning,
       DriveConstants.kvVoltSecondsPerMeterTurning,
@@ -60,6 +63,8 @@ public class SwerveModule {
       boolean invertDrive,
       double turningEncoderOffset) {
 
+
+    m_id= driveMotorChannel;
     m_driveMotor = new WPI_TalonFX(driveMotorChannel, canName);
     m_turningMotor = new WPI_TalonFX(turningMotorChannel, canName);
 
@@ -76,6 +81,7 @@ public class SwerveModule {
 
     // Limit the PID Controller's input range between -pi and pi and set the input
     // to be continuous.
+    m_turnPIDController.enableContinuousInput(-Math.PI, Math.PI);
     m_turningPIDController.enableContinuousInput(-Math.PI, Math.PI);
   }
 
@@ -89,7 +95,8 @@ public class SwerveModule {
   }
 
   private double getDriveEncoderVelocity() {
-    return m_driveMotor.getSelectedSensorVelocity() * (2 * Math.PI * ModuleConstants.kWheelRadius)
+    //WARNING - unit from falcon encoder is per 100ms, so need to multiply by 10 to get to per 1s
+    return m_driveMotor.getSelectedSensorVelocity() * 10 * (2 * Math.PI * ModuleConstants.kWheelRadius)
         / (ModuleConstants.kEncoderResolution * ModuleConstants.kDriveGearRatio);
   }
 
@@ -134,15 +141,30 @@ public class SwerveModule {
     final double driveFeedforward = m_driveFeedforward.calculate(state.speedMetersPerSecond);
 
     // Calculate the turning motor output from the turning PID controller.
-    final double turnOutput = m_turningPIDController.calculate(getTurnEncoderPositionInRadians(),
+    final double turnOutput = m_turnPIDController.calculate(getTurnEncoderPositionInRadians(),
         state.angle.getRadians());
 
-    final double turnFeedforward = m_turnFeedforward.calculate(m_turningPIDController.getSetpoint().velocity);
+    SmartDashboard.putNumber("Error " + m_id,getDriveEncoderVelocity() -state.speedMetersPerSecond );
+    SmartDashboard.putNumber("velcity set " +m_id,getDriveEncoderVelocity() );
+ 
+    SmartDashboard.putNumber("velcity req " +m_id,state.speedMetersPerSecond );
+
+    SmartDashboard.putNumber("turn set " +m_id,getTurnEncoderPositionInRadians() );
+ 
+    SmartDashboard.putNumber("turn req " +m_id,state.angle.getRadians());
+
+
+    final double turnFeedforward =0;// m_turnFeedforward.calculate(m_turningPIDController.getSetpoint().velocity);
 
     m_driveMotor.setVoltage(driveOutput + driveFeedforward);
     m_turningMotor.setVoltage(turnOutput + turnFeedforward);
   }
 
+
+  public void forceStop(){
+    m_driveMotor.setVoltage(0);
+    m_turningMotor.setVoltage(0);
+  }
   /** Zeroes all the SwerveModule encoders. */
   public void resetEncoders() {
     m_driveMotor.setSelectedSensorPosition(0);

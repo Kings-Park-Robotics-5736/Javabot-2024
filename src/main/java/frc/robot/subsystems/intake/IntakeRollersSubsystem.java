@@ -2,6 +2,7 @@ package frc.robot.subsystems.intake;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Types.FeedForwardConstants;
 import frc.robot.Types.PidConstants;
@@ -76,11 +77,21 @@ public class IntakeRollersSubsystem extends SubsystemBase {
         setSpeed(0);
     }
 
+    public Command StopIntakeCommand(){
+        return this.runOnce(()->StopIntake());
+    }
     public Command RunIntakeForwardCommand() {
         return new FunctionalCommand(
-                () -> {
-                },
-                () -> RunIntake(2000),
+                () -> {},
+                () -> RunIntake(4000),
+                (interrupted) -> StopIntake(),
+                () -> false, this);
+    }
+
+    public Command RunIntakeBackwardCommand() {
+        return new FunctionalCommand(
+                () -> {},
+                () -> RunIntake(-3000),
                 (interrupted) -> StopIntake(),
                 () -> false, this);
     }

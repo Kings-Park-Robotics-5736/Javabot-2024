@@ -6,10 +6,16 @@ import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 
+/**
+ * @brief A factory for creating commands that are used by the joystick
+ */
+public class JoystickCommandsFactory {
 
-public class JoystickCommands {
-
-    
+    /**
+     * @brief Creates a command that rumbles the controller until canceled
+     * @param device the joystick to rumble
+     * @return
+     */
     public static Command RumbleControllerTillCancel(GenericHID device) {
         return new FunctionalCommand(
                 () -> {},

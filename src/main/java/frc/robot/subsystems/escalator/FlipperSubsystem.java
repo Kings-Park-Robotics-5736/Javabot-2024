@@ -55,10 +55,10 @@ public class FlipperSubsystem extends SubsystemBase {
         final double time;
         if (direction == DirectionType.DOWN) {
             speed = -m_defaultSpeed;
-            time = .8;
+            time = .6;
         } else {
             speed = m_defaultSpeed;
-            time = 1;
+            time = .8;
         }
         return Commands.runOnce(() -> setSpeed(speed)).andThen(Commands.waitSeconds(time))
                 .andThen(runOnce(() -> setSpeed(0)));
