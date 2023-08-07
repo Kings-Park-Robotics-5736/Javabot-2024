@@ -144,7 +144,6 @@ public class SwerveModule {
     final double turnOutput = m_turnPIDController.calculate(getTurnEncoderPositionInRadians(),
         state.angle.getRadians());
 
-    SmartDashboard.putNumber("Error " + m_id,getDriveEncoderVelocity() -state.speedMetersPerSecond );
     SmartDashboard.putNumber("velcity set " +m_id,getDriveEncoderVelocity() );
  
     SmartDashboard.putNumber("velcity req " +m_id,state.speedMetersPerSecond );
@@ -153,6 +152,8 @@ public class SwerveModule {
  
     SmartDashboard.putNumber("turn req " +m_id,state.angle.getRadians());
 
+    SmartDashboard.putNumber("drive vo " +m_id,driveOutput );
+    SmartDashboard.putNumber("drive vf " +m_id,driveFeedforward);
 
     final double turnFeedforward =0;// m_turnFeedforward.calculate(m_turningPIDController.getSetpoint().velocity);
 
