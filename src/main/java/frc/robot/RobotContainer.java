@@ -99,8 +99,13 @@ public class RobotContainer {
         new JoystickButton(m_driverController, XboxController.Button.kX.value)
                 .whileTrue(m_robotDrive.driveXMetersPID(1));
 
+        new JoystickButton(m_driverController, XboxController.Button.kY.value)
+                .whileTrue(m_robotDrive.centerOnTargetCommand(true));
+        
+        new JoystickButton(m_driverController, XboxController.Button.kB.value)
+                .whileTrue(m_robotDrive.DriveToTargetCommand(2, -1));
 
-
+                
         new JoystickButton(m_actionController, XboxController.Button.kB.value)
                 .toggleOnTrue(m_intake.RunIntakeForwardCommand());
 

@@ -141,23 +141,27 @@ public class SwerveModule {
     final double driveFeedforward = m_driveFeedforward.calculate(state.speedMetersPerSecond);
 
     // Calculate the turning motor output from the turning PID controller.
-    final double turnOutput = m_turnPIDController.calculate(getTurnEncoderPositionInRadians(),
+    double turnOutput = m_turnPIDController.calculate(getTurnEncoderPositionInRadians(),
         state.angle.getRadians());
 
-    SmartDashboard.putNumber("velcity set " +m_id,getDriveEncoderVelocity() );
+   // SmartDashboard.putNumber("velcity set " +m_id,getDriveEncoderVelocity() );
  
-    SmartDashboard.putNumber("velcity req " +m_id,state.speedMetersPerSecond );
+    //SmartDashboard.putNumber("velcity req " +m_id,state.speedMetersPerSecond );
 
-    SmartDashboard.putNumber("turn set " +m_id,getTurnEncoderPositionInRadians() );
+    //SmartDashboard.putNumber("turn set " +m_id,getTurnEncoderPositionInRadians() );
  
-    SmartDashboard.putNumber("turn req " +m_id,state.angle.getRadians());
+    //SmartDashboard.putNumber("turn req " +m_id,state.angle.getRadians());
 
-    SmartDashboard.putNumber("drive vo " +m_id,driveOutput );
-    SmartDashboard.putNumber("drive vf " +m_id,driveFeedforward);
+    //SmartDashboard.putNumber("drive vo " +m_id,driveOutput );
+    //SmartDashboard.putNumber("drive vf " +m_id,driveFeedforward);
 
-    final double turnFeedforward =0;// m_turnFeedforward.calculate(m_turningPIDController.getSetpoint().velocity);
+    double turnFeedforward =0;// m_turnFeedforward.calculate(m_turningPIDController.getSetpoint().velocity);
 
     m_driveMotor.setVoltage(driveOutput + driveFeedforward);
+    /*if(turnOutput + turnFeedforward < .05){
+      turnOutput = 0;
+      turnFeedforward = 0;
+    }*/
     m_turningMotor.setVoltage(turnOutput + turnFeedforward);
   }
 

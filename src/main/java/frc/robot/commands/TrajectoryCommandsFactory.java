@@ -40,7 +40,7 @@ public class TrajectoryCommandsFactory {
 
         // Load the path group from the path planner. This is a list of trajectories
         // that will be run in sequence.
-        List<PathPlannerTrajectory> pathGroup = PathPlanner.loadPathGroup("simple", new PathConstraints(1, 1));
+        List<PathPlannerTrajectory> pathGroup = PathPlanner.loadPathGroup("CameraMain", new PathConstraints(1, 1));
 
         if (pathGroup == null) {
             return new PrintCommand("Path group is null. Ensure path file is on the rio");
@@ -59,6 +59,8 @@ public class TrajectoryCommandsFactory {
         eventMap.put("ScoreHigh", escalator.ScoreHigh());
         eventMap.put("ScoreMid", escalator.ScoreMid());
         eventMap.put("Forward1", robotDrive.driveXMetersPID(1));
+
+        eventMap.put("GrabTarget", robotDrive.DriveToTargetCommand(1.5, 1));
         eventMap.put("ForceStop", Commands.runOnce(() -> robotDrive.forceStop()));
 
         // Create the AutoBuilder. This only needs to be created once when robot code
