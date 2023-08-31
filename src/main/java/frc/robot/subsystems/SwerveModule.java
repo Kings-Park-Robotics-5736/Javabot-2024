@@ -15,9 +15,10 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.ModuleConstants;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.utils.MathUtils;
 
 
 public class SwerveModule {
@@ -85,12 +86,10 @@ public class SwerveModule {
     m_turningPIDController.enableContinuousInput(-Math.PI, Math.PI);
   }
 
-  private double degressToRadians(double degrees) {
-    return degrees * Math.PI / 180;
-  }
+
 
   private double getTurnEncoderPositionInRadians() {
-    double retVal = degressToRadians(m_turningEncoder.getAbsolutePosition());
+    double retVal = MathUtils.degreesToRadians(m_turningEncoder.getAbsolutePosition());
     return retVal;
   }
 

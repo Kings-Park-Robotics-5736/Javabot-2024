@@ -14,12 +14,15 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OIConstants;
-import frc.robot.Types.DirectionType;
 import frc.robot.commands.JoystickCommandsFactory;
 import frc.robot.commands.TrajectoryCommandsFactory;
-import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.commands.drive.CenterToTargetCommand;
+import frc.robot.commands.drive.DriveToTargetCommand;
+import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.escalator.EscalatorAssemblySubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
+import frc.robot.utils.Types.DirectionType;
+import frc.robot.vision.PiCamera;
 
 /*
  * This class is where the bulk of the robot should be declared.  Since Command-based is a
@@ -38,6 +41,8 @@ public class RobotContainer {
     private final SlewRateLimiter m_xspeedLimiter = new SlewRateLimiter(3);
     private final SlewRateLimiter m_yspeedLimiter = new SlewRateLimiter(3);
     private final SlewRateLimiter m_rotLimiter = new SlewRateLimiter(3);
+
+    private final PiCamera m_picam = new PiCamera();
 
     // The driver's controller
     XboxController m_driverController = new XboxController(OIConstants.kDriverControllerPort);
@@ -99,11 +104,18 @@ public class RobotContainer {
         new JoystickButton(m_driverController, XboxController.Button.kX.value)
                 .whileTrue(m_robotDrive.driveXMetersPID(1));
 
+       // new JoystickButton(m_driverController, XboxController.Button.kY.value)
+        //        .whileTrue(m_robotDrive.centerOnTargetCommand(true));
+
         new JoystickButton(m_driverController, XboxController.Button.kY.value)
-                .whileTrue(m_robotDrive.centerOnTargetCommand(true));
+                .whileTrue(new CenterToTargetCommand(m_robotDrive,m_picam,true));
+
         
+        //new JoystickButton(m_driverController, XboxController.Button.kB.value)
+        //        .whileTrue(m_robotDrive.DriveToTargetCommand(2, -1));
+
         new JoystickButton(m_driverController, XboxController.Button.kB.value)
-                .whileTrue(m_robotDrive.DriveToTargetCommand(2, -1));
+                .whileTrue(new DriveToTargetCommand(m_robotDrive,m_picam, 1, 1));
 
                 
         new JoystickButton(m_actionController, XboxController.Button.kB.value)
@@ -198,7 +210,7 @@ public class RobotContainer {
      */
 
      public Command getAutonomousCommand(){
-        return TrajectoryCommandsFactory.generateAutoTrajectoryCommand(m_robotDrive, m_intake, m_escalatorAssembly);
+        return TrajectoryCommandsFactory.generateAutoTrajectoryCommand(m_robotDrive, m_picam, m_intake, m_escalatorAssembly);
         /*
         return TrajectoryCommandsFactory.generateTrajectoryCommand(m_robotDrive, 
         new Pose2d(new Translation2d(0,0), new Rotation2d(0)),

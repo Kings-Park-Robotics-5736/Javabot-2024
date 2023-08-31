@@ -21,9 +21,11 @@ import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
-import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.commands.drive.DriveToTargetCommand;
+import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.escalator.EscalatorAssemblySubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
+import frc.robot.vision.PiCamera;
 
 public class TrajectoryCommandsFactory {
 
@@ -35,7 +37,7 @@ public class TrajectoryCommandsFactory {
      * @param escalator  subsystem
      * @return
      */
-    public static Command generateAutoTrajectoryCommand(DriveSubsystem robotDrive, IntakeSubsystem intake,
+    public static Command generateAutoTrajectoryCommand(DriveSubsystem robotDrive, PiCamera picam, IntakeSubsystem intake,
             EscalatorAssemblySubsystem escalator) {
 
         // Load the path group from the path planner. This is a list of trajectories
@@ -59,8 +61,10 @@ public class TrajectoryCommandsFactory {
         eventMap.put("ScoreHigh", escalator.ScoreHigh());
         eventMap.put("ScoreMid", escalator.ScoreMid());
         eventMap.put("Forward1", robotDrive.driveXMetersPID(1));
+        eventMap.put("Forward0.5", robotDrive.driveXMetersPID(.5));
 
-        eventMap.put("GrabTarget", robotDrive.DriveToTargetCommand(1.5, 1));
+
+        eventMap.put("GrabTarget",  new DriveToTargetCommand(robotDrive, picam, 1.5, 1));
         eventMap.put("ForceStop", Commands.runOnce(() -> robotDrive.forceStop()));
 
         // Create the AutoBuilder. This only needs to be created once when robot code

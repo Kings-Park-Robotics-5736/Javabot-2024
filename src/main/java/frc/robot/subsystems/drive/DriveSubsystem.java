@@ -2,7 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.subsystems;
+package frc.robot.subsystems.drive;
 
 import com.ctre.phoenix.sensors.WPI_Pigeon2;
 
@@ -14,14 +14,14 @@ import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.networktables.DoubleSubscriber;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DriveConstants;
+import frc.robot.Constants;
+
+import frc.robot.subsystems.SwerveModule;
 
 public class DriveSubsystem extends SubsystemBase {
 
@@ -67,9 +67,7 @@ public class DriveSubsystem extends SubsystemBase {
   // The gyro sensor
   private final WPI_Pigeon2 m_gyro = new WPI_Pigeon2(0, "Canivore");
 
-  private final double kDt = 0.02;
 
-  private final DoubleSubscriber ySub;
 
   /**
    * @brief This is a flag to lockout the joystick control of the robot.
@@ -83,17 +81,13 @@ public class DriveSubsystem extends SubsystemBase {
   private double m_transXLockoutValue;
   private double m_transYLockoutValue;
 
-  private boolean m_gotTarget;
-  private int m_gotTargetCounter;
-  private Pose2d m_startingPosition;
 
   // Control the motion profile for the auto-commands for driving. This is kind-of
   // like a path following
   private final TrapezoidProfile.Constraints m_constraints = new TrapezoidProfile.Constraints(
       DriveConstants.kMaxSpeedMetersPerSecond, 2);
-  private final ProfiledPIDController m_controller_x = new ProfiledPIDController(.5, 0.1, 0.000, m_constraints, kDt);
-  private final ProfiledPIDController m_controller_y = new ProfiledPIDController(.5, 0.1, 0.000, m_constraints, kDt);
-  private final ProfiledPIDController m_controller_theta = new ProfiledPIDController(1, 0, 0.000, m_constraints, kDt);
+  private final ProfiledPIDController m_controller_x = new ProfiledPIDController(.5, 0.1, 0.000, m_constraints, Constants.kDt);
+  private final ProfiledPIDController m_controller_y = new ProfiledPIDController(.5, 0.1, 0.000, m_constraints, Constants.kDt);
 
   // Odometry class for tracking robot pose
   SwerveDriveOdometry m_odometry = new SwerveDriveOdometry(
@@ -115,16 +109,8 @@ public class DriveSubsystem extends SubsystemBase {
     m_transXLockoutValue = 0;
     m_transYLockoutValue = 0;
 
-    NetworkTableInstance inst = NetworkTableInstance.getDefault();
+  
 
-    // get the subtable called "datatable"
-    NetworkTable datatable = inst.getTable("SmartDashboard");
-
-    // subscribe to the topic in "datatable" called "Y"
-    ySub = datatable.getDoubleTopic("anglex").subscribe(0.0);
-
-    // m_controller_theta.enableContinuousInput(-Math.PI, Math.PI);
-    m_controller_theta.setTolerance(0.01);
 
   }
 
@@ -142,6 +128,9 @@ public class DriveSubsystem extends SubsystemBase {
         });
 
     SmartDashboard.putNumber("Rotation", m_gyro.getRotation2d().getDegrees());
+    SmartDashboard.putNumber("X", getPose().getX());
+    SmartDashboard.putNumber("Y", getPose().getY());
+
 
   }
 
@@ -241,14 +230,6 @@ public class DriveSubsystem extends SubsystemBase {
     m_rearRight.forceStop();
   }
 
-  /** Resets the drive encoders to currently read a position of 0. */
-  public void resetEncoders() {
-    m_frontLeft.resetEncoders();
-    m_rearLeft.resetEncoders();
-    m_frontRight.resetEncoders();
-    m_rearRight.resetEncoders();
-  }
-
   /** Zeroes the heading of the robot. */
   public void zeroHeading() {
     m_gyro.reset();
@@ -259,8 +240,12 @@ public class DriveSubsystem extends SubsystemBase {
    *
    * @return the robot's heading in degrees, from -180 to 180
    */
-  public double getHeading() {
+  public double getHeadingDegrees() {
     return m_gyro.getRotation2d().getDegrees();
+  }
+
+  public double getHeadingInRadians() {
+    return m_gyro.getRotation2d().getRadians();
   }
 
   /**
@@ -270,6 +255,19 @@ public class DriveSubsystem extends SubsystemBase {
    */
   public double getTurnRate() {
     return m_gyro.getRate();
+  }
+
+
+  public void setJoystickRotateLockout(boolean val){
+    m_joystickLockoutRotate = val;
+  } 
+
+  public void setJoystickTranslateLockout(boolean val){
+    m_joystickLockoutTranslate = val;
+  }
+
+  public void setRotateLockoutValue(double val){
+    m_rotateLockoutValue = val;
   }
 
   /**
@@ -286,45 +284,8 @@ public class DriveSubsystem extends SubsystemBase {
           drive(0, 0, 0, true);
           m_joystickLockoutTranslate = false;
         },
-        this::checkDone);
-  }
-
-  public Command centerOnTargetCommand(Boolean infinite) {
-    return new FunctionalCommand(
-        () -> {
-          m_joystickLockoutRotate = true;
-        },
-        () -> centerOnTarget(),
-        (interrupted) -> {
-          drive(0, 0, 0, true);
-          m_joystickLockoutRotate = false;
-        },
-        () -> !infinite && checkTurningDone());
-  }
-
-
-  public Command DriveToTargetCommand() {
-    return DriveToTargetCommand(1.5, 1.0);
-
-  }
-
-  public Command DriveToTargetCommand(double speed, double maxDistance) {
-    return new FunctionalCommand(
-        () -> {
-          m_joystickLockoutRotate = true;
-          m_gotTarget = false;
-          m_gotTargetCounter = 0;
-          m_joystickLockoutTranslate = true;
-          m_controller_theta.reset(m_gyro.getRotation2d().getRadians());
-          m_startingPosition = getPose();
-        },
-        () -> driveToTarget(speed, maxDistance),
-        (interrupted) -> {
-          drive(0, 0, 0, true);
-          m_joystickLockoutRotate = false;
-          m_joystickLockoutTranslate = false;
-        },
-        () -> m_gotTarget);
+        this::checkDone, 
+        this);
   }
 
   /**
@@ -384,80 +345,6 @@ public class DriveSubsystem extends SubsystemBase {
     drive(finalVelX, finalVelY, 0, true, false);
   }
 
-  private double degressToRadians(double degrees) {
-    return degrees * Math.PI / 180;
-  }
-
-  private double calculateRotationToTarget() {
-    double heading = m_gyro.getRotation2d().getRadians();
-
-    double degPi = ySub.get();
-    double finalVelTheta = -100;
-    if (degPi != -1.0) {
-      SmartDashboard.putNumber("degPi", degPi);
-      SmartDashboard.putNumber("Heading", heading);
-      SmartDashboard.putNumber("Dest", heading - degressToRadians(degPi));
-
-      final double turnOutput = m_controller_theta.calculate(heading,
-          heading - degressToRadians(degPi));
-
-      SmartDashboard.putNumber("vel", m_controller_theta.getSetpoint().velocity);
-
-      double vel_pid_theta = turnOutput * DriveConstants.kMaxSpeedMetersPerSecond;
-
-      finalVelTheta = m_controller_theta.getSetpoint().velocity + vel_pid_theta;
-
-      m_rotateLockoutValue = finalVelTheta;
-    }
-    return finalVelTheta;
-  }
-
-  private void centerOnTarget() {
-
-    double rotationVel = calculateRotationToTarget();
-    if (rotationVel > -100) {
-      drive(0, 0, rotationVel, false, false);
-    }
-
-    SmartDashboard.putBoolean("At Target 1", checkTurningDone());
-    SmartDashboard.putBoolean("At Target 2", m_controller_theta.atGoal());
-
-  }
-
-  private double getTotalDisplacement(){
-    var pose = getPose();
-    return Math.sqrt((pose.getX() - m_startingPosition.getX()) * (pose.getX() - m_startingPosition.getX()) + 
-                     (pose.getY() - m_startingPosition.getY()) * (pose.getY() - m_startingPosition.getY()));
-  }
-
-  private double getTotalRotation(){
-    return Math.abs(getPose().getRotation().getRadians() - m_startingPosition.getRotation().getRadians());
-  }
-
-  private void driveToTarget(double speed, double maxDistance) {
-    double rotationVel = calculateRotationToTarget();
-    if (rotationVel > -100) {
-      drive(speed, 0, rotationVel, false, false);
-    } else {
-      m_gotTargetCounter++;
-
-    }
-
-    if (m_gotTargetCounter > 10) {
-      m_gotTarget = true;
-    }
-
-    if((maxDistance > 0 && getTotalDisplacement() > maxDistance) || getTotalRotation() > Math.PI/4 ){
-      //this is an error check to ensure we can't just run-away if we are fully auto here
-      m_gotTarget = true;
-    }
-
-    SmartDashboard.putBoolean("m_gotTarget", m_gotTarget);
-  }
-
-  private boolean checkTurningDone() {
-    return Math.abs(ySub.get()) < 2;
-  }
 
   /**
    * @brief Checks if the robot is at the setpoint

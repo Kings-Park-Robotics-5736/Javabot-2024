@@ -7,9 +7,9 @@ package frc.robot;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import frc.robot.Types.FeedForwardConstants;
-import frc.robot.Types.PidConstants;
-import frc.robot.Types.Limits;
+import frc.robot.utils.Types.FeedForwardConstants;
+import frc.robot.utils.Types.Limits;
+import frc.robot.utils.Types.PidConstants;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide
@@ -23,6 +23,9 @@ import frc.robot.Types.Limits;
  * wherever the constants are needed, to reduce verbosity.
  */
 public final class Constants {
+
+  public static final double kDt = 0.02;
+
   public static final class DriveConstants {
     public static final int kFrontLeftDriveMotorPort = 2;
     public static final int kRearLeftDriveMotorPort = 4;
