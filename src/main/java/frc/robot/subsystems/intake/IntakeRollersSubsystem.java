@@ -24,6 +24,7 @@ public class IntakeRollersSubsystem extends SubsystemBase {
     private RelativeEncoder m_encoder;
     private SimpleMotorFeedforward m_feedforward;
     private final String name;
+    private boolean m_stop;
 
     public IntakeRollersSubsystem(PidConstants pidValues, FeedForwardConstants ffValues, byte deviceId, String _name) {
 
@@ -54,7 +55,7 @@ public class IntakeRollersSubsystem extends SubsystemBase {
      * 
      * @param speed
      */
-    public void setSpeed(double speed) {
+    private void setSpeed(double speed) {
         m_motor.set(speed);
     }
 
@@ -74,6 +75,7 @@ public class IntakeRollersSubsystem extends SubsystemBase {
     }
 
     public void StopIntake() {
+        m_stop=true;
         setSpeed(0);
     }
 
@@ -82,18 +84,18 @@ public class IntakeRollersSubsystem extends SubsystemBase {
     }
     public Command RunIntakeForwardCommand() {
         return new FunctionalCommand(
-                () -> {},
+                () -> {m_stop=false;},
                 () -> RunIntake(4000),
                 (interrupted) -> StopIntake(),
-                () -> false, this);
+                () -> m_stop, this);
     }
 
     public Command RunIntakeBackwardCommand() {
         return new FunctionalCommand(
-                () -> {},
+                () -> {m_stop=false;},
                 () -> RunIntake(-3000),
                 (interrupted) -> StopIntake(),
-                () -> false, this);
+                () -> m_stop, this);
     }
 
 }

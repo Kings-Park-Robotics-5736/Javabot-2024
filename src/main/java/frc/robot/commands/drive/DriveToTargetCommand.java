@@ -10,8 +10,12 @@ import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.vision.PiCamera;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-
-
+/**
+ * @brief This command is like CenterToTarget, except it will also drive at a
+ *        static speed until it reaches the target
+ * 
+ * @not Reaching target is defined as no longer being able to see it.
+ */
 public class DriveToTargetCommand extends CommandBase {
     private DriveSubsystem m_drive;
     private boolean m_gotTarget;
@@ -22,14 +26,11 @@ public class DriveToTargetCommand extends CommandBase {
     private final double m_speed;
     private final double m_maxDistance;
 
-
     private final TrapezoidProfile.Constraints m_constraints = new TrapezoidProfile.Constraints(
-        DriveConstants.kMaxSpeedMetersPerSecond, 2);
+            DriveConstants.kMaxSpeedMetersPerSecond, 2);
 
-
-
-    private final ProfiledPIDController m_controller_theta = new ProfiledPIDController(1, 0, 0.000, m_constraints, Constants.kDt);
-
+    private final ProfiledPIDController m_controller_theta = new ProfiledPIDController(1, 0, 0.000, m_constraints,
+            Constants.kDt);
 
     public DriveToTargetCommand(DriveSubsystem robot_drive, PiCamera picam, double speed, double maxDistance) {
         this.m_drive = robot_drive;
@@ -42,8 +43,6 @@ public class DriveToTargetCommand extends CommandBase {
 
     }
 
-
-
     @Override
     public void initialize() {
         m_drive.setJoystickRotateLockout(true);
@@ -55,11 +54,9 @@ public class DriveToTargetCommand extends CommandBase {
 
         SmartDashboard.putBoolean("DriveToTarget", true);
 
-        
-    
         // m_controller_theta.enableContinuousInput(-Math.PI, Math.PI);
         m_controller_theta.setTolerance(0.01);
-        
+
     }
 
     @Override
@@ -80,41 +77,44 @@ public class DriveToTargetCommand extends CommandBase {
         return m_gotTarget;
     }
 
-    
-   
-
-
-    private double getTotalDisplacement(){
+    private double getTotalDisplacement() {
         var pose = m_drive.getPose();
-        return Math.sqrt((pose.getX() - m_startingPosition.getX()) * (pose.getX() - m_startingPosition.getX()) + 
-                         (pose.getY() - m_startingPosition.getY()) * (pose.getY() - m_startingPosition.getY()));
-      }
-    
-      private double getTotalRotation(){
+        return Math.sqrt((pose.getX() - m_startingPosition.getX()) * (pose.getX() - m_startingPosition.getX()) +
+                (pose.getY() - m_startingPosition.getY()) * (pose.getY() - m_startingPosition.getY()));
+    }
+
+    private double getTotalRotation() {
         return Math.abs(m_drive.getPose().getRotation().getRadians() - m_startingPosition.getRotation().getRadians());
-      }
+    }
 
     private void driveToTarget(double speed, double maxDistance) {
-        double rotationVel = DriveCommandsCommon.calculateRotationToTarget(m_drive.getHeadingInRadians(), m_picam.getPiCamAngle(), m_controller_theta);
-        if (rotationVel > -100) {
-          m_drive.setRotateLockoutValue(rotationVel);
-          m_drive.drive(speed, 0, rotationVel, false, false);
-        } else {
-          m_gotTargetCounter++;
-    
-        }
-    
-        if (m_gotTargetCounter > 10) {
-          m_gotTarget = true;
-        }
-    
-        if((maxDistance > 0 && getTotalDisplacement() > maxDistance) || getTotalRotation() > Math.PI/4 ){
-          //this is an error check to ensure we can't just run-away if we are fully auto here
-          m_gotTarget = true;
-        }
-    
-        SmartDashboard.putBoolean("m_gotTarget", m_gotTarget);
-      }
+        var piAngle = m_picam.getPiCamAngle();
+        if (Math.abs(piAngle) < 50) {
+            double rotationVel = DriveCommandsCommon.calculateRotationToTarget(m_drive.getHeadingInRadians(), piAngle,
+                    m_controller_theta);
+            if (rotationVel > -100) {
+                m_drive.setRotateLockoutValue(rotationVel);
+                m_drive.drive(speed, 0, rotationVel, false, false);
+                m_gotTargetCounter = 0;
+            } else {
+                m_gotTargetCounter++;
 
+            }
+        } else {
+            m_gotTargetCounter++;
+        }
+
+        if (m_gotTargetCounter > 20) {
+            m_gotTarget = true;
+        }
+
+        if ((maxDistance > 0 && getTotalDisplacement() > maxDistance) || getTotalRotation() > Math.PI / 4) {
+            // this is an error check to ensure we can't just run-away if we are fully auto
+            // here
+            m_gotTarget = true;
+        }
+
+        SmartDashboard.putBoolean("m_gotTarget", m_gotTarget);
+    }
 
 }

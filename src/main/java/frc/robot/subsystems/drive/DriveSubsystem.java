@@ -6,22 +6,15 @@ package frc.robot.subsystems.drive;
 
 import com.ctre.phoenix.sensors.WPI_Pigeon2;
 
-import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DriveConstants;
-import frc.robot.Constants;
-
-import frc.robot.subsystems.SwerveModule;
 
 public class DriveSubsystem extends SubsystemBase {
 
@@ -67,8 +60,6 @@ public class DriveSubsystem extends SubsystemBase {
   // The gyro sensor
   private final WPI_Pigeon2 m_gyro = new WPI_Pigeon2(0, "Canivore");
 
-
-
   /**
    * @brief This is a flag to lockout the joystick control of the robot.
    *        This is used when the robot is running an auto-command.
@@ -80,14 +71,6 @@ public class DriveSubsystem extends SubsystemBase {
   private double m_rotateLockoutValue;
   private double m_transXLockoutValue;
   private double m_transYLockoutValue;
-
-
-  // Control the motion profile for the auto-commands for driving. This is kind-of
-  // like a path following
-  private final TrapezoidProfile.Constraints m_constraints = new TrapezoidProfile.Constraints(
-      DriveConstants.kMaxSpeedMetersPerSecond, 2);
-  private final ProfiledPIDController m_controller_x = new ProfiledPIDController(.5, 0.1, 0.000, m_constraints, Constants.kDt);
-  private final ProfiledPIDController m_controller_y = new ProfiledPIDController(.5, 0.1, 0.000, m_constraints, Constants.kDt);
 
   // Odometry class for tracking robot pose
   SwerveDriveOdometry m_odometry = new SwerveDriveOdometry(
@@ -109,9 +92,6 @@ public class DriveSubsystem extends SubsystemBase {
     m_transXLockoutValue = 0;
     m_transYLockoutValue = 0;
 
-  
-
-
   }
 
   /**
@@ -131,16 +111,12 @@ public class DriveSubsystem extends SubsystemBase {
     SmartDashboard.putNumber("X", getPose().getX());
     SmartDashboard.putNumber("Y", getPose().getY());
 
-
   }
 
   @Override
   public void periodic() {
     // Update the odometry in the periodic block
     updateOdometry();
-
-    // double value = ySub.get();
-
   }
 
   /**
@@ -158,6 +134,7 @@ public class DriveSubsystem extends SubsystemBase {
    * @param pose The pose to which to set the odometry.
    */
   public void resetOdometry(Pose2d pose) {
+    System.out.println("-----------------Odometry Reset__________________");
     m_odometry.resetPosition(
         m_gyro.getRotation2d(),
         new SwerveModulePosition[] {
@@ -257,101 +234,16 @@ public class DriveSubsystem extends SubsystemBase {
     return m_gyro.getRate();
   }
 
-
-  public void setJoystickRotateLockout(boolean val){
+  public void setJoystickRotateLockout(boolean val) {
     m_joystickLockoutRotate = val;
-  } 
+  }
 
-  public void setJoystickTranslateLockout(boolean val){
+  public void setJoystickTranslateLockout(boolean val) {
     m_joystickLockoutTranslate = val;
   }
 
-  public void setRotateLockoutValue(double val){
+  public void setRotateLockoutValue(double val) {
     m_rotateLockoutValue = val;
-  }
-
-  /**
-   * @brief Drives the robot to a distance following the current heading using a
-   *        PID controller.
-   * @param meters
-   * @return the command
-   */
-  public Command driveXMetersPID(double meters) {
-    return new FunctionalCommand(
-        () -> InitMotionProfile(setpointToX(meters), setpointToY(meters)),
-        () -> driveAuto(),
-        (interrupted) -> {
-          drive(0, 0, 0, true);
-          m_joystickLockoutTranslate = false;
-        },
-        this::checkDone, 
-        this);
-  }
-
-  /**
-   * @brief Determines the x value of the setpoint based on the current heading
-   * @param setpoint in meters
-   * @return
-   */
-  private double setpointToX(double setpoint) {
-    return setpoint * getPose().getRotation().getCos() + getPose().getX();
-  }
-
-  /**
-   * @brief Determines the y value of the setpoint based on the current heading
-   * @param setpoint in meters
-   * @return
-   */
-  private double setpointToY(double setpoint) {
-    return setpoint * getPose().getRotation().getSin() + getPose().getY();
-  }
-
-  /**
-   * @brief Initialize the motion profile for the PID controller
-   * @param setpointX
-   * @param setpointY
-   */
-  private void InitMotionProfile(double setpointX, double setpointY) {
-
-    m_controller_x.reset(getPose().getX());
-    m_controller_x.setTolerance(.05);
-    m_controller_x.setGoal(new TrapezoidProfile.State(setpointX, 0));
-
-    m_controller_y.reset(getPose().getY());
-    m_controller_y.setTolerance(.05);
-    m_controller_y.setGoal(new TrapezoidProfile.State(setpointY, 0));
-
-    m_joystickLockoutTranslate = true; // begin locking out the 0 values from the joystick
-
-  }
-
-  /**
-   * @brief logic to drive the robot in auto-distance mode
-   */
-  private void driveAuto() {
-
-    double pid_valX = m_controller_x.calculate(getPose().getX());
-    double vel_pid_valX = pid_valX * DriveConstants.kMaxSpeedMetersPerSecond;
-
-    double pid_valY = m_controller_y.calculate(getPose().getY());
-    double vel_pid_valY = pid_valY * DriveConstants.kMaxSpeedMetersPerSecond;
-
-    SmartDashboard.putNumber("Auto VelX", m_controller_x.getSetpoint().velocity + vel_pid_valX);
-    SmartDashboard.putNumber("Auto VelY", m_controller_y.getSetpoint().velocity + vel_pid_valY);
-
-    double finalVelX = m_controller_x.getSetpoint().velocity + vel_pid_valX;
-    double finalVelY = m_controller_y.getSetpoint().velocity + vel_pid_valY;
-
-    drive(finalVelX, finalVelY, 0, true, false);
-  }
-
-
-  /**
-   * @brief Checks if the robot is at the setpoint
-   * @return
-   */
-  private boolean checkDone() {
-    return m_controller_x.atGoal() && m_controller_y.atGoal();
   }
 
 }
