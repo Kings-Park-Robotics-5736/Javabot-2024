@@ -15,11 +15,9 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.ModuleConstants;
 import frc.robot.utils.MathUtils;
-
 
 public class SwerveModule {
 
@@ -39,7 +37,8 @@ public class SwerveModule {
           ModuleConstants.kMaxModuleAngularSpeedRadiansPerSecond,
           ModuleConstants.kMaxModuleAngularAccelerationRadiansPerSecondSquared));
 
-  private final SimpleMotorFeedforward m_driveFeedforward = new SimpleMotorFeedforward(DriveConstants.ksVoltsDrive , DriveConstants.kvVoltsDrive,DriveConstants.kaVoltsDrive);
+  private final SimpleMotorFeedforward m_driveFeedforward = new SimpleMotorFeedforward(DriveConstants.ksVoltsDrive,
+      DriveConstants.kvVoltsDrive, DriveConstants.kaVoltsDrive);
 
   private final SimpleMotorFeedforward m_turnFeedforward = new SimpleMotorFeedforward(DriveConstants.ksVoltsTurning,
       DriveConstants.kvVoltSecondsPerMeterTurning,
@@ -64,8 +63,7 @@ public class SwerveModule {
       boolean invertDrive,
       double turningEncoderOffset) {
 
-
-    m_id= driveMotorChannel;
+    m_id = driveMotorChannel;
     m_driveMotor = new WPI_TalonFX(driveMotorChannel, canName);
     m_turningMotor = new WPI_TalonFX(turningMotorChannel, canName);
 
@@ -86,15 +84,14 @@ public class SwerveModule {
     m_turningPIDController.enableContinuousInput(-Math.PI, Math.PI);
   }
 
-
-
   private double getTurnEncoderPositionInRadians() {
     double retVal = MathUtils.degreesToRadians(m_turningEncoder.getAbsolutePosition());
     return retVal;
   }
 
   private double getDriveEncoderVelocity() {
-    //WARNING - unit from falcon encoder is per 100ms, so need to multiply by 10 to get to per 1s
+    // WARNING - unit from falcon encoder is per 100ms, so need to multiply by 10 to
+    // get to per 1s
     return m_driveMotor.getSelectedSensorVelocity() * 10 * (2 * Math.PI * ModuleConstants.kWheelRadius)
         / (ModuleConstants.kEncoderResolution * ModuleConstants.kDriveGearRatio);
   }
@@ -143,32 +140,35 @@ public class SwerveModule {
     double turnOutput = m_turnPIDController.calculate(getTurnEncoderPositionInRadians(),
         state.angle.getRadians());
 
-   // SmartDashboard.putNumber("velcity set " +m_id,getDriveEncoderVelocity() );
- 
-    //SmartDashboard.putNumber("velcity req " +m_id,state.speedMetersPerSecond );
+    // //SmartDashboard.putNumber("velcity set " +m_id,getDriveEncoderVelocity() );
 
-    //SmartDashboard.putNumber("turn set " +m_id,getTurnEncoderPositionInRadians() );
- 
-    //SmartDashboard.putNumber("turn req " +m_id,state.angle.getRadians());
+    //// SmartDashboard.putNumber("velcity req " +m_id,state.speedMetersPerSecond );
 
-    //SmartDashboard.putNumber("drive vo " +m_id,driveOutput );
-    //SmartDashboard.putNumber("drive vf " +m_id,driveFeedforward);
+    //// SmartDashboard.putNumber("turn set "
+    //// +m_id,getTurnEncoderPositionInRadians() );
 
-    double turnFeedforward =0;// m_turnFeedforward.calculate(m_turningPIDController.getSetpoint().velocity);
+    //// SmartDashboard.putNumber("turn req " +m_id,state.angle.getRadians());
+
+    //// SmartDashboard.putNumber("drive vo " +m_id,driveOutput );
+    //// SmartDashboard.putNumber("drive vf " +m_id,driveFeedforward);
+
+    double turnFeedforward = 0;// m_turnFeedforward.calculate(m_turningPIDController.getSetpoint().velocity);
 
     m_driveMotor.setVoltage(driveOutput + driveFeedforward);
-    /*if(turnOutput + turnFeedforward < .05){
-      turnOutput = 0;
-      turnFeedforward = 0;
-    }*/
+    /*
+     * if(turnOutput + turnFeedforward < .05){
+     * turnOutput = 0;
+     * turnFeedforward = 0;
+     * }
+     */
     m_turningMotor.setVoltage(turnOutput + turnFeedforward);
   }
 
-
-  public void forceStop(){
+  public void forceStop() {
     m_driveMotor.setVoltage(0);
     m_turningMotor.setVoltage(0);
   }
+
   /** Zeroes all the SwerveModule encoders. */
   public void resetEncoders() {
     m_driveMotor.setSelectedSensorPosition(0);

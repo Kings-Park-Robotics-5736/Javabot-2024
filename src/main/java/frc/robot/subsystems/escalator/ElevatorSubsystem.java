@@ -137,7 +137,7 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     private Boolean isFinished() {
         var isFinished = (m_controller.atGoal() && elevatorReachedTarget()) || !isWithinLimits();
-        SmartDashboard.putBoolean("isfinished " + m_name, isFinished);
+        //SmartDashboard.putBoolean("isfinished " + m_name, isFinished);
         return isFinished;
     }
 
@@ -155,9 +155,9 @@ public class ElevatorSubsystem extends SubsystemBase {
      */
     private void setSpeed(double speed) {
         m_motor.set(speed);
-        SmartDashboard.putNumber("Elevator speed" + m_name, speed);
-        SmartDashboard.putNumber("Elevator Distance" + m_name, m_encoder.getDistance());
-        SmartDashboard.putNumber("Elevator setpoint" + m_name, m_controller.getSetpoint().position);
+        //SmartDashboard.putNumber("Elevator speed" + m_name, speed);
+        //SmartDashboard.putNumber("Elevator Distance" + m_name, m_encoder.getDistance());
+        //SmartDashboard.putNumber("Elevator setpoint" + m_name, m_controller.getSetpoint().position);
     }
 
 }

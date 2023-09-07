@@ -6,8 +6,8 @@ import com.pathplanner.lib.commands.PPSwerveControllerCommand;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.commands.TrajectoryCommandsFactory;
+import frc.robot.subsystems.drive.DriveSubsystem;
 
 /**
  * @brief this is a wrapper around the path planning lib to allow us to go to a
@@ -26,7 +26,8 @@ public class PathPlanFromDynamicStartCommand extends CommandBase {
     private final boolean m_usePid;
 
     /**
-     * @param initialPoseSupplier method to obtain the current robot pose to determine initial state.
+     * @param initialPoseSupplier method to obtain the current robot pose to
+     *                            determine initial state.
      * @param robotDrive
      * @param endPose
      */
@@ -54,7 +55,7 @@ public class PathPlanFromDynamicStartCommand extends CommandBase {
     @Override
     public void initialize() {
 
-        //delay trajectory creation until this initialize.
+        // delay trajectory creation until this initialize.
         var traj = TrajectoryCommandsFactory.generateTrajectory(m_initialPoseSupplier.get(), m_endPose);
         m_ppscc = TrajectoryCommandsFactory.generatePPTrajectoryCommand(m_robotDrive, traj, m_usePid);
         m_ppscc.initialize();

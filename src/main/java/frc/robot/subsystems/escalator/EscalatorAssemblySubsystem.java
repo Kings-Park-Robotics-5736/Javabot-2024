@@ -95,7 +95,7 @@ public class EscalatorAssemblySubsystem extends SubsystemBase {
     }
 
     public Command RunElevatorDownCommand() {
-        return elevator.RunElevatorToPositionCommand(59).unless(() -> !escalator.IsEscalatorDown());
+        return elevator.RunElevatorToPositionCommand(60).unless(() -> !escalator.IsEscalatorDown());
     }
 
     /******************************************

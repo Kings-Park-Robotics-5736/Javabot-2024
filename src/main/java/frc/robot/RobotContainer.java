@@ -6,6 +6,8 @@ package frc.robot;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -16,15 +18,20 @@ import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OIConstants;
 import frc.robot.commands.JoystickCommandsFactory;
 import frc.robot.commands.TrajectoryCommandsFactory;
-import frc.robot.commands.drive.CenterToTargetCommand;
+import frc.robot.commands.drive.CenterToTargetCommandLimelight;
+import frc.robot.commands.drive.CenterToTargetCommandPiCam;
 import frc.robot.commands.drive.DriveDistanceCommand;
 import frc.robot.commands.drive.DriveToTargetCommand;
 import frc.robot.commands.drive.HuntAndReturnCommand;
+import frc.robot.commands.drive.PathPlanFromDynamicStartCommand;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.escalator.EscalatorAssemblySubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
+import frc.robot.utils.MathUtils;
 import frc.robot.utils.Types.DirectionType;
+import frc.robot.vision.Limelight;
 import frc.robot.vision.PiCamera;
+import frc.robot.vision.Limelight.LEDMode;
 
 /*
  * This class is where the bulk of the robot should be declared.  Since Command-based is a
@@ -33,22 +40,21 @@ import frc.robot.vision.PiCamera;
  * (including subsystems, commands, and button mappings) should be declared here.
  */
 public class RobotContainer {
+
         // The robot's subsystems
-        private final DriveSubsystem m_robotDrive = new DriveSubsystem();
 
+        private final PiCamera m_picam = new PiCamera();
+        public Limelight m_limelight = new Limelight();
+
+        private final DriveSubsystem m_robotDrive = new DriveSubsystem(m_limelight);
         private final IntakeSubsystem m_intake = new IntakeSubsystem();
-
         private final EscalatorAssemblySubsystem m_escalatorAssembly = new EscalatorAssemblySubsystem();
 
         private final SlewRateLimiter m_xspeedLimiter = new SlewRateLimiter(3);
         private final SlewRateLimiter m_yspeedLimiter = new SlewRateLimiter(3);
         private final SlewRateLimiter m_rotLimiter = new SlewRateLimiter(3);
 
-        private final PiCamera m_picam = new PiCamera();
-
-        // The driver's controller
         XboxController m_driverController = new XboxController(OIConstants.kDriverControllerPort);
-
         XboxController m_actionController = new XboxController(OIConstants.kActionControllerPort);
 
         private void driveWithJoystick(Boolean fieldRelative) {
@@ -82,6 +88,9 @@ public class RobotContainer {
                 // Configure the button bindings
                 configureButtonBindings();
 
+                // Set limelight LED to OFF on startup
+                m_limelight.setLEDMode(LEDMode.PIPELINE);
+
                 // Configure default commands
                 m_robotDrive.setDefaultCommand(
                                 // The left stick controls translation of the robot.
@@ -102,24 +111,36 @@ public class RobotContainer {
          */
         private void configureButtonBindings() {
 
+                //BACK BUTTON: zero out the heading. Note, with vision pose, this should not be used anymore.
                 new JoystickButton(m_driverController, XboxController.Button.kBack.value)
                                 .onTrue(Commands.runOnce(() -> m_robotDrive.zeroHeading(), m_robotDrive));
 
+                //X BUTTON: drive forward 1 meter
                 new JoystickButton(m_driverController, XboxController.Button.kX.value)
                                 .whileTrue(new DriveDistanceCommand(m_robotDrive, 1));
 
+                //LEFT BUMPER: Drive to scoring position
+                new JoystickButton(m_driverController, XboxController.Button.kLeftBumper.value)
+                                .whileTrue(new PathPlanFromDynamicStartCommand(m_robotDrive::getPose,
+                                m_robotDrive,new Pose2d(1.9,3.87,new Rotation2d(MathUtils.degreesToRadians(180)))));
+
+                //Y BUTTON: center on a cone
                 new JoystickButton(m_driverController, XboxController.Button.kY.value)
-                                .whileTrue(new CenterToTargetCommand(m_robotDrive, m_picam, true));
+                                .whileTrue(new CenterToTargetCommandPiCam(m_robotDrive, m_picam, true));
 
-                // new JoystickButton(m_driverController, XboxController.Button.kA.value)
-                // .onTrue(new PathPlanFromDynamicStartCommand(m_robotDrive::getPose,
-                // m_robotDrive,new Pose2d(0,0,new Rotation2d(0))));
+                //RIGHT BUMPER: Center on reflective post
+                new JoystickButton(m_driverController, XboxController.Button.kRightBumper.value)
+                                .whileTrue(new CenterToTargetCommandLimelight(m_robotDrive, m_limelight, true));
 
+                
+                //A BUTTON: Drive to cone and return to where you started from
                 new JoystickButton(m_driverController, XboxController.Button.kA.value)
                                 .onTrue(new HuntAndReturnCommand(m_robotDrive, m_picam, 1.5, 1.5));
 
+                //B BUTTON: Drive to a target, and stop when you reach it.
                 new JoystickButton(m_driverController, XboxController.Button.kB.value)
                                 .whileTrue(new DriveToTargetCommand(m_robotDrive, m_picam, 1, 1));
+
 
                 new JoystickButton(m_actionController, XboxController.Button.kB.value)
                                 .toggleOnTrue(m_intake.RunIntakeForwardCommand());
@@ -139,7 +160,7 @@ public class RobotContainer {
                                                                 .RumbleControllerTillCancel(m_actionController)));
 
                 new JoystickButton(m_actionController, XboxController.Button.kA.value)
-                                .whileTrue(m_escalatorAssembly.RunElevatorToPositionCommand(59)
+                                .whileTrue(m_escalatorAssembly.RunElevatorToPositionCommand(60)
                                                 .andThen(JoystickCommandsFactory
                                                                 .RumbleControllerTillCancel(m_actionController)));
 

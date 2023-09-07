@@ -2,12 +2,10 @@ package frc.robot.commands.drive;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.subsystems.drive.DriveSubsystem;
-
 
 /**
  * @brief This command is used to drive a specific distance
@@ -53,8 +51,10 @@ public class DriveDistanceCommand extends CommandBase {
         double pid_valY = m_controller_y.calculate(m_robotDrive.getPose().getY());
         double vel_pid_valY = pid_valY * DriveConstants.kMaxSpeedMetersPerSecond;
 
-        SmartDashboard.putNumber("Auto VelX", m_controller_x.getSetpoint().velocity + vel_pid_valX);
-        SmartDashboard.putNumber("Auto VelY", m_controller_y.getSetpoint().velocity + vel_pid_valY);
+        // SmartDashboard.putNumber("Auto VelX", m_controller_x.getSetpoint().velocity +
+        // vel_pid_valX);
+        // SmartDashboard.putNumber("Auto VelY", m_controller_y.getSetpoint().velocity +
+        // vel_pid_valY);
 
         double finalVelX = m_controller_x.getSetpoint().velocity + vel_pid_valX;
         double finalVelY = m_controller_y.getSetpoint().velocity + vel_pid_valY;

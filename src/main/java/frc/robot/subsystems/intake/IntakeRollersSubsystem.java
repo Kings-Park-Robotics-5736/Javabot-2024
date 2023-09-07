@@ -1,19 +1,17 @@
 package frc.robot.subsystems.intake;
 
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.SparkMaxPIDController;
+import com.revrobotics.SparkMaxPIDController.ArbFFUnits;
+
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.utils.Types.FeedForwardConstants;
 import frc.robot.utils.Types.PidConstants;
-
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMaxLowLevel.MotorType;
-import com.revrobotics.SparkMaxPIDController.ArbFFUnits;
-import com.revrobotics.SparkMaxPIDController;
-import com.revrobotics.RelativeEncoder;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 
 
@@ -69,8 +67,8 @@ public class IntakeRollersSubsystem extends SubsystemBase {
         double ff = m_feedforward.calculate(setpoint / 60);
         m_pidController.setReference(setpoint, CANSparkMax.ControlType.kVelocity, 0, ff, ArbFFUnits.kVoltage);
 
-        SmartDashboard.putNumber("ProcessVariable" + name, m_encoder.getVelocity());
-        SmartDashboard.putNumber("FF" + name, ff);
+        //SmartDashboard.putNumber("ProcessVariable" + name, m_encoder.getVelocity());
+        //SmartDashboard.putNumber("FF" + name, ff);
 
     }
 
@@ -85,7 +83,7 @@ public class IntakeRollersSubsystem extends SubsystemBase {
     public Command RunIntakeForwardCommand() {
         return new FunctionalCommand(
                 () -> {m_stop=false;},
-                () -> RunIntake(4000),
+                () -> RunIntake(5000),
                 (interrupted) -> StopIntake(),
                 () -> m_stop, this);
     }

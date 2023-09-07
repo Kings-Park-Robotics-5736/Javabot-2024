@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.commands.drive.DriveDistanceCommand;
@@ -45,7 +46,7 @@ public class TrajectoryCommandsFactory {
     public static Command generateAutoTrajectoryHuntCommand(DriveSubsystem robotDrive, PiCamera picam,
             IntakeSubsystem intake, EscalatorAssemblySubsystem escalator) {
         return escalator.RunElevatorDownCommand().andThen(new HuntAndReturnCommand(robotDrive,
-                escalator.RunElevatorUpCommand(), intake.RunIntakeForwardCommand(), picam, 1.5, 1.5, false));
+                escalator.RunElevatorUpCommand(), intake.RunIntakeForwardCommand(), picam, 1.5, 1.5, false)).andThen(new WaitCommand(10));
     }
 
     /**
@@ -62,7 +63,7 @@ public class TrajectoryCommandsFactory {
 
         // Load the path group from the path planner. This is a list of trajectories
         // that will be run in sequence.
-        List<PathPlannerTrajectory> pathGroup = PathPlanner.loadPathGroup("CameraMain", new PathConstraints(1, 1));
+        List<PathPlannerTrajectory> pathGroup = PathPlanner.loadPathGroup("mainWithDriveOnly", new PathConstraints(1, 1));
 
         if (pathGroup == null) {
             return new PrintCommand("Path group is null. Ensure path file is on the rio");
@@ -83,7 +84,12 @@ public class TrajectoryCommandsFactory {
         eventMap.put("Forward1", new DriveDistanceCommand(robotDrive, 1));
         eventMap.put("Forward0.5", new DriveDistanceCommand(robotDrive, 0.5));
         eventMap.put("GrabTarget", new DriveToTargetCommand(robotDrive, picam, 1.5, 1));
+
+        eventMap.put("GrabTargetAndIntake", intake.RunIntakeForwardCommand().raceWith(new DriveToTargetCommand(robotDrive, picam, 1.5, 1)));
+
         eventMap.put("HuntAndReturn", generateAutoTrajectoryHuntCommand(robotDrive, picam, intake, escalator));
+
+
         eventMap.put("ForceStop", Commands.runOnce(() -> robotDrive.forceStop()));
 
         // Create the AutoBuilder. This only needs to be created once when robot code

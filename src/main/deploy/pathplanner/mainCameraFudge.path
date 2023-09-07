@@ -51,30 +51,52 @@
     },
     {
       "anchorPoint": {
-        "x": 2.5,
+        "x": 3.0,
         "y": 3.006125867586274
       },
       "prevControl": {
-        "x": 2.207320857373707,
+        "x": 2.707320857373707,
         "y": 3.006125867586274
       },
       "nextControl": {
-        "x": 2.8042536058413443,
+        "x": 3.3042536058413443,
         "y": 3.006125867586274
       },
       "holonomicAngle": 0.0,
       "isReversal": false,
       "velOverride": null,
       "isLocked": false,
-      "isStopPoint": true,
+      "isStopPoint": false,
       "stopEvent": {
-        "names": [
-          "ForceStop",
-          "HuntAndReturn"
-        ],
-        "executionBehavior": "sequential",
+        "names": [],
+        "executionBehavior": "parallel",
         "waitBehavior": "none",
         "waitTime": 0
+      }
+    },
+    {
+      "anchorPoint": {
+        "x": 4.0,
+        "y": 3.0
+      },
+      "prevControl": {
+        "x": 3.9836376274372753,
+        "y": 3.0
+      },
+      "nextControl": {
+        "x": 3.9836376274372753,
+        "y": 3.0
+      },
+      "holonomicAngle": 0,
+      "isReversal": true,
+      "velOverride": null,
+      "isLocked": false,
+      "isStopPoint": false,
+      "stopEvent": {
+        "names": [],
+        "executionBehavior": "parallel",
+        "waitBehavior": "none",
+        "waitTime": 1.0
       }
     },
     {
@@ -133,16 +155,28 @@
   "isReversed": null,
   "markers": [
     {
-      "position": 0.0,
+      "position": 0.10909090909108396,
       "names": [
         "ElevatorDown"
       ]
     },
     {
-      "position": 2.6666666666667154,
+      "position": 1.6727272727265512,
       "names": [
-        "event",
+        "RunIntake"
+      ]
+    },
+    {
+      "position": 3.4242424242423892,
+      "names": [
+        "StopIntake",
         "ElevatorUp"
+      ]
+    },
+    {
+      "position": 2.333333333333372,
+      "names": [
+        "CenterOnTarget"
       ]
     }
   ]

@@ -62,9 +62,9 @@ public class EscalatorSubsystem extends SubsystemBase {
         m_pidController.setOutputRange(-1, 1);
         m_feedforward = new ElevatorFeedforward(ffValues.ks, ffValues.kg, ffValues.kv, ffValues.ka);
         //optional code to tune pids from smart dashboard
-        /*SmartDashboard.putNumber("P Gain", pidValues.p);
-        SmartDashboard.putNumber("I Gain", pidValues.i);
-        SmartDashboard.putNumber("D Gain", pidValues.d);*/
+        /*//SmartDashboard.putNumber("P Gain", pidValues.p);
+        //SmartDashboard.putNumber("I Gain", pidValues.i);
+        //SmartDashboard.putNumber("D Gain", pidValues.d);*/
     }
 
     @Override
@@ -137,7 +137,7 @@ public class EscalatorSubsystem extends SubsystemBase {
      */
     private void setSpeed(double speed) {
         m_motor.set(speed);
-        SmartDashboard.putNumber("Escalator Position" + m_name, m_encoder.getPosition());
+        //SmartDashboard.putNumber("Escalator Position" + m_name, m_encoder.getPosition());
     }
 
     /**
@@ -182,7 +182,7 @@ public class EscalatorSubsystem extends SubsystemBase {
 
     private Boolean isFinished() {
         var isFinished =  escalatorReachedTarget();// &&profile.isFinished(Timer.getFPGATimestamp() - startTime);
-        SmartDashboard.putBoolean("isfinished " + m_name, isFinished);
+        //SmartDashboard.putBoolean("isfinished " + m_name, isFinished);
         return isFinished;
     }
 
@@ -199,10 +199,10 @@ public class EscalatorSubsystem extends SubsystemBase {
         m_pidController.setReference(setpoint.position, CANSparkMax.ControlType.kPosition, 0, ff,
                 ArbFFUnits.kVoltage);
 
-        SmartDashboard.putNumber("ProcessVariable" + m_name, m_encoder.getPosition());
-        SmartDashboard.putNumber("FF" + m_name, ff);
-        SmartDashboard.putNumber("setpoint_pos" + m_name, setpoint.position);
-        SmartDashboard.putNumber("time " + m_name, currTime - startTime);
+        //SmartDashboard.putNumber("ProcessVariable" + m_name, m_encoder.getPosition());
+        //SmartDashboard.putNumber("FF" + m_name, ff);
+        //SmartDashboard.putNumber("setpoint_pos" + m_name, setpoint.position);
+        //SmartDashboard.putNumber("time " + m_name, currTime - startTime);
     }
 
 }
