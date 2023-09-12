@@ -11,24 +11,24 @@ import frc.robot.utils.MathUtils;
  * Limelight camera class
  */
 public class Limelight {
-    private static NetworkTable table;
-    private static NetworkTableEntry tx;
-    private static NetworkTableEntry ty;
-    private static NetworkTableEntry tv;
-    private static NetworkTableEntry ta;
-    private static NetworkTableEntry tid;
-    private static NetworkTableEntry botpose;
-    private static NetworkTableEntry botpose_wpiblue;
-    private static NetworkTableEntry botpose_wpired;
-    private static NetworkTableEntry camerapose_targetspace;
-    private static NetworkTableEntry targetpose_cameraspace;
-    private static NetworkTableEntry targetpose_robotspace;
-    private static NetworkTableEntry botpose_targetspace;
-    private static NetworkTableEntry camerapose_robotspace;
-    private static NetworkTableEntry camMode;
-    private static NetworkTableEntry ledMode;
-    private static NetworkTableEntry pipeline;
-    private static NetworkTableEntry actualPipeline;
+    private NetworkTable table;
+    private NetworkTableEntry tx;
+    private NetworkTableEntry ty;
+    private NetworkTableEntry tv;
+    private NetworkTableEntry ta;
+    private NetworkTableEntry tid;
+    private NetworkTableEntry botpose;
+    private NetworkTableEntry botpose_wpiblue;
+    private NetworkTableEntry botpose_wpired;
+    private NetworkTableEntry camerapose_targetspace;
+    private NetworkTableEntry targetpose_cameraspace;
+    private NetworkTableEntry targetpose_robotspace;
+    private NetworkTableEntry botpose_targetspace;
+    private NetworkTableEntry camerapose_robotspace;
+    private NetworkTableEntry camMode;
+    private NetworkTableEntry ledMode;
+    private NetworkTableEntry pipeline;
+    private NetworkTableEntry actualPipeline;
 
     public enum LEDMode {
         PIPELINE(0),
@@ -58,8 +58,8 @@ public class Limelight {
      * Camera sends data to network table, get table and values when creating
      * instance of Limelight
      */
-    public Limelight() {
-        table = NetworkTableInstance.getDefault().getTable("limelight");
+    public Limelight(String tableName) {
+        table = NetworkTableInstance.getDefault().getTable(tableName);
         tx = table.getEntry("tx"); // horizontal offset (-29.8 - 29.8 degrees)
         ty = table.getEntry("ty"); // vertical offset (-24.85 - 24.85 degrees)
         tv = table.getEntry("tv"); // valid target (0 - 1)
@@ -241,6 +241,13 @@ public class Limelight {
         return new Pose2d(pose[0], pose[1], new Rotation2d(MathUtils.degreesToRadians(pose[5])));
     }
 
+
+    public long getLastBluePoseChange() {
+        return botpose_wpiblue.getLastChange();
+    }
+    public long getLastRedPoseChange() {
+        return botpose_wpired.getLastChange();
+    }
     /**
      * Get botpose
      * 

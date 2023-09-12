@@ -83,7 +83,7 @@ public class IntakeRollersSubsystem extends SubsystemBase {
     public Command RunIntakeForwardCommand() {
         return new FunctionalCommand(
                 () -> {m_stop=false;},
-                () -> RunIntake(5000),
+                () -> RunIntake(4000),
                 (interrupted) -> StopIntake(),
                 () -> m_stop, this);
     }

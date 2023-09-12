@@ -44,9 +44,10 @@ public class RobotContainer {
         // The robot's subsystems
 
         private final PiCamera m_picam = new PiCamera();
-        public Limelight m_limelight = new Limelight();
+        public Limelight m_limelight = new Limelight("limelight");
+        public Limelight m_limelight_side = new Limelight("limelight-side");
 
-        private final DriveSubsystem m_robotDrive = new DriveSubsystem(m_limelight);
+        private final DriveSubsystem m_robotDrive = new DriveSubsystem(m_limelight,null);// use only 1 limelight for driving now since we dont have great measurements m_limelight_side);
         private final IntakeSubsystem m_intake = new IntakeSubsystem();
         private final EscalatorAssemblySubsystem m_escalatorAssembly = new EscalatorAssemblySubsystem();
 
@@ -56,6 +57,7 @@ public class RobotContainer {
 
         XboxController m_driverController = new XboxController(OIConstants.kDriverControllerPort);
         XboxController m_actionController = new XboxController(OIConstants.kActionControllerPort);
+        
 
         private void driveWithJoystick(Boolean fieldRelative) {
                 // Get the x speed. We are inverting this because Xbox controllers return
@@ -88,7 +90,9 @@ public class RobotContainer {
                 // Configure the button bindings
                 configureButtonBindings();
 
+
                 // Set limelight LED to OFF on startup
+                m_limelight.setLEDMode(LEDMode.PIPELINE);
                 m_limelight.setLEDMode(LEDMode.PIPELINE);
 
                 // Configure default commands
@@ -122,7 +126,7 @@ public class RobotContainer {
                 //LEFT BUMPER: Drive to scoring position
                 new JoystickButton(m_driverController, XboxController.Button.kLeftBumper.value)
                                 .whileTrue(new PathPlanFromDynamicStartCommand(m_robotDrive::getPose,
-                                m_robotDrive,new Pose2d(1.9,3.87,new Rotation2d(MathUtils.degreesToRadians(180)))));
+                                m_robotDrive,new Pose2d(1.96,3.87,new Rotation2d(MathUtils.degreesToRadians(180)))));
 
                 //Y BUTTON: center on a cone
                 new JoystickButton(m_driverController, XboxController.Button.kY.value)
@@ -130,7 +134,7 @@ public class RobotContainer {
 
                 //RIGHT BUMPER: Center on reflective post
                 new JoystickButton(m_driverController, XboxController.Button.kRightBumper.value)
-                                .whileTrue(new CenterToTargetCommandLimelight(m_robotDrive, m_limelight, true));
+                                .whileTrue(new CenterToTargetCommandLimelight(m_robotDrive,m_escalatorAssembly, m_limelight, true));
 
                 
                 //A BUTTON: Drive to cone and return to where you started from
@@ -240,7 +244,7 @@ public class RobotContainer {
          */
 
         public Command getAutonomousCommand() {
-                return TrajectoryCommandsFactory.generateAutoTrajectoryCommand(m_robotDrive, m_picam, m_intake,
+                return TrajectoryCommandsFactory.generateAutoTrajectoryCommand(m_robotDrive, m_picam, m_limelight, m_intake,
                                 m_escalatorAssembly);
 
         }

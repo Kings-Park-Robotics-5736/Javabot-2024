@@ -79,13 +79,15 @@ public class DriveSubsystem extends SubsystemBase {
   private double m_transXLockoutValue;
   private double m_transYLockoutValue;
   private int m_updateCounter;
+  private long m_lastPoseUpdate;
 
-  private Limelight m_Limelight;
+  private Limelight m_limelight;
+  private Limelight m_limelight_side;
 
   private final SwerveDrivePoseEstimator m_poseEstimator;
 
   /** Creates a new DriveSubsystem. */
-  public DriveSubsystem(Limelight ll) {
+  public DriveSubsystem(Limelight ll, Limelight l2) {
 
     m_joystickLockoutTranslate = false;
     m_joystickLockoutRotate = false;
@@ -93,8 +95,10 @@ public class DriveSubsystem extends SubsystemBase {
     m_transXLockoutValue = 0;
     m_transYLockoutValue = 0;
 
-    m_Limelight = ll;
+    m_limelight = ll;
+    m_limelight_side = l2;
     m_updateCounter = 0;
+    m_lastPoseUpdate=0;
 
     m_gyro.setYaw(180);
 
@@ -129,36 +133,55 @@ public class DriveSubsystem extends SubsystemBase {
             m_rearRight.getPosition()
         });
 
-    if (m_updateCounter % 2 == 0) {
-      var alliance = DriverStation.getAlliance();
-
-      double[] pose;
-
-      boolean validPose = m_Limelight.checkValidTarget();
-      if (alliance == DriverStation.Alliance.Red) {
-        pose = m_Limelight.getBotPoseRed();
-      } else if (alliance == DriverStation.Alliance.Blue) {
-        pose = m_Limelight.getBotPoseBlue();
-      } else {
-        validPose = false;
-        pose = new double[6]; // empty 6 position array
-      }
-
-      if (validPose && m_Limelight.getIsPipelineAprilTag()) {
-        Pose2d limelightPose = m_Limelight.AsPose2d(pose);
-
-        // Also apply vision measurements. pose[6] holds the latency/frame delay
-        m_poseEstimator.addVisionMeasurement(
-            limelightPose,
-            Timer.getFPGATimestamp() - (pose[6] / 1000.0));
-      }
+    addLimelightVisionMeasurement(m_limelight);
+    if(m_limelight_side != null){
+      addLimelightVisionMeasurement(m_limelight_side);
     }
+    
+    
 
     SmartDashboard.putNumber("Gyro Rotation", m_gyro.getRotation2d().getDegrees());
     SmartDashboard.putNumber("Pose Rotation", getPose().getRotation().getDegrees());
     SmartDashboard.putNumber("X", getPose().getX());
     SmartDashboard.putNumber("Y", getPose().getY());
 
+  }
+
+  private void addLimelightVisionMeasurement(Limelight ll){
+    var alliance = DriverStation.getAlliance();
+
+    double[] pose;
+
+    long currentUpdateTime = 0;
+
+    boolean validPose = ll.checkValidTarget();
+    if (alliance == DriverStation.Alliance.Red) {
+      pose = ll.getBotPoseRed();
+      currentUpdateTime = ll.getLastRedPoseChange();
+    } else if (alliance == DriverStation.Alliance.Blue) {
+      pose = ll.getBotPoseBlue();
+      currentUpdateTime = ll.getLastBluePoseChange();
+    } else {
+      validPose = false;
+      pose = new double[6]; // empty 6 position array
+    }
+    
+
+    //observed bad tracking when tag is very close to edge
+    double offsetX = ll.getTargetOffsetX();
+      
+    if (validPose && Math.abs(offsetX) < 32.5 && ll.getIsPipelineAprilTag() && currentUpdateTime != m_lastPoseUpdate) {
+      Pose2d limelightPose = ll.AsPose2d(pose);
+      m_lastPoseUpdate = currentUpdateTime;
+      if(limelightPose.getX() > .5){
+        // Also apply vision measurements. pose[6] holds the latency/frame delay
+        m_poseEstimator.addVisionMeasurement(
+            limelightPose,
+            Timer.getFPGATimestamp() - (pose[6] / 1000.0));
+       // System.out.println("Adding vision measurement of x = " + limelightPose.getX());
+      }
+    }
+    
   }
 
   @Override
@@ -260,6 +283,9 @@ public class DriveSubsystem extends SubsystemBase {
   /** Zeroes the heading of the robot. */
   public void zeroHeading() {
     m_gyro.reset();
+    var currentPose = getPose();
+    Pose2d newPose = new Pose2d(currentPose.getTranslation(), m_gyro.getRotation2d());
+    this.resetOdometry(newPose);
   }
 
   /**

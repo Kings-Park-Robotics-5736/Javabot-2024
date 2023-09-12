@@ -63,6 +63,10 @@ public abstract class CenterToTargetCommand extends CommandBase {
         return !m_infinite && checkTurningDone();
     }
 
+    protected void stop(){
+        m_drive.drive(0, 0, 0, false, false);
+    }
+
     protected abstract boolean checkTurningDone();
 
     protected void centerOnTarget(double angle, boolean useCameraMeasurement) {

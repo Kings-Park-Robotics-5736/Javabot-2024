@@ -24,6 +24,7 @@ public class PathPlanFromDynamicStartCommand extends CommandBase {
     private final DriveSubsystem m_robotDrive;
     private Pose2d m_endPose;
     private final boolean m_usePid;
+    private int m_pathPlannerDoneCounter;
 
     /**
      * @param initialPoseSupplier method to obtain the current robot pose to
@@ -59,10 +60,12 @@ public class PathPlanFromDynamicStartCommand extends CommandBase {
         var traj = TrajectoryCommandsFactory.generateTrajectory(m_initialPoseSupplier.get(), m_endPose);
         m_ppscc = TrajectoryCommandsFactory.generatePPTrajectoryCommand(m_robotDrive, traj, m_usePid);
         m_ppscc.initialize();
+        m_pathPlannerDoneCounter=0;
     }
 
     @Override
     public void end(boolean interrupted) {
+        //System.out.println("COunter = " + m_pathPlannerDoneCounter + ", poseX = " + m_robotDrive.getPose().getX() + ", poseY = " + m_robotDrive.getPose().getY() + ", desired X = " + m_endPose.getX() + ", desiredY = " + m_endPose.getY());
         m_ppscc.end(interrupted);
     }
 
@@ -73,7 +76,11 @@ public class PathPlanFromDynamicStartCommand extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        return m_ppscc.isFinished();
+        if(m_ppscc.isFinished()){
+            m_pathPlannerDoneCounter++;
+        }
+
+        return m_pathPlannerDoneCounter > 25 || (Math.abs(m_robotDrive.getPose().getX()-m_endPose.getX()) < .02 && Math.abs(m_robotDrive.getPose().getY()-m_endPose.getY()) < .02);
     }
 
 }

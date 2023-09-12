@@ -2,13 +2,13 @@
   "waypoints": [
     {
       "anchorPoint": {
-        "x": 1.9,
-        "y": 3.85
+        "x": 1.98,
+        "y": 3.9
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.9000000000000004,
-        "y": 3.85
+        "x": 2.9800000000000004,
+        "y": 3.9
       },
       "holonomicAngle": 180.0,
       "isReversal": false,
@@ -27,15 +27,15 @@
     {
       "anchorPoint": {
         "x": 2.7,
-        "y": 3.85
+        "y": 3.9
       },
       "prevControl": {
         "x": 2.5403736753520443,
-        "y": 3.85
+        "y": 3.9
       },
       "nextControl": {
         "x": 2.859626324647956,
-        "y": 3.85
+        "y": 3.9
       },
       "holonomicAngle": 180.0,
       "isReversal": false,
@@ -52,15 +52,15 @@
     {
       "anchorPoint": {
         "x": 3.5,
-        "y": 3.85
+        "y": 3.9
       },
       "prevControl": {
         "x": 3.207320857373707,
-        "y": 3.85
+        "y": 3.9
       },
       "nextControl": {
         "x": 3.207320857373707,
-        "y": 3.85
+        "y": 3.9
       },
       "holonomicAngle": 0.0,
       "isReversal": true,
@@ -79,15 +79,15 @@
     {
       "anchorPoint": {
         "x": 2.7,
-        "y": 3.85
+        "y": 3.9
       },
       "prevControl": {
         "x": 3.029053394537133,
-        "y": 3.85
+        "y": 3.9
       },
       "nextControl": {
         "x": 2.390763942968873,
-        "y": 3.85
+        "y": 3.9
       },
       "holonomicAngle": 180.0,
       "isReversal": false,
@@ -103,12 +103,12 @@
     },
     {
       "anchorPoint": {
-        "x": 1.9,
-        "y": 3.85
+        "x": 1.98,
+        "y": 3.9
       },
       "prevControl": {
-        "x": 2.974707949231332,
-        "y": 3.85
+        "x": 3.0547079492313323,
+        "y": 3.9
       },
       "nextControl": null,
       "holonomicAngle": 180.0,
@@ -119,7 +119,8 @@
       "stopEvent": {
         "names": [
           "ForceStop",
-          "ScoreMid"
+          "DriveToScoring",
+          "ScoreMidCentering"
         ],
         "executionBehavior": "sequential",
         "waitBehavior": "after",
@@ -132,7 +133,7 @@
   "isReversed": null,
   "markers": [
     {
-      "position": 0.10909090909108396,
+      "position": 0.0,
       "names": [
         "ElevatorDown"
       ]
@@ -148,6 +149,12 @@
       "names": [
         "StopIntake",
         "ElevatorUp"
+      ]
+    },
+    {
+      "position": 3.95,
+      "names": [
+        "LimelightVisionPipeline"
       ]
     }
   ]

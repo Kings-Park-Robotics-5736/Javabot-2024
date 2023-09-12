@@ -129,6 +129,10 @@ public class EscalatorSubsystem extends SubsystemBase {
         m_encoder.setPosition(0);
     }
 
+    public double getPosition(){
+        return m_encoder.getPosition();
+    }
+
     /**
      * 
      * Set the speed of the intake motor (-1 to 1)
@@ -137,7 +141,7 @@ public class EscalatorSubsystem extends SubsystemBase {
      */
     private void setSpeed(double speed) {
         m_motor.set(speed);
-        //SmartDashboard.putNumber("Escalator Position" + m_name, m_encoder.getPosition());
+        SmartDashboard.putNumber("Escalator Position" + m_name, m_encoder.getPosition());
     }
 
     /**

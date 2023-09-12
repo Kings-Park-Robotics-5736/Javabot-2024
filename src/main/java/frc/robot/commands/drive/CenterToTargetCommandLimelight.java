@@ -1,6 +1,7 @@
 package frc.robot.commands.drive;
 
 import frc.robot.subsystems.drive.DriveSubsystem;
+import frc.robot.subsystems.escalator.EscalatorAssemblySubsystem;
 import frc.robot.vision.Limelight;
 
 /**
@@ -16,14 +17,16 @@ import frc.robot.vision.Limelight;
 public class CenterToTargetCommandLimelight extends CenterToTargetCommand {
 
     private Limelight m_limelight;
+    private EscalatorAssemblySubsystem m_escalator;
     private final double LIMELIGHT_ERROR_THRESH = 2;
     private long m_lastUpdate;
 
-    public CenterToTargetCommandLimelight(DriveSubsystem robot_drive, Limelight limelight, boolean infinite) {
+    public CenterToTargetCommandLimelight(DriveSubsystem robot_drive, EscalatorAssemblySubsystem escalator, Limelight limelight, boolean infinite) {
 
         super(robot_drive, infinite);
         this.m_limelight = limelight;
         this.m_lastUpdate = 0;
+        this.m_escalator = escalator;
 
         // NOTE - we explicitly do not do the below line, or else we can't drive while
         // centering
@@ -47,14 +50,20 @@ public class CenterToTargetCommandLimelight extends CenterToTargetCommand {
     @Override
     public void execute() {
 
-        if (m_limelight.getIsPipelineReflective()) {
-            long lastUpdate = m_limelight.getLastOffsetXChange();
-            boolean useCameraMeasurement = false;
-            if (lastUpdate != m_lastUpdate) {
-                m_lastUpdate = lastUpdate;
-                useCameraMeasurement = true;
+        if(m_escalator.getEscalatorPosition()<19 ||m_escalator.getEscalatorPosition()>33  ){
+            if (m_limelight.getIsPipelineReflective()) {
+                long lastUpdate = m_limelight.getLastOffsetXChange();
+                boolean useCameraMeasurement = false;
+                if (lastUpdate != m_lastUpdate) {
+                    m_lastUpdate = lastUpdate;
+                    useCameraMeasurement = true;
+                }
+                centerOnTarget(m_limelight.getTargetOffsetX(), useCameraMeasurement);
+            }else{
+                stop();
             }
-            centerOnTarget(m_limelight.getTargetOffsetX(), useCameraMeasurement);
+        }else{
+            stop();
         }
     }
 

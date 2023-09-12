@@ -36,6 +36,10 @@ public class EscalatorAssemblySubsystem extends SubsystemBase {
 
     }
 
+    public double getEscalatorPosition(){
+        return escalator.getPosition();
+    }
+
     /*****************************************
      * Manual Control
      ******************************************/
@@ -78,7 +82,7 @@ public class EscalatorAssemblySubsystem extends SubsystemBase {
     }
 
     public Command RunEscalatorToMidScore() {
-        return escalator.RunEscalatorToPositionCommand(38.8).unless(() -> !elevator.IsElevatorUp());
+        return escalator.RunEscalatorToPositionCommand(37.3).unless(() -> !elevator.IsElevatorUp());
     }
 
     public Command RunEscalatorToBottom() {

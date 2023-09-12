@@ -45,6 +45,8 @@ public class ElevatorSubsystem extends SubsystemBase {
         m_name = _name;
         m_limits = limits;
 
+        resetEncoder();
+
     }
 
     @Override

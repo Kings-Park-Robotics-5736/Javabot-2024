@@ -62,7 +62,7 @@ public class DriveToTargetCommand extends CommandBase {
 
         m_inSlowdown = false;
         m_slowdownCounter = 0;
-        m_useSpeed = 0.1;
+        m_useSpeed = m_speed;//0.5;
     }
 
     @Override
@@ -140,7 +140,7 @@ public class DriveToTargetCommand extends CommandBase {
             m_useSpeed = m_speed;
         }
 
-        if (m_gotTargetCounter > 20) {
+        if (m_gotTargetCounter > 30) {
             m_gotTarget = true;
             m_inSlowdown = true;
             m_slowdownSpeed = m_speed;
