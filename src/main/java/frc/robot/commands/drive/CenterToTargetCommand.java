@@ -5,7 +5,9 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
+import frc.robot.Constants.DriveToTargetCommandConstants;
 import frc.robot.subsystems.drive.DriveSubsystem;
+
 
 /**
  * @brief This command centers the robot on the target. It does NOT drive to it
@@ -23,19 +25,19 @@ public abstract class CenterToTargetCommand extends CommandBase {
     private boolean m_infinite;
 
     private final TrapezoidProfile.Constraints m_constraints = new TrapezoidProfile.Constraints(
-            DriveConstants.kMaxSpeedMetersPerSecond, 2);
+            DriveConstants.kMaxSpeedMetersPerSecond, DriveConstants.kMaxAccelerationMetersPerSecondSquared);
 
-    private final ProfiledPIDController m_controller_theta = new ProfiledPIDController(1, 0, 0.000, m_constraints,
+    private final ProfiledPIDController m_controller_theta = new ProfiledPIDController(
+            DriveToTargetCommandConstants.kPidValues.p, DriveToTargetCommandConstants.kPidValues.i,
+            DriveToTargetCommandConstants.kPidValues.d, m_constraints,
             Constants.kDt);
 
     public CenterToTargetCommand(DriveSubsystem robot_drive, boolean infinite) {
 
         this.m_drive = robot_drive;
-
         this.m_infinite = infinite;
 
-        // NOTE - we explicitly do not do the below line, or else we can't drive while
-        // centering
+        // NOTE - we explicitly don't do the below line; else can't drive while centering
         // addRequirements(m_drive);
 
     }
@@ -46,8 +48,6 @@ public abstract class CenterToTargetCommand extends CommandBase {
         m_drive.setJoystickRotateLockout(true);
 
         m_controller_theta.reset(m_drive.getHeadingInRadians());
-
-        // m_controller_theta.enableContinuousInput(-Math.PI, Math.PI);
         m_controller_theta.setTolerance(0.01);
 
     }
@@ -63,10 +63,11 @@ public abstract class CenterToTargetCommand extends CommandBase {
         return !m_infinite && checkTurningDone();
     }
 
-    protected void stop(){
+    protected void stop() {
         m_drive.drive(0, 0, 0, false, false);
     }
 
+    //to be implemented by the inherited classes.
     protected abstract boolean checkTurningDone();
 
     protected void centerOnTarget(double angle, boolean useCameraMeasurement) {

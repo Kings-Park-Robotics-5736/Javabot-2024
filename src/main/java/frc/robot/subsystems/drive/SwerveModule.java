@@ -27,7 +27,7 @@ public class SwerveModule {
 
   private final WPI_CANCoder m_turningEncoder;
   private final PIDController m_drivePIDController = new PIDController(DriveConstants.kPDrive, 0, 0);
-  private final PIDController m_turnPIDController = new PIDController(5, 0, 0);
+  private final PIDController m_turnPIDController = new PIDController(ModuleConstants.kPModuleTurningNoController, 0, 0);
   // Using a TrapezoidProfile PIDController to allow for smooth turning
   private final ProfiledPIDController m_turningPIDController = new ProfiledPIDController(
       ModuleConstants.kPModuleTurningController,

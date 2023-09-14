@@ -6,6 +6,8 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
+import frc.robot.Constants.DriveToTargetCommandConstants;
+
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.vision.PiCamera;
 
@@ -20,24 +22,22 @@ public class DriveToTargetCommand extends CommandBase {
     private boolean m_gotTarget;
     private int m_gotTargetCounter;
     private Pose2d m_startingPosition;
-    private boolean m_inSlowdown;
-    private int m_slowdownCounter;
-    private double m_slowdownSpeed;
 
     private final PiCamera m_picam;
     private final double m_speed;
     private final double m_maxDistance;
-    private double m_useSpeed;
 
     private final TrapezoidProfile.Constraints m_constraints = new TrapezoidProfile.Constraints(
-            DriveConstants.kMaxSpeedMetersPerSecond, 2);
+            DriveConstants.kMaxSpeedMetersPerSecond, DriveConstants.kMaxAccelerationMetersPerSecondSquared);
 
-    private final ProfiledPIDController m_controller_theta = new ProfiledPIDController(1, 0, 0.000, m_constraints,
+    private final ProfiledPIDController m_controller_theta = new ProfiledPIDController(
+            DriveToTargetCommandConstants.kPidValues.p, DriveToTargetCommandConstants.kPidValues.i,
+            DriveToTargetCommandConstants.kPidValues.d, m_constraints,
             Constants.kDt);
 
     public DriveToTargetCommand(DriveSubsystem robot_drive, PiCamera picam, double speed, double maxDistance) {
-        this.m_drive = robot_drive;
 
+        this.m_drive = robot_drive;
         this.m_picam = picam;
         this.m_speed = speed;
         this.m_maxDistance = maxDistance;
@@ -48,84 +48,80 @@ public class DriveToTargetCommand extends CommandBase {
 
     @Override
     public void initialize() {
+
+        //Lock out drive controls
         m_drive.setJoystickRotateLockout(true);
+        m_drive.setJoystickTranslateLockout(true);
+
         m_gotTarget = false;
         m_gotTargetCounter = 0;
-        m_drive.setJoystickTranslateLockout(true);
-        m_controller_theta.reset(m_drive.getHeadingInRadians());
+
+        //acuire current pose to check total distance travelled
         m_startingPosition = m_drive.getPose();
-
-        // SmartDashboard.putBoolean("DriveToTarget", true);
-
-        // m_controller_theta.enableContinuousInput(-Math.PI, Math.PI);
+        
+        //configure motion controller
+        m_controller_theta.reset(m_drive.getHeadingInRadians());
         m_controller_theta.setTolerance(0.01);
-
-        m_inSlowdown = false;
-        m_slowdownCounter = 0;
-        m_useSpeed = m_speed;//0.5;
     }
 
     @Override
     public void end(boolean interrupted) {
+
+        //stop the robot from moving completely
         m_drive.drive(0, 0, 0, true);
 
+        //unlock joysticks
         m_drive.setJoystickRotateLockout(false);
         m_drive.setJoystickTranslateLockout(false);
-        // SmartDashboard.putBoolean("DriveToTarget", false);
     }
 
     @Override
     public void execute() {
-        if (m_inSlowdown) {
-            slowDown();
-        } else {
-            driveToTarget(m_speed, m_maxDistance);
-        }
+        driveToTarget(m_speed, m_maxDistance);
     }
 
     @Override
     public boolean isFinished() {
-        return m_gotTarget && !m_inSlowdown;
+        return m_gotTarget;
     }
 
+    /**
+     * @brief  Calculate the total displacement from the starting position
+     * @note   Uses euclidean distance formula based on x and y coordinates
+     * @return total displacement
+     */
     private double getTotalDisplacement() {
-        var pose = m_drive.getPose();
+        var pose = m_drive.getPose(); // get current pose
+
+        // euclidean distance formula (sqrt((x2-x1)^2 + (y2-y1)^2)
         return Math.sqrt((pose.getX() - m_startingPosition.getX()) * (pose.getX() - m_startingPosition.getX()) +
                 (pose.getY() - m_startingPosition.getY()) * (pose.getY() - m_startingPosition.getY()));
     }
 
+    /**
+     * @brief  Calculate the total rotation from the starting position
+     * @return total rotation
+     */
     private double getTotalRotation() {
         return Math.abs(m_drive.getPose().getRotation().getRadians() - m_startingPosition.getRotation().getRadians());
     }
 
-    private void slowDown() {
-        /*
-         * if(m_slowdownCounter < 200){
-         * m_slowdownCounter++;
-         * }else{
-         * m_inSlowdown=false;
-         * }
-         * 
-         * m_drive.drive(m_slowdownSpeed, 0, 0, false, false);
-         * if(m_slowdownCounter%10==0){
-         * m_slowdownSpeed/=2.0;
-         * }
-         * System.out.println("Setting drive speed to " + m_slowdownSpeed);
-         */
-        m_inSlowdown = false;
-
-    }
-
+    /**
+     * @brief  Drive to target using the PiCamera to center us
+     * @param  speed: speed to drive at
+     * @param  maxDistance: maximum distance to drive before stopping if we 'run away' to a target too far
+     */
     private void driveToTarget(double speed, double maxDistance) {
-        var piAngle = m_picam.getPiCamAngle();
-        if (Math.abs(piAngle) < 50) {
+        var piAngle = m_picam.getPiCamAngle(); // get angle from PiCamera interface
+        if (Math.abs(piAngle) < 50) { //only trust angles that are in range -50deg to 50deg
             double rotationVel = DriveCommandsCommon.calculateRotationToTarget(m_drive.getHeadingInRadians(), true,
                     piAngle,
                     m_controller_theta);
+
             if (rotationVel > -100) {
 
                 m_drive.setRotateLockoutValue(rotationVel);
-                m_drive.drive(m_useSpeed, 0, rotationVel, false, false);
+                m_drive.drive(m_speed, 0, rotationVel, false, false);
                 m_gotTargetCounter = 0;
             } else {
                 m_gotTargetCounter++;
@@ -134,29 +130,19 @@ public class DriveToTargetCommand extends CommandBase {
         } else {
             m_gotTargetCounter++;
         }
-        if (m_useSpeed < m_speed) {
-            m_useSpeed += .08;
-        } else {
-            m_useSpeed = m_speed;
-        }
 
-        if (m_gotTargetCounter > 30) {
+        // if we can no longer see the target for a while, we are done
+        if (m_gotTargetCounter > DriveToTargetCommandConstants.kGotTargetThreshold) {
             m_gotTarget = true;
-            m_inSlowdown = true;
-            m_slowdownSpeed = m_speed;
-            System.out.println("---------------Los Target-----------------");
+            System.out.println("---------------Lost Target-----------------");
         }
 
-        if ((maxDistance > 0 && getTotalDisplacement() > maxDistance) || getTotalRotation() > Math.PI / 4) {
+        if ((maxDistance > 0 && getTotalDisplacement() > maxDistance)
+                || getTotalRotation() > DriveToTargetCommandConstants.kMaxRotation) {
             // this is an error check to ensure we can't just run-away if we are fully auto
-            // here
             System.out.println("---------------Overran-----------------");
             m_gotTarget = true;
-            m_inSlowdown = true;
-            m_slowdownSpeed = m_speed;
         }
 
-        // SmartDashboard.putBoolean("m_gotTarget", m_gotTarget);
     }
-
 }

@@ -4,10 +4,16 @@
 
 package frc.robot;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.pathplanner.lib.PathPoint;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -15,7 +21,7 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.DriveConstants;
-import frc.robot.Constants.OIConstants;
+import frc.robot.Constants.IOConstants;
 import frc.robot.commands.JoystickCommandsFactory;
 import frc.robot.commands.TrajectoryCommandsFactory;
 import frc.robot.commands.drive.CenterToTargetCommandLimelight;
@@ -55,8 +61,8 @@ public class RobotContainer {
         private final SlewRateLimiter m_yspeedLimiter = new SlewRateLimiter(3);
         private final SlewRateLimiter m_rotLimiter = new SlewRateLimiter(3);
 
-        XboxController m_driverController = new XboxController(OIConstants.kDriverControllerPort);
-        XboxController m_actionController = new XboxController(OIConstants.kActionControllerPort);
+        XboxController m_driverController = new XboxController(IOConstants.kDriverControllerPort);
+        XboxController m_actionController = new XboxController(IOConstants.kActionControllerPort);
         
 
         private void driveWithJoystick(Boolean fieldRelative) {
@@ -123,10 +129,11 @@ public class RobotContainer {
                 new JoystickButton(m_driverController, XboxController.Button.kX.value)
                                 .whileTrue(new DriveDistanceCommand(m_robotDrive, 1));
 
+                 
                 //LEFT BUMPER: Drive to scoring position
                 new JoystickButton(m_driverController, XboxController.Button.kLeftBumper.value)
                                 .whileTrue(new PathPlanFromDynamicStartCommand(m_robotDrive::getPose,
-                                m_robotDrive,new Pose2d(1.96,3.87,new Rotation2d(MathUtils.degreesToRadians(180)))));
+                                m_robotDrive,new Pose2d(1.96,3.87,new Rotation2d(MathUtils.degreesToRadians(180))), true, true));
 
                 //Y BUTTON: center on a cone
                 new JoystickButton(m_driverController, XboxController.Button.kY.value)

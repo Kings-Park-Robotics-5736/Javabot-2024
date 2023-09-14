@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.FlipperContstants;
 import frc.robot.utils.Types.DirectionType;
 
 public class FlipperSubsystem extends SubsystemBase {
@@ -54,10 +55,10 @@ public class FlipperSubsystem extends SubsystemBase {
         final double time;
         if (direction == DirectionType.DOWN) {
             speed = -m_defaultSpeed;
-            time = .6;
+            time = FlipperContstants.kDownTime;
         } else {
             speed = m_defaultSpeed;
-            time = .8;
+            time = FlipperContstants.kUpTime;
         }
         return Commands.runOnce(() -> setSpeed(speed)).andThen(Commands.waitSeconds(time))
                 .andThen(runOnce(() -> setSpeed(0)));

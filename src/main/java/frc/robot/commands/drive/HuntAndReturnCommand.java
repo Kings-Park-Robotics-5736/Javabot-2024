@@ -42,7 +42,6 @@ public class HuntAndReturnCommand extends CommandBase {
     private final double m_speed;
     private final double m_maxDistance;
     private final boolean m_usePid;
-    private int delay;
     private int elevatorDelay;
 
     public HuntAndReturnCommand(DriveSubsystem robotDrive, PiCamera picam, double speed, double maxDistance) {
@@ -70,7 +69,7 @@ public class HuntAndReturnCommand extends CommandBase {
         // create our sub-commands
         m_driveToTargetCommand = new DriveToTargetCommand(m_robotDrive, m_picam, m_speed, m_maxDistance);
         m_PathPlanFromDynamicStartCommand = new PathPlanFromDynamicStartCommand(m_robotDrive::getPose, m_robotDrive,
-                m_startPose, m_usePid);
+                m_startPose, m_usePid, false);
 
         // initialize our first command, the hunt/drive to target
         m_driveToTargetCommand.initialize();
@@ -84,8 +83,6 @@ public class HuntAndReturnCommand extends CommandBase {
             m_runIntakeCommand.initialize();
         }
         m_state = State.HUNT; // We started, so we are now hunting!
-
-        delay = 0;
     }
 
     @Override
@@ -93,7 +90,6 @@ public class HuntAndReturnCommand extends CommandBase {
         switch (m_state) {
             case HUNT:
                 m_driveToTargetCommand.end(interrupted); // ensure we stop/end the drive command if it hasnt finished
-                                                         // yet
                 break;
             case RETURN_TO_START:
                 m_PathPlanFromDynamicStartCommand.end(interrupted); // ensure we stop path planning
@@ -127,11 +123,6 @@ public class HuntAndReturnCommand extends CommandBase {
                 break;
             case RETURN_TO_START:
 
-                delay++;
-                if (delay < 100) {
-                    delay++;
-                    break;
-                }
                 // use path planning lib to keep returing to start
                 m_PathPlanFromDynamicStartCommand.execute();
 
@@ -168,9 +159,10 @@ public class HuntAndReturnCommand extends CommandBase {
                         m_runIntakeCommand.end(true); // stop the intake before raising the elevator
                     }
                 }
-                ret = false;
+                ret = false; //we can't be done! we only finished the Hunt! Now we need to return
                 break;
             case RETURN_TO_START:
+                //we are done when path planning says we are done
                 ret = m_PathPlanFromDynamicStartCommand.isFinished();
                 break;
             default:

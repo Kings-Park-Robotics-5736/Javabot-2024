@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.EscalatorConstants;
 import frc.robot.utils.Types.FeedForwardConstants;
 import frc.robot.utils.Types.Limits;
 import frc.robot.utils.Types.PidConstants;
@@ -37,9 +38,7 @@ public class EscalatorSubsystem extends SubsystemBase {
     private int staleCounter = 0;
     private double lastPosition = 0;
 
-    private final double kStaleTolerance = .75;
-    private final double kDiffThreshold = 0.25;
-    private final int kStaleThreshold = 5;
+
 
     public EscalatorSubsystem(PidConstants pidValues,Limits limits, FeedForwardConstants ffValues, byte deviceId, String _name) {
 
@@ -149,7 +148,7 @@ public class EscalatorSubsystem extends SubsystemBase {
      * @param setpoint of the motor, in absolute rotations
      */
     private void InitMotionProfile(double setpoint) {
-        profile = new TrapezoidProfile(new TrapezoidProfile.Constraints(120, 150),
+        profile = new TrapezoidProfile(new TrapezoidProfile.Constraints(EscalatorConstants.kMaxVelocity, EscalatorConstants.kMaxAcceleration),
                 new TrapezoidProfile.State(setpoint, 0),
                 new TrapezoidProfile.State(m_encoder.getPosition(), 0));
 
@@ -167,7 +166,7 @@ public class EscalatorSubsystem extends SubsystemBase {
         // if it hasn't moved (defined by encoder change less than kDiffThreshold),
         // increment the stale counter
         // if it has moved, reset the stale counter
-        if (Math.abs(m_encoder.getPosition() - lastPosition) < kDiffThreshold) {
+        if (Math.abs(m_encoder.getPosition() - lastPosition) < EscalatorConstants.kDiffThreshold) {
             staleCounter++;
         } else {
             staleCounter = 0;
@@ -181,7 +180,7 @@ public class EscalatorSubsystem extends SubsystemBase {
         // we say that the elevator has reached its target if it is within
         // kDiffThreshold of the target,
         // or if it has been within a looser kStaleTolerance for kStaleThreshold cycles
-        return delta < kDiffThreshold || (delta < kStaleTolerance && staleCounter > kStaleThreshold);
+        return delta < EscalatorConstants.kDiffThreshold || (delta < EscalatorConstants.kStaleTolerance && staleCounter > EscalatorConstants.kStaleThreshold);
     }
 
     private Boolean isFinished() {

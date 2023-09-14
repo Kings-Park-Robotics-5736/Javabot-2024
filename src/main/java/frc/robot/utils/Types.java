@@ -10,10 +10,10 @@ public final class Types {
     public  double i;
     public  double d;
 
-    public PidConstants(double _p, double _i, double _d) {
-      p = _p;
-      i = _i;
-      d = _d;
+    public PidConstants(double p, double i, double d) {
+      this.p = p;
+      this.i = i;
+      this.d = d;
     }
   }
 
@@ -23,14 +23,14 @@ public final class Types {
     public final double ka;
     public final double kg;
 
-    public FeedForwardConstants(double _ks, double _kv, double _ka) {
-      this(_ks, _kv, _ka, 0);
+    public FeedForwardConstants(double ks, double kv, double ka) {
+      this(ks, kv, ka, 0);
     }
-    public FeedForwardConstants(double _ks, double _kv, double _ka, double _kg) {
-      ks = _ks;
-      kv = _kv;
-      ka = _ka;
-      kg = _kg;
+    public FeedForwardConstants(double ks, double kv, double ka, double kg) {
+      this.ks = ks;
+      this.kv = kv;
+      this.ka = ka;
+      this.kg = kg;
     }
   }
 

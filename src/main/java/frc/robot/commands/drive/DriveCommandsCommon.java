@@ -25,7 +25,7 @@ public class DriveCommandsCommon {
      *                             profile.
      * 
      * @return Return the velocity, in rad/s to send to drive() (as if it came from
-     *         a joystick)
+     *         a joystick). -100 if no target is found from the source image
      */
     public static double calculateRotationToTarget(double heading, boolean useCameraMeasurement, double degPi,
             ProfiledPIDController m_controller_theta) {

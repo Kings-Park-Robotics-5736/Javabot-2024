@@ -2,9 +2,12 @@ package frc.robot.vision;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.networktables.DoubleArraySubscriber;
+import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.TimestampedDoubleArray;
 import frc.robot.utils.MathUtils;
 
 /**
@@ -29,6 +32,9 @@ public class Limelight {
     private NetworkTableEntry ledMode;
     private NetworkTableEntry pipeline;
     private NetworkTableEntry actualPipeline;
+    private final DoubleArraySubscriber botPoseBlueSubscriber;
+    private final DoubleArraySubscriber botPoseRedSubscriber;
+
 
     public enum LEDMode {
         PIPELINE(0),
@@ -77,6 +83,10 @@ public class Limelight {
         camMode = table.getEntry("camMode"); // operation mode (0-1)
         pipeline = table.getEntry("pipeline");
         actualPipeline = table.getEntry("getpipe");
+        double[] emptyArray = {0,0,0,0,0,0,0};
+        botPoseBlueSubscriber = table.getDoubleArrayTopic("botpose_wpiblue").subscribe(emptyArray);
+        botPoseRedSubscriber = table.getDoubleArrayTopic("botpose_wpired").subscribe(emptyArray);
+
     }
 
     /**
@@ -241,13 +251,6 @@ public class Limelight {
         return new Pose2d(pose[0], pose[1], new Rotation2d(MathUtils.degreesToRadians(pose[5])));
     }
 
-
-    public long getLastBluePoseChange() {
-        return botpose_wpiblue.getLastChange();
-    }
-    public long getLastRedPoseChange() {
-        return botpose_wpired.getLastChange();
-    }
     /**
      * Get botpose
      * 
@@ -262,8 +265,8 @@ public class Limelight {
      * 
      * @return double[]
      */
-    public double[] getBotPoseBlue() {
-        return botpose_wpiblue.getDoubleArray(new double[7]);
+    public TimestampedDoubleArray getBotPoseBlue() {
+        return botPoseBlueSubscriber.getAtomic();
     }
 
     /**
@@ -271,8 +274,8 @@ public class Limelight {
      * 
      * @return double[]
      */
-    public double[] getBotPoseRed() {
-        return botpose_wpired.getDoubleArray(new double[7]);
+    public TimestampedDoubleArray getBotPoseRed() {
+        return botPoseRedSubscriber.getAtomic();
     }
 
     /**

@@ -4,6 +4,7 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants;
+import frc.robot.Constants.CustomDriveDistanceCommandConstants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.subsystems.drive.DriveSubsystem;
 
@@ -19,10 +20,14 @@ public class DriveDistanceCommand extends CommandBase {
     // Control the motion profile for the auto-commands for driving. This is kind-of
     // like a path following
     private final TrapezoidProfile.Constraints m_constraints = new TrapezoidProfile.Constraints(
-            DriveConstants.kMaxSpeedMetersPerSecond, 2);
-    private final ProfiledPIDController m_controller_x = new ProfiledPIDController(.5, 0.1, 0.000, m_constraints,
+            DriveConstants.kMaxSpeedMetersPerSecond, DriveConstants.kMaxAccelerationMetersPerSecondSquared);
+    private final ProfiledPIDController m_controller_x = new ProfiledPIDController(
+            CustomDriveDistanceCommandConstants.kPidValues.p, CustomDriveDistanceCommandConstants.kPidValues.i,
+            CustomDriveDistanceCommandConstants.kPidValues.d, m_constraints,
             Constants.kDt);
-    private final ProfiledPIDController m_controller_y = new ProfiledPIDController(.5, 0.1, 0.000, m_constraints,
+    private final ProfiledPIDController m_controller_y = new ProfiledPIDController(
+            CustomDriveDistanceCommandConstants.kPidValues.p, CustomDriveDistanceCommandConstants.kPidValues.i,
+            CustomDriveDistanceCommandConstants.kPidValues.d, m_constraints,
             Constants.kDt);
 
     public DriveDistanceCommand(DriveSubsystem robotDrive, double meters) {
@@ -50,11 +55,6 @@ public class DriveDistanceCommand extends CommandBase {
 
         double pid_valY = m_controller_y.calculate(m_robotDrive.getPose().getY());
         double vel_pid_valY = pid_valY * DriveConstants.kMaxSpeedMetersPerSecond;
-
-        // SmartDashboard.putNumber("Auto VelX", m_controller_x.getSetpoint().velocity +
-        // vel_pid_valX);
-        // SmartDashboard.putNumber("Auto VelY", m_controller_y.getSetpoint().velocity +
-        // vel_pid_valY);
 
         double finalVelX = m_controller_x.getSetpoint().velocity + vel_pid_valX;
         double finalVelY = m_controller_y.getSetpoint().velocity + vel_pid_valY;

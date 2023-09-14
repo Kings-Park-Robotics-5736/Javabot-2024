@@ -10,10 +10,9 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.IntakeConstants;
 import frc.robot.utils.Types.FeedForwardConstants;
 import frc.robot.utils.Types.PidConstants;
-
-
 
 public class IntakeRollersSubsystem extends SubsystemBase {
 
@@ -48,7 +47,7 @@ public class IntakeRollersSubsystem extends SubsystemBase {
     }
 
     /**
-     * \
+     * 
      * Set the speed of the intake motor (-1 to 1)
      * 
      * @param speed
@@ -67,31 +66,33 @@ public class IntakeRollersSubsystem extends SubsystemBase {
         double ff = m_feedforward.calculate(setpoint / 60);
         m_pidController.setReference(setpoint, CANSparkMax.ControlType.kVelocity, 0, ff, ArbFFUnits.kVoltage);
 
-        //SmartDashboard.putNumber("ProcessVariable" + name, m_encoder.getVelocity());
-        //SmartDashboard.putNumber("FF" + name, ff);
-
     }
 
     public void StopIntake() {
-        m_stop=true;
+        m_stop = true;
         setSpeed(0);
     }
 
-    public Command StopIntakeCommand(){
-        return this.runOnce(()->StopIntake());
+    public Command StopIntakeCommand() {
+        return this.runOnce(() -> StopIntake());
     }
+
     public Command RunIntakeForwardCommand() {
         return new FunctionalCommand(
-                () -> {m_stop=false;},
-                () -> RunIntake(4000),
+                () -> {
+                    m_stop = false;
+                },
+                () -> RunIntake(IntakeConstants.kForwardSpeed),
                 (interrupted) -> StopIntake(),
                 () -> m_stop, this);
     }
 
     public Command RunIntakeBackwardCommand() {
         return new FunctionalCommand(
-                () -> {m_stop=false;},
-                () -> RunIntake(-3000),
+                () -> {
+                    m_stop = false;
+                },
+                () -> RunIntake(IntakeConstants.kReverseSpeed),
                 (interrupted) -> StopIntake(),
                 () -> m_stop, this);
     }

@@ -90,7 +90,7 @@ public class TrajectoryCommandsFactory {
         eventMap.put("Forward0.5", new DriveDistanceCommand(robotDrive, 0.5));
         eventMap.put("GrabTarget", new DriveToTargetCommand(robotDrive, picam, 2.25, 1));
         eventMap.put("DriveToScoring", new PathPlanFromDynamicStartCommand(robotDrive::getPose,
-        robotDrive,new Pose2d(1.92,3.87,new Rotation2d(MathUtils.degreesToRadians(180)))));
+        robotDrive,new Pose2d(1.92,3.87,new Rotation2d(MathUtils.degreesToRadians(180))), true, true));
 
         eventMap.put("GrabTargetAndIntake", intake.RunIntakeForwardCommand().raceWith(new DriveToTargetCommand(robotDrive, picam, 1.75, 1)));
         eventMap.put("CenterToPost",new CenterToTargetCommandLimelight(robotDrive,escalator, limelight, true));
@@ -147,14 +147,14 @@ public class TrajectoryCommandsFactory {
                     new PathPoint(start.getTranslation(), start.getRotation(), start.getRotation()), // position,
                                                                                                      // heading
                     points.get(0),
-                    points.subList(1, points.size()).toArray(new PathPoint[points.size()]));
+                    points.subList(1, points.size()).toArray(new PathPoint[points.size()-1]));
         } else {
             traj1 = PathPlanner.generatePath(
                     new PathConstraints(AutoConstants.kMaxSpeedMetersPerSecond,
                             AutoConstants.kMaxAccelerationMetersPerSecondSquared),
                     new PathPoint(start.getTranslation(), start.getRotation(), start.getRotation()), // position,
                                                                                                      // heading
-                    new PathPoint(end.getTranslation(), end.getRotation(), end.getRotation(), 1.5) // position, heading
+                    new PathPoint(end.getTranslation(), end.getRotation(), end.getRotation()) // position, heading
             );
         }
         return traj1;

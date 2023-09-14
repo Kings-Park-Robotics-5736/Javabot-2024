@@ -7,11 +7,11 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.Constants.ElevatorConstants;
 import frc.robot.utils.Types.Limits;
 import frc.robot.utils.Types.PidConstants;
 
@@ -26,13 +26,8 @@ public class ElevatorSubsystem extends SubsystemBase {
     private int staleCounter = 0;
     private double lastPosition = 0;
 
-    private final double kStaleTolerance = .5;
-    private final double kDiffThreshold = 0.15;
-    private final int kStaleThreshold = 10;
-
-    private final TrapezoidProfile.Constraints m_constraints = new TrapezoidProfile.Constraints(100, 100);
-    private final ProfiledPIDController m_controller = new ProfiledPIDController(0.5, 0.0, 0.007, m_constraints,
-            Constants.kDt);
+    private final TrapezoidProfile.Constraints m_constraints = new TrapezoidProfile.Constraints(ElevatorConstants.kMaxVelocity, ElevatorConstants.kMaxAcceleration);
+    private final ProfiledPIDController m_controller; 
 
     public ElevatorSubsystem(PidConstants pidValues, Limits limits, byte deviceId, String _name) {
 
@@ -44,6 +39,9 @@ public class ElevatorSubsystem extends SubsystemBase {
 
         m_name = _name;
         m_limits = limits;
+
+        m_controller = new ProfiledPIDController(pidValues.p, pidValues.i, pidValues.d, m_constraints,
+            Constants.kDt);
 
         resetEncoder();
 
@@ -100,7 +98,7 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     private void InitMotionProfile(double setpoint) {
         m_controller.reset(m_encoder.getDistance());
-        m_controller.setTolerance(1.0);
+        m_controller.setTolerance(ElevatorConstants.kPositionTolerance);
         m_controller.setGoal(new TrapezoidProfile.State(setpoint, 0));
 
     }
@@ -120,7 +118,7 @@ public class ElevatorSubsystem extends SubsystemBase {
         // if it hasn't moved (defined by encoder change less than kDiffThreshold),
         // increment the stale counter
         // if it has moved, reset the stale counter
-        if (Math.abs(m_encoder.get() - lastPosition) < kDiffThreshold) {
+        if (Math.abs(m_encoder.get() - lastPosition) < ElevatorConstants.kDiffThreshold) {
             staleCounter++;
         } else {
             staleCounter = 0;
@@ -134,12 +132,11 @@ public class ElevatorSubsystem extends SubsystemBase {
         // we say that the elevator has reached its target if it is within
         // kDiffThreshold of the target,
         // or if it has been within a looser kStaleTolerance for kStaleThreshold cycles
-        return delta < kDiffThreshold || (delta < kStaleTolerance && staleCounter > kStaleThreshold);
+        return delta < ElevatorConstants.kDiffThreshold || (delta < ElevatorConstants.kStaleTolerance && staleCounter > ElevatorConstants.kStaleThreshold);
     }
 
     private Boolean isFinished() {
         var isFinished = (m_controller.atGoal() && elevatorReachedTarget()) || !isWithinLimits();
-        //SmartDashboard.putBoolean("isfinished " + m_name, isFinished);
         return isFinished;
     }
 

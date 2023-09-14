@@ -19,15 +19,15 @@ public class EscalatorAssemblySubsystem extends SubsystemBase {
     private FlipperSubsystem flipper;
 
     public EscalatorAssemblySubsystem() {
-        escalator = new EscalatorSubsystem(Constants.EscalatorConstants.pidValues,
-                Constants.ElevatorContstraints.limits,
-                Constants.EscalatorConstants.ffValues, Constants.EscalatorConstants.deviceId, "Escalator");
+        escalator = new EscalatorSubsystem(Constants.EscalatorConstants.kPidValues,
+                Constants.ElevatorConstants.kLimits,
+                Constants.EscalatorConstants.kFFValues, Constants.EscalatorConstants.kDeviceId, "Escalator");
 
-        elevator = new ElevatorSubsystem(Constants.ElevatorContstraints.pidValues,
-                Constants.ElevatorContstraints.limits,
-                Constants.ElevatorContstraints.deviceId, "Elevator");
+        elevator = new ElevatorSubsystem(Constants.ElevatorConstants.kPidValues,
+                Constants.ElevatorConstants.kLimits,
+                Constants.ElevatorConstants.kDeviceId, "Elevator");
 
-        flipper = new FlipperSubsystem(Constants.FlipperContstraints.deviceId, Constants.FlipperContstraints.speed,
+        flipper = new FlipperSubsystem(Constants.FlipperContstants.kDeviceId, Constants.FlipperContstants.kSpeed,
                 "Flipper");
     }
 

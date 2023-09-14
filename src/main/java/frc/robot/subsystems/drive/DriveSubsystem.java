@@ -15,6 +15,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.TimestampedDoubleArray;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -78,7 +79,6 @@ public class DriveSubsystem extends SubsystemBase {
   private double m_rotateLockoutValue;
   private double m_transXLockoutValue;
   private double m_transYLockoutValue;
-  private int m_updateCounter;
   private long m_lastPoseUpdate;
 
   private Limelight m_limelight;
@@ -97,7 +97,7 @@ public class DriveSubsystem extends SubsystemBase {
 
     m_limelight = ll;
     m_limelight_side = l2;
-    m_updateCounter = 0;
+    
     m_lastPoseUpdate=0;
 
     m_gyro.setYaw(180);
@@ -113,7 +113,7 @@ public class DriveSubsystem extends SubsystemBase {
         },
         new Pose2d(0, 0, new Rotation2d(MathUtils.degreesToRadians(180))),
         VecBuilder.fill(0.05, 0.05, Units.degreesToRadians(5)),
-        VecBuilder.fill(0.5, 0.5, Units.degreesToRadians(90)));
+        VecBuilder.fill(0.5, 0.5, Units.degreesToRadians(30)));
 
   }
 
@@ -121,8 +121,6 @@ public class DriveSubsystem extends SubsystemBase {
    * Update odometry from the current positions and angles.
    */
   public void updateOdometry() {
-
-    m_updateCounter++;
 
     m_poseEstimator.update(
         m_gyro.getRotation2d(),
@@ -148,40 +146,70 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   private void addLimelightVisionMeasurement(Limelight ll){
-    var alliance = DriverStation.getAlliance();
-
+    
     double[] pose;
-
+    double transStd;
+    double rotStd;
     long currentUpdateTime = 0;
+    TimestampedDoubleArray poseWithTime;
 
+    if(!ll.getIsPipelineAprilTag()){
+      return;
+    }
+    var alliance = DriverStation.getAlliance();
     boolean validPose = ll.checkValidTarget();
+
     if (alliance == DriverStation.Alliance.Red) {
-      pose = ll.getBotPoseRed();
-      currentUpdateTime = ll.getLastRedPoseChange();
+      poseWithTime = ll.getBotPoseRed();
     } else if (alliance == DriverStation.Alliance.Blue) {
-      pose = ll.getBotPoseBlue();
-      currentUpdateTime = ll.getLastBluePoseChange();
+      poseWithTime = ll.getBotPoseBlue();
     } else {
       validPose = false;
       pose = new double[6]; // empty 6 position array
+      poseWithTime= new TimestampedDoubleArray(0, 0, pose);
+    }
+
+    if(!validPose){
+      return;
     }
     
+    currentUpdateTime=poseWithTime.timestamp;
+
+    if( currentUpdateTime == m_lastPoseUpdate){
+      return;
+    }
+    m_lastPoseUpdate = currentUpdateTime;
 
     //observed bad tracking when tag is very close to edge
     double offsetX = ll.getTargetOffsetX();
       
-    if (validPose && Math.abs(offsetX) < 32.5 && ll.getIsPipelineAprilTag() && currentUpdateTime != m_lastPoseUpdate) {
+    if ( Math.abs(offsetX) < 32.5) {
+
+      pose = poseWithTime.value;
       Pose2d limelightPose = ll.AsPose2d(pose);
-      m_lastPoseUpdate = currentUpdateTime;
+      
+      double[] cameraToAprilTagPose = m_limelight.getTargetPoseCameraSpace();
+      double distanceToAprilTagSquared = cameraToAprilTagPose[0]*cameraToAprilTagPose[0] + cameraToAprilTagPose[2]*cameraToAprilTagPose[2];
+      double poseDelta = m_poseEstimator.getEstimatedPosition().getTranslation().getDistance(limelightPose.getTranslation());
+
+      if(distanceToAprilTagSquared < 9 && poseDelta < .5 ){
+        transStd = 0.5;
+        rotStd=10;
+      }else if (distanceToAprilTagSquared < 25){
+        transStd = 1.0;
+        rotStd=15;
+      }else{
+        transStd = 1.5;
+        rotStd=20;
+      }
       if(limelightPose.getX() > .5){
-        // Also apply vision measurements. pose[6] holds the latency/frame delay
+        // Apply vision measurements. pose[6] holds the latency/frame delay
         m_poseEstimator.addVisionMeasurement(
             limelightPose,
-            Timer.getFPGATimestamp() - (pose[6] / 1000.0));
-       // System.out.println("Adding vision measurement of x = " + limelightPose.getX());
+           Timer.getFPGATimestamp() - (pose[6] / 1000.0),
+           VecBuilder.fill(transStd,transStd, Units.degreesToRadians(rotStd)));
       }
     }
-    
   }
 
   @Override

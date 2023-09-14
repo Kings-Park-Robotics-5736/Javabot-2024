@@ -13,9 +13,9 @@ import frc.robot.utils.Types.PidConstants;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide
- *  numerical or boolean constants.
+ * numerical or boolean constants.
  * This class should not be used for any other purpose. All constants
- *  should be declared globally (i.e. public static). 
+ * should be declared globally (i.e. public static).
  * Do not put anything functional in this class.
  *
  * <p>
@@ -27,6 +27,7 @@ public final class Constants {
   public static final double kDt = 0.02;
 
   public static final class DriveConstants {
+
     public static final int kFrontLeftDriveMotorPort = 2;
     public static final int kRearLeftDriveMotorPort = 4;
     public static final int kFrontRightDriveMotorPort = 0;
@@ -57,34 +58,32 @@ public final class Constants {
     public static final double kBackLeftAngleOffset = -257.52;
     public static final double kBackRightAngleOffset = -316.143;
 
-    public static final double kTrackWidth = 0.482;
     // Distance between centers of right and left wheels on robot
+    public static final double kTrackWidth = 0.482;
+
+    // Distance between front and back wheels on robot
     public static final double kWheelBase = 0.61;
 
     public static final String kCanName = "Canivore";
-    // Distance between front and back wheels on robot
+
     public static final SwerveDriveKinematics kDriveKinematics = new SwerveDriveKinematics(
         new Translation2d(kWheelBase / 2, kTrackWidth / 2),
         new Translation2d(kWheelBase / 2, -kTrackWidth / 2),
         new Translation2d(-kWheelBase / 2, kTrackWidth / 2),
         new Translation2d(-kWheelBase / 2, -kTrackWidth / 2));
 
-    // These are example values only - DO NOT USE THESE FOR YOUR OWN ROBOT!
-    // These characterization values MUST be determined either experimentally or
-    // theoretically
-    // for *your* robot's drive.
     // The SysId tool provides a convenient method for obtaining these values for
     // your robot.
     public static final double ksVoltsTurning = .10059;
     public static final double kvVoltSecondsPerMeterTurning = 0.3749;
     public static final double kaVoltSecondsSquaredPerMeterTurning = 0.1142;
-
-    public static final double ksVoltsDrive = .26912;//.22125;
-    public static final double kvVoltsDrive = 2.1702;//2.1898;
-    public static final double kaVoltsDrive = 0.509;//0.58667;
-    public static final double kPDrive = 2.5049;//1.8044;
+    public static final double ksVoltsDrive = .26912;// .22125;
+    public static final double kvVoltsDrive = 2.1702;// 2.1898;
+    public static final double kaVoltsDrive = 0.509;// 0.58667;
+    public static final double kPDrive = 2.5049;// 1.8044;
 
     public static final double kMaxSpeedMetersPerSecond = 3;
+    public static final double kMaxAccelerationMetersPerSecondSquared = 3;
   }
 
   public static final class ModuleConstants {
@@ -96,17 +95,18 @@ public final class Constants {
     public static final double kDriveGearRatio = 6.75;
 
     public static final double kPModuleTurningController = 7.9245;
+    public static final double kPModuleTurningNoController = 5;
 
   }
 
-  public static final class OIConstants {
+  public static final class IOConstants {
     public static final int kDriverControllerPort = 0;
     public static final int kActionControllerPort = 1;
   }
 
   public static final class AutoConstants {
-    public static final double kMaxSpeedMetersPerSecond = 3;// 3;
-    public static final double kMaxAccelerationMetersPerSecondSquared = 3;// 3;
+    public static final double kMaxSpeedMetersPerSecond = 3;
+    public static final double kMaxAccelerationMetersPerSecondSquared = 3;
     public static final double kMaxAngularSpeedRadiansPerSecond = Math.PI;
     public static final double kMaxAngularSpeedRadiansPerSecondSquared = Math.PI;
 
@@ -119,47 +119,82 @@ public final class Constants {
         kMaxAngularSpeedRadiansPerSecond, kMaxAngularSpeedRadiansPerSecondSquared);
   }
 
+  public static final class IntakeConstants {
+
+    public static final int kForwardSpeed = 4000;
+    public static final int kReverseSpeed = -3000;
+  }
+
   public static final class LowerIntakeConstants {
 
-    public static final byte deviceId = 2;
+    public static final byte kDeviceId = 2;
 
-    public static final PidConstants pidValues = new PidConstants(0.00001, 0, 0);
-    public static final FeedForwardConstants ffValues = new FeedForwardConstants(0.06368, 0.12005, 0.0034381);
-
+    public static final PidConstants kPidValues = new PidConstants(0.00001, 0, 0);
+    public static final FeedForwardConstants kFFValues = new FeedForwardConstants(0.06368, 0.12005, 0.0034381);
   }
 
   public static final class UpperIntakeConstants {
-    public static final PidConstants pidValues = new PidConstants(0.00001, 0, 0);
-    public static final FeedForwardConstants ffValues = new FeedForwardConstants(0.06368, 0.12005, 0.0034381);
 
-    public static final byte deviceId = 3;
+    public static final byte kDeviceId = 3;
 
+    public static final PidConstants kPidValues = new PidConstants(0.00001, 0, 0);
+    public static final FeedForwardConstants kFFValues = new FeedForwardConstants(0.06368, 0.12005, 0.0034381);
   }
 
   public static final class EscalatorConstants {
-    public static final PidConstants pidValues = new PidConstants(0.06, .0001, 0.0);
-    public static final FeedForwardConstants ffValues = new FeedForwardConstants(0.27419, 0.12313, 0.0026, 0.11545);
 
-    public static final byte deviceId = 1;
-    public static final Limits limits = new Limits(0, 62);
+    public static final byte kDeviceId = 1;
+
+    public static final PidConstants kPidValues = new PidConstants(0.06, .0001, 0.0);
+    public static final FeedForwardConstants kFFValues = new FeedForwardConstants(0.27419, 0.12313, 0.0026, 0.11545);
+    public static final Limits kLimits = new Limits(0, 62);
+
+    public static final int kMaxVelocity = 120;
+    public static final int kMaxAcceleration = 150;
+
+    public static final double kStaleTolerance = .75;
+    public static final double kDiffThreshold = 0.25;
+    public static final int kStaleThreshold = 5;
+  }
+
+  public static final class ElevatorConstants {
+
+    public static final byte kDeviceId = 9;
+
+    public static final PidConstants kPidValues = new PidConstants(0.5, 0, 0.007);
+    public static final Limits kLimits = new Limits(0, 60);
+
+    public static final int kMaxVelocity = 100;
+    public static final int kMaxAcceleration = 100;
+
+    public static final double kStaleTolerance = .5;
+    public static final double kDiffThreshold = 0.15;
+    public static final int kStaleThreshold = 10;
+    public static final double kPositionTolerance = 1.0;
+  }
+
+  public static final class FlipperContstants {
+
+    public static final byte kDeviceId = 8;
+
+    public static final double kSpeed = .75;
+
+    public static final double kDownTime = 0.6;
+    public static final double kUpTime = 0.8;
+  }
+
+  public static final class DriveToTargetCommandConstants {
+
+    // after 30 times of not seeing target after seeing it, declare it intaked
+    public static final int kGotTargetThreshold = 30;
+
+    public static final double kMaxRotation = Math.PI / 4; // 45 degrees
+    public static final PidConstants kPidValues = new PidConstants(1, 0, 0.00);
 
   }
 
-  public static final class ElevatorContstraints {
-    public static final PidConstants pidValues = new PidConstants(0.5, 0, 0.007);
-
-    public static final byte deviceId = 9;
-
-    public static final Limits limits = new Limits(0, 60);
-
-  }
-
-  
-  public static final class FlipperContstraints {
-
-    public static final byte deviceId = 8;
-
-    public static final double speed=.75;
+  public static final class CustomDriveDistanceCommandConstants {
+    public static final PidConstants kPidValues = new PidConstants(.5, .1, 0.00);
 
   }
 

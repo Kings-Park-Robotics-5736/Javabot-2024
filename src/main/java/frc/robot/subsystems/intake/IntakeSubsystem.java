@@ -14,11 +14,11 @@ public class IntakeSubsystem extends SubsystemBase {
 
     public IntakeSubsystem() {
 
-        top = new IntakeRollersSubsystem(Constants.UpperIntakeConstants.pidValues,
-                Constants.UpperIntakeConstants.ffValues, Constants.UpperIntakeConstants.deviceId, "Top");
+        top = new IntakeRollersSubsystem(Constants.UpperIntakeConstants.kPidValues,
+                Constants.UpperIntakeConstants.kFFValues, Constants.UpperIntakeConstants.kDeviceId, "Top");
 
-        bottom = new IntakeRollersSubsystem(Constants.LowerIntakeConstants.pidValues,
-                Constants.LowerIntakeConstants.ffValues, Constants.LowerIntakeConstants.deviceId, "Bottom");
+        bottom = new IntakeRollersSubsystem(Constants.LowerIntakeConstants.kPidValues,
+                Constants.LowerIntakeConstants.kFFValues, Constants.LowerIntakeConstants.kDeviceId, "Bottom");
 
     }
 
