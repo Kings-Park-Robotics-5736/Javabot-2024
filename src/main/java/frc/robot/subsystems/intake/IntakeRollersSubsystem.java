@@ -80,6 +80,7 @@ public class IntakeRollersSubsystem extends SubsystemBase {
     public Command RunIntakeForwardCommand() {
         return new FunctionalCommand(
                 () -> {
+                    System.out.println("-----------------Starting intake forward--------------");
                     m_stop = false;
                 },
                 () -> RunIntake(IntakeConstants.kForwardSpeed),

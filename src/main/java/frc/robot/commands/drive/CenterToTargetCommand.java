@@ -56,6 +56,7 @@ public abstract class CenterToTargetCommand extends CommandBase {
     public void end(boolean interrupted) {
         m_drive.drive(0, 0, 0, true);
         m_drive.setJoystickRotateLockout(false);
+        m_drive.setRotateLockoutValue(0);
     }
 
     @Override
@@ -64,6 +65,7 @@ public abstract class CenterToTargetCommand extends CommandBase {
     }
 
     protected void stop() {
+        m_drive.setRotateLockoutValue(0);
         m_drive.drive(0, 0, 0, false, false);
     }
 
@@ -75,6 +77,7 @@ public abstract class CenterToTargetCommand extends CommandBase {
                 useCameraMeasurement,
                 angle, m_controller_theta);
         if (rotationVel > -100) {
+            m_drive.setRotateLockoutValue(rotationVel);
             m_drive.drive(0, 0, rotationVel, false, false);
         }
 

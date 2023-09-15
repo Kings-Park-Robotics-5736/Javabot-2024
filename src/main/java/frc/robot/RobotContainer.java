@@ -4,16 +4,8 @@
 
 package frc.robot;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import com.pathplanner.lib.PathPoint;
-
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -23,21 +15,22 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.IOConstants;
 import frc.robot.commands.JoystickCommandsFactory;
+import frc.robot.commands.RobotCommandsFactory;
 import frc.robot.commands.TrajectoryCommandsFactory;
 import frc.robot.commands.drive.CenterToTargetCommandLimelight;
 import frc.robot.commands.drive.CenterToTargetCommandPiCam;
 import frc.robot.commands.drive.DriveDistanceCommand;
 import frc.robot.commands.drive.DriveToTargetCommand;
-import frc.robot.commands.drive.HuntAndReturnCommand;
 import frc.robot.commands.drive.PathPlanFromDynamicStartCommand;
+import frc.robot.field.ScoringPositions;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.escalator.EscalatorAssemblySubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
-import frc.robot.utils.MathUtils;
 import frc.robot.utils.Types.DirectionType;
 import frc.robot.vision.Limelight;
-import frc.robot.vision.PiCamera;
 import frc.robot.vision.Limelight.LEDMode;
+import frc.robot.vision.PiCamera;
+
 
 /*
  * This class is where the bulk of the robot should be declared.  Since Command-based is a
@@ -133,7 +126,7 @@ public class RobotContainer {
                 //LEFT BUMPER: Drive to scoring position
                 new JoystickButton(m_driverController, XboxController.Button.kLeftBumper.value)
                                 .whileTrue(new PathPlanFromDynamicStartCommand(m_robotDrive::getPose,
-                                m_robotDrive,new Pose2d(1.96,3.87,new Rotation2d(MathUtils.degreesToRadians(180))), true, true));
+                                m_robotDrive,ScoringPositions.kRobotPoseChargeStationBlue3, true, true));
 
                 //Y BUTTON: center on a cone
                 new JoystickButton(m_driverController, XboxController.Button.kY.value)
@@ -145,12 +138,17 @@ public class RobotContainer {
 
                 
                 //A BUTTON: Drive to cone and return to where you started from
-                new JoystickButton(m_driverController, XboxController.Button.kA.value)
-                                .onTrue(new HuntAndReturnCommand(m_robotDrive, m_picam, 1.5, 1.5));
+                //new JoystickButton(m_driverController, XboxController.Button.kA.value)
+                 //               .onTrue(new HuntAndReturnCommand(m_robotDrive, m_picam, 1.5, 1.5));
 
                 //B BUTTON: Drive to a target, and stop when you reach it.
                 new JoystickButton(m_driverController, XboxController.Button.kB.value)
                                 .whileTrue(new DriveToTargetCommand(m_robotDrive, m_picam, 1, 1));
+
+                new JoystickButton(m_driverController, XboxController.Button.kA.value)
+                                .whileTrue( RobotCommandsFactory.generateScoreMidToBlueChargeStation3Command(m_robotDrive, m_picam, m_limelight, m_intake, m_escalatorAssembly));
+
+
 
 
                 new JoystickButton(m_actionController, XboxController.Button.kB.value)

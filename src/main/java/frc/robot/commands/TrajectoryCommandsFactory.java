@@ -14,7 +14,6 @@ import com.pathplanner.lib.commands.PPSwerveControllerCommand;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -28,10 +27,11 @@ import frc.robot.commands.drive.DriveDistanceCommand;
 import frc.robot.commands.drive.DriveToTargetCommand;
 import frc.robot.commands.drive.HuntAndReturnCommand;
 import frc.robot.commands.drive.PathPlanFromDynamicStartCommand;
+import frc.robot.field.ScoringPositions;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.escalator.EscalatorAssemblySubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
-import frc.robot.utils.MathUtils;
+import frc.robot.utils.Types.ScoringHeight;
 import frc.robot.vision.Limelight;
 import frc.robot.vision.PiCamera;
 
@@ -90,12 +90,14 @@ public class TrajectoryCommandsFactory {
         eventMap.put("Forward0.5", new DriveDistanceCommand(robotDrive, 0.5));
         eventMap.put("GrabTarget", new DriveToTargetCommand(robotDrive, picam, 2.25, 1));
         eventMap.put("DriveToScoring", new PathPlanFromDynamicStartCommand(robotDrive::getPose,
-        robotDrive,new Pose2d(1.92,3.87,new Rotation2d(MathUtils.degreesToRadians(180))), true, true));
+        robotDrive,ScoringPositions.kRobotPoseChargeStationBlue3, true, true));
 
-        eventMap.put("GrabTargetAndIntake", intake.RunIntakeForwardCommand().raceWith(new DriveToTargetCommand(robotDrive, picam, 1.75, 1)));
+        eventMap.put("GrabTargetAndIntake",RobotCommandsFactory.generateDriveToTargetWithIntake(robotDrive, picam, intake, 1.75, 1));
+        
         eventMap.put("CenterToPost",new CenterToTargetCommandLimelight(robotDrive,escalator, limelight, true));
         eventMap.put("HuntAndReturn", generateAutoTrajectoryHuntCommand(robotDrive, picam, intake, escalator));
-        eventMap.put("ScoreMidCentering", escalator.ScoreMid().raceWith(new CenterToTargetCommandLimelight(robotDrive, escalator,limelight, true)));
+        eventMap.put("ScoreMidCentering", RobotCommandsFactory.generateScoreCommandWithCentering(robotDrive, escalator, limelight, ScoringHeight.MID));
+        
 
         eventMap.put("LimelightVisionPipeline", Commands.runOnce(()->limelight.setReflectivePipeline()));
         eventMap.put("ForceStop", Commands.runOnce(() -> robotDrive.forceStop()));

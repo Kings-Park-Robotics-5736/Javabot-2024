@@ -73,6 +73,7 @@ public class DriveToTargetCommand extends CommandBase {
         //unlock joysticks
         m_drive.setJoystickRotateLockout(false);
         m_drive.setJoystickTranslateLockout(false);
+        m_drive.setRotateLockoutValue(0);
     }
 
     @Override
