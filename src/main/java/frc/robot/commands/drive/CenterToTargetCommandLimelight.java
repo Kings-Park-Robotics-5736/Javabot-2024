@@ -62,12 +62,12 @@ public class CenterToTargetCommandLimelight extends CenterToTargetCommand {
                 }
                 centerOnTarget(m_limelight.getTargetOffsetX(), useCameraMeasurement);
             } else {
-                System.out.println("Not reflective yet!");
+                //System.out.println("Not reflective yet!");
                 stop();
             }
         } else {
             stop();
-            System.out.println("In dead zone");
+            //System.out.println("In dead zone");
         }
     }
 
