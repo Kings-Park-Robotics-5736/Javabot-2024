@@ -78,15 +78,15 @@ public class EscalatorAssemblySubsystem extends SubsystemBase {
     }
 
     public Command RunEscalatorToHighScore() {
-        return escalator.RunEscalatorToPositionCommand(61).unless(() -> !elevator.IsElevatorUp());
+        return escalator.RunEscalatorToPositionCommand(Constants.EscalatorConstants.kHighScorePosition).unless(() -> !elevator.IsElevatorUp());
     }
 
     public Command RunEscalatorToMidScore() {
-        return escalator.RunEscalatorToPositionCommand(37.3).unless(() -> !elevator.IsElevatorUp());
+        return escalator.RunEscalatorToPositionCommand(Constants.EscalatorConstants.kMidScorePosition).unless(() -> !elevator.IsElevatorUp());
     }
 
     public Command RunEscalatorToBottom() {
-        return escalator.RunEscalatorToPositionCommand(0).unless(() -> !elevator.IsElevatorUp());
+        return escalator.RunEscalatorToPositionCommand(Constants.EscalatorConstants.kBottomPosition).unless(() -> !elevator.IsElevatorUp());
     }
 
     
@@ -95,11 +95,11 @@ public class EscalatorAssemblySubsystem extends SubsystemBase {
     }
 
     public Command RunElevatorUpCommand() {
-        return elevator.RunElevatorToPositionCommand(0).unless(() -> !escalator.IsEscalatorDown());
+        return elevator.RunElevatorToPositionCommand(Constants.ElevatorConstants.kUpPosition).unless(() -> !escalator.IsEscalatorDown());
     }
 
     public Command RunElevatorDownCommand() {
-        return elevator.RunElevatorToPositionCommand(59.5).unless(() -> !escalator.IsEscalatorDown());
+        return elevator.RunElevatorToPositionCommand(Constants.ElevatorConstants.kDownPosition).unless(() -> !escalator.IsEscalatorDown());
     }
 
     /******************************************

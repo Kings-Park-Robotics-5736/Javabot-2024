@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import com.ctre.phoenix.motorcontrol.can.MotControllerJNI;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.XboxController;
@@ -14,15 +16,13 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.IOConstants;
+import frc.robot.commands.CommandMap;
 import frc.robot.commands.JoystickCommandsFactory;
 import frc.robot.commands.RobotCommandsFactory;
 import frc.robot.commands.TrajectoryCommandsFactory;
-import frc.robot.commands.drive.CenterToTargetCommandLimelight;
 import frc.robot.commands.drive.CenterToTargetCommandPiCam;
 import frc.robot.commands.drive.DriveDistanceCommand;
 import frc.robot.commands.drive.DriveToTargetCommand;
-import frc.robot.commands.drive.PathPlanFromDynamicStartCommand;
-import frc.robot.field.ScoringPositions;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.escalator.EscalatorAssemblySubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
@@ -49,6 +49,8 @@ public class RobotContainer {
         private final DriveSubsystem m_robotDrive = new DriveSubsystem(m_limelight,null);// use only 1 limelight for driving now since we dont have great measurements m_limelight_side);
         private final IntakeSubsystem m_intake = new IntakeSubsystem();
         private final EscalatorAssemblySubsystem m_escalatorAssembly = new EscalatorAssemblySubsystem();
+
+        private final  CommandMap m_commandMap = new CommandMap(m_robotDrive, m_picam, m_limelight,  m_intake, m_escalatorAssembly );
 
         private final SlewRateLimiter m_xspeedLimiter = new SlewRateLimiter(3);
         private final SlewRateLimiter m_yspeedLimiter = new SlewRateLimiter(3);
@@ -90,8 +92,7 @@ public class RobotContainer {
                 configureButtonBindings();
 
 
-                // Set limelight LED to OFF on startup
-                m_limelight.setLEDMode(LEDMode.PIPELINE);
+                // Set limelight LED to follow pipeline on startup
                 m_limelight.setLEDMode(LEDMode.PIPELINE);
 
                 // Configure default commands
@@ -125,8 +126,7 @@ public class RobotContainer {
                  
                 //LEFT BUMPER: Drive to scoring position
                 new JoystickButton(m_driverController, XboxController.Button.kLeftBumper.value)
-                                .whileTrue(new PathPlanFromDynamicStartCommand(m_robotDrive::getPose,
-                                m_robotDrive,ScoringPositions.kRobotPoseChargeStationBlue3, true, true));
+                                .whileTrue(m_commandMap.getCommand("DriveToScoring"));
 
                 //Y BUTTON: center on a cone
                 new JoystickButton(m_driverController, XboxController.Button.kY.value)
@@ -134,7 +134,7 @@ public class RobotContainer {
 
                 //RIGHT BUMPER: Center on reflective post
                 new JoystickButton(m_driverController, XboxController.Button.kRightBumper.value)
-                                .whileTrue(new CenterToTargetCommandLimelight(m_robotDrive,m_escalatorAssembly, m_limelight, true));
+                                .whileTrue(m_commandMap.getCommand("CenterToPost"));
 
                 
                 //A BUTTON: Drive to cone and return to where you started from
@@ -249,8 +249,7 @@ public class RobotContainer {
          */
 
         public Command getAutonomousCommand() {
-                return TrajectoryCommandsFactory.generateAutoTrajectoryCommand(m_robotDrive, m_picam, m_limelight, m_intake,
-                                m_escalatorAssembly);
+                return TrajectoryCommandsFactory.generateAutoTrajectoryCommand(m_robotDrive, m_commandMap);
 
         }
 

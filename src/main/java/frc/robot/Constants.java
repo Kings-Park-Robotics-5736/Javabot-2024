@@ -155,6 +155,10 @@ public final class Constants {
     public static final double kStaleTolerance = .75;
     public static final double kDiffThreshold = 0.25;
     public static final int kStaleThreshold = 5;
+
+    public static final double kHighScorePosition = 61.0;
+    public static final double kMidScorePosition = 37.3;
+    public static final double kBottomPosition = 0.0;
   }
 
   public static final class ElevatorConstants {
@@ -171,6 +175,10 @@ public final class Constants {
     public static final double kDiffThreshold = 0.15;
     public static final int kStaleThreshold = 10;
     public static final double kPositionTolerance = 1.0;
+
+
+    public static final double kUpPosition = 0.0;
+    public static final double kDownPosition = 59.5;
   }
 
   public static final class FlipperContstants {

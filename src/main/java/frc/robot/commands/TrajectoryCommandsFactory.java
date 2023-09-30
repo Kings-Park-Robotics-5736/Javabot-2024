@@ -1,7 +1,6 @@
 package frc.robot.commands;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import com.pathplanner.lib.PathConstraints;
@@ -15,24 +14,16 @@ import com.pathplanner.lib.commands.PPSwerveControllerCommand;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
-import frc.robot.commands.drive.CenterToTargetCommandLimelight;
-import frc.robot.commands.drive.DriveDistanceCommand;
-import frc.robot.commands.drive.DriveToTargetCommand;
 import frc.robot.commands.drive.HuntAndReturnCommand;
-import frc.robot.commands.drive.PathPlanFromDynamicStartCommand;
-import frc.robot.field.ScoringPositions;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.escalator.EscalatorAssemblySubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
-import frc.robot.utils.Types.ScoringHeight;
-import frc.robot.vision.Limelight;
 import frc.robot.vision.PiCamera;
 
 public class TrajectoryCommandsFactory {
@@ -62,9 +53,7 @@ public class TrajectoryCommandsFactory {
      * @param escalator  subsystem
      * @return
      */
-    public static Command generateAutoTrajectoryCommand(DriveSubsystem robotDrive, PiCamera picam, Limelight limelight,
-            IntakeSubsystem intake,
-            EscalatorAssemblySubsystem escalator) {
+    public static Command generateAutoTrajectoryCommand(DriveSubsystem robotDrive, CommandMap commandMap) {
 
         // Load the path group from the path planner. This is a list of trajectories
         // that will be run in sequence.
@@ -74,34 +63,8 @@ public class TrajectoryCommandsFactory {
             return new PrintCommand("Path group is null. Ensure path file is on the rio");
         }
 
-        // TODO move to its own place so it can be used by any plotted trajectories
-        HashMap<String, Command> eventMap = new HashMap<>();
-        eventMap.put("RunIntake", intake.RunIntakeForwardCommand());
-        eventMap.put("StopIntake", intake.StopIntakeCommand());
-        eventMap.put("EscalatorHigh", escalator.RunEscalatorToHighScore());
-        eventMap.put("DropLow", escalator.RunEscalatorToBottom());
-        eventMap.put("FlipOut", escalator.RunFlipperUpCommand());
-        eventMap.put("FlipIn", escalator.RunFlipperDownCommand());
-        eventMap.put("ElevatorDown", escalator.RunElevatorDownCommand());
-        eventMap.put("ElevatorUp", escalator.RunElevatorUpCommand());
-        eventMap.put("ScoreHigh", escalator.ScoreHigh());
-        eventMap.put("ScoreMid", escalator.ScoreMid());
-        eventMap.put("Forward1", new DriveDistanceCommand(robotDrive, 1));
-        eventMap.put("Forward0.5", new DriveDistanceCommand(robotDrive, 0.5));
-        eventMap.put("GrabTarget", new DriveToTargetCommand(robotDrive, picam, 2.25, 1));
-        eventMap.put("DriveToScoring", new PathPlanFromDynamicStartCommand(robotDrive::getPose,
-        robotDrive,ScoringPositions.kRobotPoseChargeStationBlue3, true, true));
-
-        eventMap.put("GrabTargetAndIntake",RobotCommandsFactory.generateDriveToTargetWithIntake(robotDrive, picam, intake, 1.75, 1));
-        
-        eventMap.put("CenterToPost",new CenterToTargetCommandLimelight(robotDrive,escalator, limelight, true));
-        eventMap.put("HuntAndReturn", generateAutoTrajectoryHuntCommand(robotDrive, picam, intake, escalator));
-        eventMap.put("ScoreMidCentering", RobotCommandsFactory.generateScoreCommandWithCentering(robotDrive, escalator, limelight, ScoringHeight.MID));
-        
-
-        eventMap.put("LimelightVisionPipeline", Commands.runOnce(()->limelight.setReflectivePipeline()));
-        eventMap.put("ForceStop", Commands.runOnce(() -> robotDrive.forceStop()));
-
+        var eventMap = commandMap.getRawMap();
+      
         // Create the AutoBuilder. This only needs to be created once when robot code
         // starts, not every time you want to create an auto command. A good place to
         // put this is in RobotContainer along with your subsystems.
