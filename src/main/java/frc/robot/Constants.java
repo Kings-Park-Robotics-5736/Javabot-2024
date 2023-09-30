@@ -77,10 +77,10 @@ public final class Constants {
     public static final double ksVoltsTurning = .10059;
     public static final double kvVoltSecondsPerMeterTurning = 0.3749;
     public static final double kaVoltSecondsSquaredPerMeterTurning = 0.1142;
-    public static final double ksVoltsDrive = .26912;// .22125;
-    public static final double kvVoltsDrive = 2.1702;// 2.1898;
-    public static final double kaVoltsDrive = 0.509;// 0.58667;
-    public static final double kPDrive = 2.5049;// 1.8044;
+    public static final double ksVoltsDrive = .26912;
+    public static final double kvVoltsDrive = 2.1702;
+    public static final double kaVoltsDrive = 0.509;
+    public static final double kPDrive = 2.5049;
 
     public static final double kMaxSpeedMetersPerSecond = 3;
     public static final double kMaxAccelerationMetersPerSecondSquared = 3;
