@@ -1,0 +1,415 @@
+{
+  "$schema": "https://aka.ms/codetour-schema",
+  "title": "4. Advanced Subsystems (Escalator)",
+  "steps": [
+    {
+      "title": "Introduction",
+      "description": "We have seen example subsystems and commands. Now lets take a look at a more complex subsystem, the *EscalatorAssembly*.  \r\nOn this robot, the whole escalator assembly has 3 parts:\r\n1. The Escalator itself\r\n2. The Elevator\r\n3. The Flipper  \r\n  \r\nWe will model each one as a sub-object of the parent object, the `EscalatorAssemblySubsystem`."
+    },
+    {
+      "file": "src/main/java/frc/robot/subsystems/escalator/EscalatorAssemblySubsystem.java",
+      "selection": {
+        "start": {
+          "line": 15,
+          "character": 14
+        },
+        "end": {
+          "line": 15,
+          "character": 40
+        }
+      },
+      "description": "Here, we have our `EscalatorAssemblySubsystem` class (Again, remeber the `extends SubsystemBase` part).  \r\nThis has 3 sub-objects (also known as *children*):\r\n1. escalator\r\n2. elevator\r\n3. flipper\r\n\r\nWe will take a look at each of those.",
+      "title": "Escalator Assembly Overview"
+    },
+    {
+      "file": "src/main/java/frc/robot/subsystems/escalator/EscalatorAssemblySubsystem.java",
+      "selection": {
+        "start": {
+          "line": 22,
+          "character": 8
+        },
+        "end": {
+          "line": 24,
+          "character": 110
+        }
+      },
+      "description": "In our constructor, we first create our escalator. We give it PID values, limits for motion, Feed Forward values, the CAN id, and a name (for debugging)",
+      "title": "Creating the Escalator"
+    },
+    {
+      "file": "src/main/java/frc/robot/subsystems/escalator/EscalatorAssemblySubsystem.java",
+      "selection": {
+        "start": {
+          "line": 26,
+          "character": 9
+        },
+        "end": {
+          "line": 28,
+          "character": 68
+        }
+      },
+      "description": "We then create our elevator. We give it PID values, limits for motion, the CAN id, and a name (for debugging)",
+      "title": "Creating the Elevator"
+    },
+    {
+      "file": "src/main/java/frc/robot/subsystems/escalator/EscalatorAssemblySubsystem.java",
+      "selection": {
+        "start": {
+          "line": 30,
+          "character": 7
+        },
+        "end": {
+          "line": 31,
+          "character": 28
+        }
+      },
+      "description": "Finally, we create our flipper. It is a simple motor with no encoder, so we give it only the CAN device ID and the speed we wish for it to move at (in the percentage range from -1 to 1).",
+      "title": "Creating the Flipper"
+    },
+    {
+      "file": "src/main/java/frc/robot/subsystems/escalator/ElevatorSubsystem.java",
+      "selection": {
+        "start": {
+          "line": 32,
+          "character": 5
+        },
+        "end": {
+          "line": 32,
+          "character": 97
+        }
+      },
+      "description": "This is the constructor for our `ElevatorSubsystem`. Here, we initialize our motor, set our member variables (like our limits), initialize our `ProfiledPIDController`, and reset our encoder.  \r\n\r\nA *ProfiledPIDController* is a way to acheive a smooth motion path. Our elevator moves from position A to position B. If we told it 'move at 3 meters/second until you reach point B', it will have a very abrupt start and end, leading to jittery movements. Instead, we use a *trapezoid motion profile*. This controls the speed for *every step of the way* like a trapezoid shape, where we start slow, accelerate to our max speed, and slow down when we approach the destination, finally coming to a complete stop.  \r\nNo motion path is perfect (gravity, friction, etc plays it's part), so we combine the trapezoid profile with a pid controller, ensuring that at every step of the way, we correct for any error if the escalator isn't where it should be.  \r\nThe combination of a trapezoid profile and a pid controller is called a `ProfiledPIDController`. ",
+      "title": "Elevator Constructor & ProfiledPIDContoller Overview"
+    },
+    {
+      "file": "src/main/java/frc/robot/subsystems/escalator/ElevatorSubsystem.java",
+      "selection": {
+        "start": {
+          "line": 55,
+          "character": 4
+        },
+        "end": {
+          "line": 57,
+          "character": 6
+        }
+      },
+      "description": "At various points, we need to know if the elevator is at it's highest or lowest point. This method checks if the elevator is all the way up.  \r\nBecause at the start of the match, the elevator starts up, an encoder value of 0 corresponds with the elevator being up (since the encoder reads 0 when the robot is turned on). To ensure the elevator is up, we check if the value is less than 10 more than the lower limit. This gives a little leeway in our check.",
+      "title": "Checking Elevator Position"
+    },
+    {
+      "file": "src/main/java/frc/robot/subsystems/escalator/ElevatorSubsystem.java",
+      "selection": {
+        "start": {
+          "line": 70,
+          "character": 5
+        },
+        "end": {
+          "line": 77,
+          "character": 6
+        }
+      },
+      "description": "This command runs the elevator at a manual speed. It takes in 2 arguments:\r\n1. A `DoubleSupplier` (more on that) to get the desired speed\r\n2. Whether or not to ignore the software limits.\r\n\r\nIn case the encoder gets off, we want to be able to move the elevator without being constrained. When this is the case, we set ignoreLimits to false, so that we aren't locked out from moving the elevator. \r\n\r\nLooking at the functional command:\r\n1. We do nothing on initialization; ()->{} is a *lambda expression* that does nothing. It is equivalent to a function that would look like:  \r\n\r\n    `public void DoNothing(){`\r\n\r\n    `}`\r\n\r\n2. On every iteration (every 0.02 seconds), set the elevator speed to the current desired speed. This speed could come from a joystick, for instance that could keep changing. This is why we use a `DoubleSupplier getSpeed` instead of just `Double speed`; Using a double supplier allows us to know at that point in time what the desired speed is.\r\n3. When the command is stopped, we need to stop the elevator\r\n4. We are done moving the elevator if we are no longer in our set limits (or if we are set to ignore limits, make it so we are never done)\r\n5. We give it the reference to this subsystem with `this`",
+      "title": "Running Elevator Manual Speed Command"
+    },
+    {
+      "file": "src/main/java/frc/robot/subsystems/escalator/ElevatorSubsystem.java",
+      "selection": {
+        "start": {
+          "line": 79,
+          "character": 4
+        },
+        "end": {
+          "line": 85,
+          "character": 6
+        }
+      },
+      "description": "A more complex command is to move the elevator to a specific position. Since the position does not change throughout the duration of the command, we can use just a `double position` (instead of a `DoubleSupplier` seen in the previous step [#8]).  \r\nThe first thing we do is Initialize our motion profile. Lets take a look at that.",
+      "title": "Running Elevator To Position Command"
+    },
+    {
+      "file": "src/main/java/frc/robot/subsystems/escalator/ElevatorSubsystem.java",
+      "selection": {
+        "start": {
+          "line": 99,
+          "character": 4
+        },
+        "end": {
+          "line": 104,
+          "character": 6
+        }
+      },
+      "description": "When we initialize our motion profile, we:\r\n1. Tell our motion controller that our start point is our current position (`m_controller.reset()`)\r\n2. Tell our motion controller that we are ok being a little bit off in our position, up to the tolerance specified by our constant\r\n3. Tell our motion contoller where we want to end up at (`m_contoller.setGoal`). In this case, we want to end up in a state that is at our desired position, with a velocity of 0.",
+      "title": "Elevator Position Command - Initialize"
+    },
+    {
+      "file": "src/main/java/frc/robot/subsystems/escalator/ElevatorSubsystem.java",
+      "selection": {
+        "start": {
+          "line": 82,
+          "character": 17
+        },
+        "end": {
+          "line": 82,
+          "character": 45
+        }
+      },
+      "description": "Coming back to our command, on every iteration (every 0.02 seconds), we call a function that adjusts the elevator position (`RunElevator`)",
+      "title": "Elevator Position Command - Iteration"
+    },
+    {
+      "file": "src/main/java/frc/robot/subsystems/escalator/ElevatorSubsystem.java",
+      "selection": {
+        "start": {
+          "line": 106,
+          "character": 5
+        },
+        "end": {
+          "line": 109,
+          "character": 6
+        }
+      },
+      "description": "Run Elevator uses our motion profile to calculate what we should set our elevator motor to run at (from -1 to 1).  \r\n`m_controller.calculate` uses the FRC WPILIB to do these calculations for us.",
+      "title": "Elevator Position Command - Iteration (Part 2)"
+    },
+    {
+      "file": "src/main/java/frc/robot/subsystems/escalator/ElevatorSubsystem.java",
+      "selection": {
+        "start": {
+          "line": 83,
+          "character": 17
+        },
+        "end": {
+          "line": 83,
+          "character": 48
+        }
+      },
+      "description": "When we are done moving (either because we reached our target or we were forcefully stopped), we need to stop the elevator entirely",
+      "title": "Elevator Position Command - End"
+    },
+    {
+      "file": "src/main/java/frc/robot/subsystems/escalator/ElevatorSubsystem.java",
+      "selection": {
+        "start": {
+          "line": 84,
+          "character": 17
+        },
+        "end": {
+          "line": 84,
+          "character": 35
+        }
+      },
+      "description": "At every iteration, we need to know if we reached our destination. Lets see how we do that.",
+      "title": "Elevator Position Command - Finish Check"
+    },
+    {
+      "file": "src/main/java/frc/robot/subsystems/escalator/ElevatorSubsystem.java",
+      "selection": {
+        "start": {
+          "line": 138,
+          "character": 5
+        },
+        "end": {
+          "line": 141,
+          "character": 6
+        }
+      },
+      "description": "To check if we are finished moving, we will assess if:\r\n1. The motion controller says we are where we want to be\r\n2. Our own calculations (seen next) tell us we are where we want to be\r\n3. As insurance against damaging the motor, we check if we are no longer within our soft limits.",
+      "title": "Elevator Position Command - Finish Check (Part 2)"
+    },
+    {
+      "file": "src/main/java/frc/robot/subsystems/escalator/ElevatorSubsystem.java",
+      "selection": {
+        "start": {
+          "line": 115,
+          "character": 4
+        },
+        "end": {
+          "line": 115,
+          "character": 45
+        }
+      },
+      "description": "To check if the elevator reached the target, we will:\r\n1. Count how long we have been trying to move the motor without it moving (stall condition). To do this, we check the difference between our curent reading and our last reading, and if they are very close, we increment our stale counter. \r\n2. Check how far off we are from the desired goal.\r\n\r\nIf we are very close to the desired goal, or we are further from the desired goal but no longer moving, we say we have reached our destination",
+      "title": "Elevator Position Command - Finish Check (Part 3)"
+    },
+    {
+      "file": "src/main/java/frc/robot/subsystems/escalator/ElevatorSubsystem.java",
+      "selection": {
+        "start": {
+          "line": 145,
+          "character": 9
+        },
+        "end": {
+          "line": 146,
+          "character": 75
+        }
+      },
+      "description": "To check if the position is within our limits, we will check the motor direction and position. Doing both allows us to for instance move the motor up even if we are below our bottom limit.  \r\n",
+      "title": "Elevator Position Command - Finish Check (Part 4)"
+    },
+    {
+      "file": "src/main/java/frc/robot/subsystems/escalator/FlipperSubsystem.java",
+      "selection": {
+        "start": {
+          "line": 21,
+          "character": 5
+        },
+        "end": {
+          "line": 21,
+          "character": 71
+        }
+      },
+      "description": "Next, the flipper is a simple motor with no encoder. In the constructor, we initialize our motor.",
+      "title": "Flipper Constructor"
+    },
+    {
+      "file": "src/main/java/frc/robot/subsystems/escalator/FlipperSubsystem.java",
+      "selection": {
+        "start": {
+          "line": 53,
+          "character": 4
+        },
+        "end": {
+          "line": 53,
+          "character": 72
+        }
+      },
+      "description": "To move the flipper up or down, we will simply move it for a specific amount of time.",
+      "title": "Flipper Position Command"
+    },
+    {
+      "file": "src/main/java/frc/robot/subsystems/escalator/FlipperSubsystem.java",
+      "selection": {
+        "start": {
+          "line": 63,
+          "character": 8
+        },
+        "end": {
+          "line": 64,
+          "character": 54
+        }
+      },
+      "description": "Setting the motor to move at a constant speed means that we can set it once and forget it (i.e. we don't need to re-adjust the speed every iteration / 0.02 seconds like many other commands). In this command, we first set the speed to the desired speed, then wait a defined amount of time, then set the speed to 0 (stop the flipper).  \r\nThe use of `.andThen()` is called *command composition*. Like the *Parallel* functionality we saw in a previous tour, it is a way for us to join multiple commands together into one larger command.",
+      "title": "Flipper Position Command Composition"
+    },
+    {
+      "file": "src/main/java/frc/robot/subsystems/escalator/EscalatorSubsystem.java",
+      "selection": {
+        "start": {
+          "line": 43,
+          "character": 4
+        },
+        "end": {
+          "line": 43,
+          "character": 128
+        }
+      },
+      "description": "Next, the escalator itself.  \r\nHere, we have a smart NEO motor with a built in PID contoller.  \r\nWe initialize our motor, set the motor contollers PID contoller values, and create our feed forward controller.",
+      "title": "Escalator Constructor"
+    },
+    {
+      "file": "src/main/java/frc/robot/subsystems/escalator/EscalatorSubsystem.java",
+      "selection": {
+        "start": {
+          "line": 87,
+          "character": 4
+        },
+        "end": {
+          "line": 89,
+          "character": 6
+        }
+      },
+      "description": "Like the elevator, we have functions to check if the escalator is up or down. For the escalator, down is a value near 0 on the encoder, and up is a higher value, i.e. 100. If we are greater than our high limit - 3 encoder counts, we say that the escalator is up.",
+      "title": "Checking Escalator Position"
+    },
+    {
+      "file": "src/main/java/frc/robot/subsystems/escalator/EscalatorSubsystem.java",
+      "selection": {
+        "start": {
+          "line": 100,
+          "character": 4
+        },
+        "end": {
+          "line": 106,
+          "character": 6
+        }
+      },
+      "description": "The command to run the escalator at a manual speed is very similar to the one to run the elevator at a manual speed; we give it a `DoubleSupplier` for the speed to allow us to change the speed as the command runs.",
+      "title": "Running Escalator Manual Speed Command"
+    },
+    {
+      "file": "src/main/java/frc/robot/subsystems/escalator/EscalatorSubsystem.java",
+      "selection": {
+        "start": {
+          "line": 113,
+          "character": 4
+        },
+        "end": {
+          "line": 119,
+          "character": 6
+        }
+      },
+      "description": "Running the escalator to a specific position is also similar to the elevator.",
+      "title": "Running Escalator to Position Command"
+    },
+    {
+      "file": "src/main/java/frc/robot/subsystems/escalator/EscalatorSubsystem.java",
+      "selection": {
+        "start": {
+          "line": 151,
+          "character": 9
+        },
+        "end": {
+          "line": 156,
+          "character": 1
+        }
+      },
+      "description": "Unlike in the Elevator, where we used a ProfiledPIDController, here we just use a Trapezoid motion profile. That is because with the elevator, the motor controller didnt have a built in PID controller. Here, the NEO does, so we let the NEO handle the PID controls, and we just handle the motion profile.",
+      "title": "EscalatorTrapezoid Profile"
+    },
+    {
+      "file": "src/main/java/frc/robot/subsystems/escalator/EscalatorSubsystem.java",
+      "selection": {
+        "start": {
+          "line": 198,
+          "character": 9
+        },
+        "end": {
+          "line": 203,
+          "character": 38
+        }
+      },
+      "description": "Finally, to actually move the escalator, we calculate our feed forward values using the motion profile, and give them to the NEO motor controller to do the rest.",
+      "title": "Run Escalator Function"
+    },
+    {
+      "file": "src/main/java/frc/robot/subsystems/escalator/EscalatorAssemblySubsystem.java",
+      "selection": {
+        "start": {
+          "line": 76,
+          "character": 4
+        },
+        "end": {
+          "line": 79,
+          "character": 1
+        }
+      },
+      "description": "Coming back up a level, if we want to move the escalator to a specific position, we want to use our high-level object, the `EscalatorAssemblySubsystem`. Only this subsystem knows that there even is a specific escalator (since the `EscalatorSubsystem` is a private member variable of this object).  \r\nHere, we create a command that tells the escaltor to run to the position, but with a condition. If the elevator is down, it will break it. So, we only let the command run if the elevator is not up (`unless(()->!elevator.IsElevatorUp()));`).  \r\nIt might seem silly - why check if the elevator is not up, isn't that the same as if the elevator is down? Why not just let it run unless the elevator is down?\r\nThe answer, though is no - if the elevator is halfway, it is not down; Moving at this point would break the elevator. However, being halfway, it is not up, which is the check we want.",
+      "title": "Run Escalator To Position Command Conditionally"
+    },
+    {
+      "file": "src/main/java/frc/robot/subsystems/escalator/EscalatorAssemblySubsystem.java",
+      "selection": {
+        "start": {
+          "line": 111,
+          "character": 8
+        },
+        "end": {
+          "line": 112,
+          "character": 87
+        }
+      },
+      "description": "Often, we want multiple commands to be chained together, and these chains may be used in many places. As such, we create methods that return the chains, to prevent multiple places in the code from having to build the chains over and over again.  \r\nFor instance, to score high, we need to run the elevator up, then run the escalator to the high scoring spot, then run the flipper up, then run the flipper down, and move the escalator back down to the bottom.  \r\nNote here we see another *command composition* keyword - `alongWith`. To save time, we can move the flipper back down while the escalator goes back down. `alongWith` allows two commands to happen at the same time (just like the `Parallel` command we saw earlier).",
+      "title": "Score High Composed Command"
+    }
+  ]
+}

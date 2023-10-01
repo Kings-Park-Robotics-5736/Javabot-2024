@@ -1,0 +1,130 @@
+{
+  "$schema": "https://aka.ms/codetour-schema",
+  "title": "2. Intro to Robot Subsystems (Intake)",
+  "steps": [
+    {
+      "title": "Introduction",
+      "description": "All robots have multiple parts to them. These may be intakes, shooters, drive trains, indexers, etc.  \r\nIn coding terms, we model each of these parts as *objects*. They are there own self-contained systems.  \r\nAdditionally, systems can contain systems themselves. Consider a shooter with 2 sets of roller wheels. The main *Shooter* object contains 2 *ShooterRoller* objects.  \r\nIn FRC Code, we organize all of our objects/parts/systems/etc into our *subsystems* folder. For organization, we organize them by robot function. I.E.\r\n1. drive\r\n2. escalator\r\n3. intake\r\n\r\nWe already saw an example of a subsystem in our first tour. Our drive train and swerve modules were located in the *drive* folder of the *subsystems* directory.  \r\n\r\n\r\nLet's now take a look at our intake subsystem."
+    },
+    {
+      "file": "src/main/java/frc/robot/subsystems/intake/IntakeSubsystem.java",
+      "selection": {
+        "start": {
+          "line": 10,
+          "character": 30
+        },
+        "end": {
+          "line": 10,
+          "character": 51
+        }
+      },
+      "description": "This is our intake subsystem class. Note the `extends SubsystemBase` verbiage. This is needed in all subsystems, as it is critical for the FRC WPILIB library. (In coding terms, this denotes *inheritance*)  \r\n\r\nIn this code, our intake consists of 2 sets of rollers; one on the top, and one on the bottom.  \r\n\r\nThis shows us a heirarchy structure. This IntakeSubsystem class contains a *top* and a *bottom* *IntakeRollersSubsystem* object.",
+      "title": "Intake Subsystem"
+    },
+    {
+      "file": "src/main/java/frc/robot/subsystems/intake/IntakeSubsystem.java",
+      "selection": {
+        "start": {
+          "line": 12,
+          "character": 4
+        },
+        "end": {
+          "line": 13,
+          "character": 43
+        }
+      },
+      "description": "Here, we define that our *IntakeSubsystem* will contain both a *top* and *bottom* `IntakeRollersSubsystem`",
+      "title": "Intake Top and Bottom Rollers"
+    },
+    {
+      "file": "src/main/java/frc/robot/subsystems/intake/IntakeSubsystem.java",
+      "selection": {
+        "start": {
+          "line": 17,
+          "character": 8
+        },
+        "end": {
+          "line": 21,
+          "character": 111
+        }
+      },
+      "description": "In our Constructor, we initialize our *top* and *bottom* `IntakeRollersSubsystem` objects. Note that we give them values from our *constants* file; specifically, each roller has unique PID values, FeedForward values, CAN Bus ID, and a name (for debugging purposes). ",
+      "title": "Creating Intake Top and Bottom Rollers"
+    },
+    {
+      "file": "src/main/java/frc/robot/subsystems/intake/IntakeRollersSubsystem.java",
+      "selection": {
+        "start": {
+          "line": 17,
+          "character": 1
+        },
+        "end": {
+          "line": 17,
+          "character": 58
+        }
+      },
+      "description": "This is now the code for each individual roller in the intake. Each roller is controlled by its own motor, with an encoder.  \r\nNote that like the IntakeSubsystem, we also have the verbiage `extends SubsystemBase`. Again, all subsystems must have this. ",
+      "title": "Intake Rollers Subsystem"
+    },
+    {
+      "file": "src/main/java/frc/robot/subsystems/intake/IntakeRollersSubsystem.java",
+      "selection": {
+        "start": {
+          "line": 26,
+          "character": 5
+        },
+        "end": {
+          "line": 26,
+          "character": 118
+        }
+      },
+      "description": "Here, we initialize our individual roller subsystem. Recall that we invoke this constructor from the `IntakeSubsystem` constructor we saw in step [#4].  \r\n\r\nHere, we initialize our SparkMax motor, use the PID controller built into the SparkMax motor controller, and set a few other member variables.",
+      "title": "Creating Intake Rollers Subsystem"
+    },
+    {
+      "file": "src/main/java/frc/robot/subsystems/intake/IntakeRollersSubsystem.java",
+      "selection": {
+        "start": {
+          "line": 55,
+          "character": 4
+        },
+        "end": {
+          "line": 57,
+          "character": 6
+        }
+      },
+      "description": "Here, we have a very simple method to set the speed of a motor. Setting this to -1 is max speed backwards; setting to 1 is max speed forward; 0 is stopped. ",
+      "title": "Setting Roller Speed / Voltage"
+    },
+    {
+      "file": "src/main/java/frc/robot/subsystems/intake/IntakeRollersSubsystem.java",
+      "selection": {
+        "start": {
+          "line": 71,
+          "character": 4
+        },
+        "end": {
+          "line": 74,
+          "character": 6
+        }
+      },
+      "description": "To stop the intake motor, we set the speed to 0",
+      "title": "Stopping Intake Roller"
+    },
+    {
+      "file": "src/main/java/frc/robot/subsystems/intake/IntakeRollersSubsystem.java",
+      "selection": {
+        "start": {
+          "line": 64,
+          "character": 4
+        },
+        "end": {
+          "line": 69,
+          "character": 6
+        }
+      },
+      "description": "When we are running the intake motor, we want to run it at a specific speed. To do this, we use a PID controller combined with a feed forward controller. The Feed Forward controller calculates what we should set the motor voltage to be to acheive a specific speed. Ever motor has slightly different tolerances to it, and the weight of the roller wheels, friction, etc change what voltage would give us a specific speed. To calculate the coefficients that the Feed Forward controler uses, we *profile* the intake roller assembly using the FRC SysID tool.  \r\n\r\nFinally, we use the motor controller's built-in PID controller, and let it handle the rest. We tell it the speed we want to acheive (setpoint), that we are looking to control its velocity, our feed-forward calculated value, and that the feed-foward value's unit is in volts.",
+      "title": "Running Intake Roller with PID and Feed Forward"
+    }
+  ]
+}

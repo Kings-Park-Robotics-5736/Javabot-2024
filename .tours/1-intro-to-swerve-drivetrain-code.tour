@@ -234,5 +234,6 @@
     }
   ],
   "description": "This walkthrough is an introduction to the main robot code, focusing on the drive train and swerve modules.",
-  "isPrimary": true
+  "isPrimary": true, 
+  "nextTour": "2. Intro to Robot Subsystems (Intake)"
 }
