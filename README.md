@@ -14,12 +14,23 @@ To help learn this codebase, code tours are available. These will walk you throu
  
 Five different code tours are available, each a bit more technologically challenging than the previous one.  
 
-To run the code tours, first either install the recommended extensions:  
-[Install Recommended Extensions](./images/install-recommendations.webp)  
-  
-Or, under extensions, install the 'Code Tour' extension:   
-[Install Manually](./images/install-manually.png)
+1. Install the code tour extension:
 
-Once CodeTour is installed, select the tour from the 'CodeTour' Panel. 
-[Select Code Tour](./images/run-codetour.png)
+    Either install the recommended extensions:   
+    ![Install Recommended Extensions](./images/install-recommendations.webp)  
+
+    <br/><br/>
+
+    Or, under extensions, install the 'Code Tour' extension:  
+
+    <img src="./images/install-manually.png" width="500" />
+    
+    <br/><br/>
+
+2. Once CodeTour is installed, select the tour from the 'CodeTour' Panel.  
+<img src="./images/run-codetour.png" width="500" />  
+
+  
+3. One by one, follow along with each code tour.
+
 
