@@ -2,7 +2,7 @@ package frc.robot.commands.drive;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.DriveToTargetCommandConstants;
@@ -19,7 +19,7 @@ import frc.robot.subsystems.drive.DriveSubsystem;
  *       will be
  *       locked out. As such, we will manually lock out the rotate joystick.
  */
-public abstract class CenterToTargetCommand extends CommandBase {
+public abstract class CenterToTargetCommand extends Command {
 
     private DriveSubsystem m_drive;
     private boolean m_infinite;

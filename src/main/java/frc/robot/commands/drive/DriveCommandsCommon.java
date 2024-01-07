@@ -1,8 +1,8 @@
 package frc.robot.commands.drive;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.util.Units;
 import frc.robot.Constants.DriveConstants;
-import frc.robot.utils.MathUtils;
 
 /**
  * @brief Helper utilities that are common across the various drive routines
@@ -36,7 +36,7 @@ public class DriveCommandsCommon {
             final double turnOutput;
             if (useCameraMeasurement) {
                 turnOutput = m_controller_theta.calculate(heading,
-                        heading - MathUtils.degreesToRadians(degPi));
+                        heading - Units.degreesToRadians(degPi));
             } else {
                 turnOutput = m_controller_theta.calculate(heading);
             }

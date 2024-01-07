@@ -4,6 +4,10 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
+import com.pathplanner.lib.util.PIDConstants;
+import com.pathplanner.lib.util.ReplanningConfig;
+
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
@@ -53,10 +57,10 @@ public final class Constants {
     public static final boolean kFrontRightDriveReversed = true;
     public static final boolean kRearRightDriveReversed = true;
 
-    public static final double kFrontLeftAngleOffset = -94.395;
-    public static final double kFrontRightAngleOffset = -68.8;
-    public static final double kBackLeftAngleOffset = -257.52;
-    public static final double kBackRightAngleOffset = -316.143;
+    public static final double kFrontLeftAngleOffset = -94.395 /360.0; //unit is from -1 to 1, normalized
+    public static final double kFrontRightAngleOffset = -68.8 /360.0;
+    public static final double kBackLeftAngleOffset = -257.52 /360.0;
+    public static final double kBackRightAngleOffset = -316.143 /360.0;
 
     // Distance between centers of right and left wheels on robot
     public static final double kTrackWidth = 0.482;
@@ -117,6 +121,14 @@ public final class Constants {
     // Constraint for the motion profiled robot angle controller
     public static final TrapezoidProfile.Constraints kThetaControllerConstraints = new TrapezoidProfile.Constraints(
         kMaxAngularSpeedRadiansPerSecond, kMaxAngularSpeedRadiansPerSecondSquared);
+
+     public static final HolonomicPathFollowerConfig pathFollowerConfig = new HolonomicPathFollowerConfig(
+      new PIDConstants(5.0, 0, 0), // Translation constants 
+      new PIDConstants(5.0, 0, 0), // Rotation constants 
+      kMaxSpeedMetersPerSecond, 
+      new Translation2d(DriveConstants.kWheelBase / 2, DriveConstants.kTrackWidth / 2).getNorm(), // Drive base radius (distance from center to furthest module) 
+      new ReplanningConfig()
+    );
   }
 
 
