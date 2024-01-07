@@ -1,16 +1,17 @@
 package frc.robot.commands;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.commands.drive.CenterToTargetCommandLimelight;
 import frc.robot.commands.drive.DriveToTargetCommand;
-import frc.robot.commands.drive.PathPlanFromDynamicStartCommand;
 import frc.robot.field.ScoringPositions;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.utils.Types;
 import frc.robot.vision.Limelight;
 import frc.robot.vision.PiCamera;
+import frc.robot.commands.TrajectoryCommandsFactory;
 
 public class RobotCommandsFactory {
 
@@ -59,12 +60,11 @@ public class RobotCommandsFactory {
      * @param finalPosition
      * @return
      */
-    public static Command generateDoublePathPlanningCommand(DriveSubsystem robotDrive, Pose2d finalPosition) {
+    public static Command generateDoublePathPlanningCommand(DriveSubsystem robotDrive, Pose2d finalPosition, Rotation2d finalRotation) {
 
-        return new PathPlanFromDynamicStartCommand(robotDrive::getPose, robotDrive,
-                finalPosition).andThen(
-                        new PathPlanFromDynamicStartCommand(robotDrive::getPose, robotDrive,
-                                finalPosition));
+        return TrajectoryCommandsFactory.generatePPTrajectoryCommand(robotDrive,
+                finalPosition, finalRotation).andThen(
+                        TrajectoryCommandsFactory.generatePPTrajectoryCommand(robotDrive, finalPosition, finalRotation));
     }
 
 
