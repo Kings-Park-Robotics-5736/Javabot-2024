@@ -119,77 +119,7 @@ public final class Constants {
         kMaxAngularSpeedRadiansPerSecond, kMaxAngularSpeedRadiansPerSecondSquared);
   }
 
-  public static final class IntakeConstants {
 
-    public static final int kForwardSpeed = 4000;
-    public static final int kReverseSpeed = -3000;
-  }
-
-  public static final class LowerIntakeConstants {
-
-    public static final byte kDeviceId = 2;
-
-    public static final PidConstants kPidValues = new PidConstants(0.00001, 0, 0);
-    public static final FeedForwardConstants kFFValues = new FeedForwardConstants(0.06368, 0.12005, 0.0034381);
-  }
-
-  public static final class UpperIntakeConstants {
-
-    public static final byte kDeviceId = 3;
-
-    public static final PidConstants kPidValues = new PidConstants(0.00001, 0, 0);
-    public static final FeedForwardConstants kFFValues = new FeedForwardConstants(0.06368, 0.12005, 0.0034381);
-  }
-
-  public static final class EscalatorConstants {
-
-    public static final byte kDeviceId = 1;
-
-    public static final PidConstants kPidValues = new PidConstants(0.06, .0001, 0.0);
-    public static final FeedForwardConstants kFFValues = new FeedForwardConstants(0.27419, 0.12313, 0.0026, 0.11545);
-    public static final Limits kLimits = new Limits(0, 62);
-
-    public static final int kMaxVelocity = 120;
-    public static final int kMaxAcceleration = 150;
-
-    public static final double kStaleTolerance = .75;
-    public static final double kDiffThreshold = 0.25;
-    public static final int kStaleThreshold = 5;
-
-    public static final double kHighScorePosition = 61.0;
-    public static final double kMidScorePosition = 37.3;
-    public static final double kBottomPosition = 0.0;
-  }
-
-  public static final class ElevatorConstants {
-
-    public static final byte kDeviceId = 9;
-
-    public static final PidConstants kPidValues = new PidConstants(0.5, 0, 0.007);
-    public static final Limits kLimits = new Limits(0, 60);
-
-    public static final int kMaxVelocity = 100;
-    public static final int kMaxAcceleration = 100;
-
-    public static final double kStaleTolerance = .5;
-    public static final double kDiffThreshold = 0.15;
-    public static final int kStaleThreshold = 10;
-    public static final double kPositionTolerance = 1.0;
-
-
-    public static final double kUpPosition = 0.0;
-    public static final double kDownPosition = 59.5;
-  }
-
-  public static final class FlipperContstants {
-
-    public static final byte kDeviceId = 8;
-
-    public static final double kSpeed = .75;
-
-    public static final double kDownTime = 0.6;
-    public static final double kUpTime = 0.8;
-  }
 
   public static final class DriveToTargetCommandConstants {
 

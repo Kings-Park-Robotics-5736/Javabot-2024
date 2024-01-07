@@ -50,9 +50,4 @@ public final class Types {
     DOWN
   };
 
-  public enum ScoringHeight{
-    LOW,
-    MID,
-    HIGH
-  }
 }

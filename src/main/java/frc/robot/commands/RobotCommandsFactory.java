@@ -8,10 +8,7 @@ import frc.robot.commands.drive.DriveToTargetCommand;
 import frc.robot.commands.drive.PathPlanFromDynamicStartCommand;
 import frc.robot.field.ScoringPositions;
 import frc.robot.subsystems.drive.DriveSubsystem;
-import frc.robot.subsystems.escalator.EscalatorAssemblySubsystem;
-import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.utils.Types;
-import frc.robot.utils.Types.ScoringHeight;
 import frc.robot.vision.Limelight;
 import frc.robot.vision.PiCamera;
 
@@ -30,16 +27,13 @@ public class RobotCommandsFactory {
      * @param height        height to score at
      * @return command
      */
-    public static Command generateGrabTargetAndScoreCommmand(DriveSubsystem robotDrive, PiCamera picam,
-            Limelight limelight, IntakeSubsystem intake, EscalatorAssemblySubsystem escalator,
-            Pose2d finalPosition, Types.ScoringHeight height) {
 
-        return escalator.RunElevatorDownCommand()
-                .andThen(generateDriveToTargetWithIntake(robotDrive, picam, intake,2,3))
-                .andThen(escalator.RunElevatorUpCommand()
-                        .alongWith(generateDoublePathPlanningCommandWithLimelightTargeting(robotDrive, limelight,
-                                finalPosition)))
-                .andThen(generateScoreCommandWithCentering(robotDrive, escalator, limelight, height));
+     //TODO
+    public static Command generateGrabTargetAndScoreCommmand(DriveSubsystem robotDrive, PiCamera picam,
+            Limelight limelight,
+            Pose2d finalPosition) {
+
+        return null;
     }
 
 
@@ -52,9 +46,9 @@ public class RobotCommandsFactory {
      * @return
      */
     public static Command generateDriveToTargetWithIntake(DriveSubsystem robotDrive, PiCamera picam,
-            IntakeSubsystem intake, double speed, double maxDistance) {
+            double speed, double maxDistance) {
 
-        return intake.RunIntakeForwardCommand().raceWith(new DriveToTargetCommand(robotDrive, picam, speed, maxDistance));
+        return null;
     }
 
 
@@ -86,27 +80,10 @@ public class RobotCommandsFactory {
     public static Command generateDoublePathPlanningCommandWithLimelightTargeting(DriveSubsystem robotDrive,
             Limelight limelight, Pose2d finalPosition) {
 
-        return new PathPlanFromDynamicStartCommand(robotDrive::getPose, robotDrive,
-                finalPosition, true, true).andThen(Commands.runOnce(() -> limelight.setReflectivePipeline()))
-                .andThen(new PathPlanFromDynamicStartCommand(robotDrive::getPose, robotDrive,
-                        finalPosition, true, true));
+        return null;
     }
 
-    /**
-     * Generate the entire score command to a specific scoring position. Uses generateGrabTargetAndScoreCommmand().
-     * @param robotDrive
-     * @param picam
-     * @param limelight
-     * @param intake
-     * @param escalator
-     * @return
-     */
-    public static Command generateScoreMidToBlueChargeStation3Command(DriveSubsystem robotDrive, PiCamera picam,
-            Limelight limelight, IntakeSubsystem intake, EscalatorAssemblySubsystem escalator) {
-
-        return generateGrabTargetAndScoreCommmand(robotDrive, picam, limelight, intake, escalator,
-                ScoringPositions.kRobotPoseChargeStationBlue3, ScoringHeight.MID);
-    }
+  
 
     /**
      * Generate the command to score to an object a specific position (height), while centering with limelight.
@@ -117,32 +94,9 @@ public class RobotCommandsFactory {
      * @return
      */
     public static Command generateScoreCommandWithCentering(DriveSubsystem robotDrive,
-            EscalatorAssemblySubsystem escalator, Limelight limelight, Types.ScoringHeight height) {
+            Limelight limelight) {
 
-        return getElevatorCommandFromHeight(escalator, height)
-                .raceWith(new CenterToTargetCommandLimelight(robotDrive, escalator, limelight, true));
+        return null;
     }
 
-    /**
-     * Convert enum Scoring Height to a command that scores at that height.
-     * @note Score Low is not currently supported.
-     * @param escalator
-     * @param height
-     * @return
-     */
-    private static Command getElevatorCommandFromHeight(EscalatorAssemblySubsystem escalator,
-            Types.ScoringHeight height) {
-
-        Command ret;
-        switch (height) {
-            case MID:
-                ret = escalator.ScoreMid();
-                break;
-            case HIGH:
-                ret = escalator.ScoreHigh();
-            default:
-                ret = escalator.ScoreMid();
-        }
-        return ret;
-    }
 }

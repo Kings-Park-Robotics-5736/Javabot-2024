@@ -22,8 +22,6 @@ import frc.robot.commands.drive.CenterToTargetCommandPiCam;
 import frc.robot.commands.drive.DriveDistanceCommand;
 import frc.robot.commands.drive.DriveToTargetCommand;
 import frc.robot.subsystems.drive.DriveSubsystem;
-import frc.robot.subsystems.escalator.EscalatorAssemblySubsystem;
-import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.utils.Types.DirectionType;
 import frc.robot.vision.Limelight;
 import frc.robot.vision.Limelight.LEDMode;
@@ -45,10 +43,8 @@ public class RobotContainer {
         public Limelight m_limelight_side = new Limelight("limelight-side");
 
         private final DriveSubsystem m_robotDrive = new DriveSubsystem(m_limelight,null);// use only 1 limelight for driving now since we dont have great measurements m_limelight_side);
-        private final IntakeSubsystem m_intake = new IntakeSubsystem();
-        private final EscalatorAssemblySubsystem m_escalatorAssembly = new EscalatorAssemblySubsystem();
 
-        private final  CommandMap m_commandMap = new CommandMap(m_robotDrive, m_picam, m_limelight,  m_intake, m_escalatorAssembly );
+        private final  CommandMap m_commandMap = new CommandMap(m_robotDrive, m_picam, m_limelight);
 
         private final SlewRateLimiter m_xspeedLimiter = new SlewRateLimiter(3);
         private final SlewRateLimiter m_yspeedLimiter = new SlewRateLimiter(3);
@@ -121,123 +117,23 @@ public class RobotContainer {
                 new JoystickButton(m_driverController, XboxController.Button.kX.value)
                                 .whileTrue(new DriveDistanceCommand(m_robotDrive, 1));
 
-                 
-                //LEFT BUMPER: Drive to scoring position
-                new JoystickButton(m_driverController, XboxController.Button.kLeftBumper.value)
-                                .whileTrue(m_commandMap.getCommand("DriveToScoring"));
 
-                //Y BUTTON: center on a cone
+                //Y BUTTON: center on a game piece
                 new JoystickButton(m_driverController, XboxController.Button.kY.value)
                                 .whileTrue(new CenterToTargetCommandPiCam(m_robotDrive, m_picam, true));
 
-                //RIGHT BUMPER: Center on reflective post
-                new JoystickButton(m_driverController, XboxController.Button.kRightBumper.value)
-                                .whileTrue(m_commandMap.getCommand("CenterToPost"));
+
 
                 
-                //A BUTTON: Drive to cone and return to where you started from
+                //A BUTTON: Drive to game piece and return to where you started from
                 //new JoystickButton(m_driverController, XboxController.Button.kA.value)
                  //               .onTrue(new HuntAndReturnCommand(m_robotDrive, m_picam, 1.5, 1.5));
 
                 //B BUTTON: Drive to a target, and stop when you reach it.
                 new JoystickButton(m_driverController, XboxController.Button.kB.value)
-                                .whileTrue(new DriveToTargetCommand(m_robotDrive, m_picam, 1, 1));
+                                .whileTrue(new DriveToTargetCommand(m_robotDrive, m_picam, 1, 4));
 
-                new JoystickButton(m_driverController, XboxController.Button.kA.value)
-                                .whileTrue( RobotCommandsFactory.generateScoreMidToBlueChargeStation3Command(m_robotDrive, m_picam, m_limelight, m_intake, m_escalatorAssembly));
-
-
-
-
-                new JoystickButton(m_actionController, XboxController.Button.kB.value)
-                                .toggleOnTrue(m_intake.RunIntakeForwardCommand());
-
-                new JoystickButton(m_actionController, XboxController.Button.kX.value)
-                                .toggleOnTrue(m_intake.RunIntakeBackwardCommand());
-
-                new JoystickButton(m_actionController, XboxController.Button.kBack.value)
-                                .onTrue(m_escalatorAssembly.ResetElevatorEncoderCommand());
-
-                new JoystickButton(m_actionController, XboxController.Button.kStart.value)
-                                .onTrue(m_escalatorAssembly.ResetEscalatorEncoderCommand());
-
-                new JoystickButton(m_actionController, XboxController.Button.kY.value)
-                                .whileTrue(m_escalatorAssembly.RunElevatorToPositionCommand(0)
-                                                .andThen(JoystickCommandsFactory
-                                                                .RumbleControllerTillCancel(m_actionController)));
-
-                new JoystickButton(m_actionController, XboxController.Button.kA.value)
-                                .whileTrue(m_escalatorAssembly.RunElevatorToPositionCommand(60)
-                                                .andThen(JoystickCommandsFactory
-                                                                .RumbleControllerTillCancel(m_actionController)));
-
-                new JoystickButton(m_actionController, XboxController.Button.kLeftBumper.value)
-                                .whileTrue(m_escalatorAssembly.RunEscalatorToPositionCommand(0)
-                                                .andThen(JoystickCommandsFactory
-                                                                .RumbleControllerTillCancel(m_actionController)));
-
-                new JoystickButton(m_actionController, XboxController.Button.kRightBumper.value)
-                                .whileTrue(m_escalatorAssembly.RunEscalatorToHighScore().andThen(JoystickCommandsFactory
-                                                .RumbleControllerTillCancel(m_actionController)));
-
-                new JoystickButton(m_actionController, XboxController.Button.kLeftStick.value)
-                                .whileTrue(m_escalatorAssembly.RunEscalatorToMidScore().andThen(JoystickCommandsFactory
-                                                .RumbleControllerTillCancel(m_actionController)));
-
-                // this is not a button. So we need to manually define the trigger
-                // All a joystick button is is a wrapper for a trigger, that generates a
-                // condition.
-                // I.E. new JoystickButton(m_actionController,
-                // XboxController.Button.kRightBumper.value) generates something like:
-                // ()->{return XboxController.Button.kRightBumper.value==1;}
-                // Here, we are creating our own condition:
-                // ()->{return m_actionController.getRightTriggerAxis() > 0;}, which means that
-                // we are 'triggered' once we have some value on the axis.
-                new Trigger(() -> {
-                        return m_actionController.getRightTriggerAxis() > 0;
-                }).whileTrue(m_escalatorAssembly
-                                .RunEscalatorManualSpeedCommand(() -> m_actionController.getRightTriggerAxis()));
-                new Trigger(() -> {
-                        return m_actionController.getLeftTriggerAxis() > 0;
-                }).whileTrue(m_escalatorAssembly
-                                .RunEscalatorManualSpeedCommand(() -> -m_actionController.getLeftTriggerAxis()));
-
-                // using .02 here as a deadband
-                new Trigger(() -> {
-                        return m_actionController.getRightY() > 0.02 || m_actionController.getRightY() < -0.02;
-                }).and((new JoystickButton(m_actionController, XboxController.Button.kBack.value)).negate()).whileTrue(
-                                m_escalatorAssembly.RunElevatorManualSpeedCommand(() -> m_actionController.getRightY(),
-                                                false));
-
-                new Trigger(() -> {
-                        return m_actionController.getRightY() > 0.02 || m_actionController.getRightY() < -0.02;
-                }).and(new JoystickButton(m_actionController, XboxController.Button.kBack.value)).whileTrue(
-                                m_escalatorAssembly.RunElevatorManualSpeedCommand(() -> m_actionController.getRightY(),
-                                                true));
-
-                // the POV hat works differently;
-                // it returns a value from 0-360, where 0 is up, 90 is right, 180 is down, and
-                // 270 is left.
-                // you can get values in between, so we need to define a range.
-                new Trigger(() -> {
-                        return m_actionController.getPOV() > 20 && m_actionController.getPOV() < 180;
-                }).onTrue(m_escalatorAssembly.RunFlipperToPositionCommand(DirectionType.UP));
-
-                new Trigger(() -> {
-                        return m_actionController.getPOV() < 180 && m_actionController.getPOV() < 360;
-                }).onTrue(m_escalatorAssembly.RunFlipperToPositionCommand(DirectionType.DOWN));
-
-                /*
-                 * new Trigger(() -> {
-                 * return m_actionController.getRightTriggerAxis() > 0;
-                 * }).whileTrue(m_escalatorAssembly.RunFlipperManualSpeedCommand(() ->
-                 * m_actionController.getRightTriggerAxis()));
-                 * new Trigger(() -> {
-                 * return m_actionController.getLeftTriggerAxis() > 0;
-                 * }).whileTrue(m_escalatorAssembly.RunFlipperManualSpeedCommand(() ->
-                 * -m_actionController.getLeftTriggerAxis()));
-                 */
-
+             
         }
 
         /**

@@ -22,28 +22,11 @@ import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.commands.drive.HuntAndReturnCommand;
 import frc.robot.subsystems.drive.DriveSubsystem;
-import frc.robot.subsystems.escalator.EscalatorAssemblySubsystem;
-import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.vision.PiCamera;
 
 public class TrajectoryCommandsFactory {
 
-    /**
-     * @brief Command used in auto to hunt & return from target. It will first
-     *        ensure elevator is all the way down, then it will hunt, and while
-     *        returning, it will stop intake, raise elevator, and finish coming back
-     *        to the start.
-     * @param robotDrive
-     * @param picam
-     * @param intake
-     * @param escalator
-     * @return
-     */
-    public static Command generateAutoTrajectoryHuntCommand(DriveSubsystem robotDrive, PiCamera picam,
-            IntakeSubsystem intake, EscalatorAssemblySubsystem escalator) {
-        return escalator.RunElevatorDownCommand().andThen(new HuntAndReturnCommand(robotDrive,
-                escalator.RunElevatorUpCommand(), intake.RunIntakeForwardCommand(), picam, 1.5, 1.5, false)).andThen(new WaitCommand(10));
-    }
+ 
 
     /**
      * @brief Generates a command that will follow an autonomous path group with
