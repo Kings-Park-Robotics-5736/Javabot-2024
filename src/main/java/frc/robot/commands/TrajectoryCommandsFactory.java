@@ -41,7 +41,7 @@ public class TrajectoryCommandsFactory {
                             Units.degreesToRadians(360), Units.degreesToRadians(540)),
                     new GoalEndState(0.0, endRotation));
 
-            AutoBuilder.followPathWithEvents(path).schedule();
+            AutoBuilder.followPath(path).schedule();
         });
     }
 
