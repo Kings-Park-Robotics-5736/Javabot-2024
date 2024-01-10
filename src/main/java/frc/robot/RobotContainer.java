@@ -26,6 +26,13 @@ import frc.robot.utils.Types.DirectionType;
 import frc.robot.vision.Limelight;
 import frc.robot.vision.Limelight.LEDMode;
 import frc.robot.vision.PiCamera;
+<<<<<<< Updated upstream
+=======
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathPlannerAuto;
+
+>>>>>>> Stashed changes
 
 
 /*
@@ -143,8 +150,18 @@ public class RobotContainer {
          */
 
         public Command getAutonomousCommand() {
+<<<<<<< Updated upstream
                 return TrajectoryCommandsFactory.generateAutoTrajectoryCommand(m_robotDrive, m_commandMap);
 
+=======
+                SmartDashboard.putString("Auto Running", autoChooser.getSelected().getName());
+                return autoChooser.getSelected();
+                //return new PathPlannerAuto("R1 Score");
+        }
+
+        public void publishAuto(){
+                SmartDashboard.putString("Auto Chosen", autoChooser.getSelected().getName());
+>>>>>>> Stashed changes
         }
 
 }
