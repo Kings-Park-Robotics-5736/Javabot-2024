@@ -32,7 +32,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import com.pathplanner.lib.auto.NamedCommands;
 
 
-
+import frc.robot.subsystems.intake.IntakeSubsystem;
 /*
  * This class is where the bulk of the robot should be declared.  Since Command-based is a
  * "declarative" paradigm, very little robot logic should actually be handled in the {@link Robot}
@@ -49,7 +49,7 @@ public class RobotContainer {
 
         private final DriveSubsystem m_robotDrive = new DriveSubsystem(m_limelight,null);// use only 1 limelight for driving now since we dont have great measurements m_limelight_side);
 
-
+        private final IntakeSubsystem m_intake = new IntakeSubsystem();
         private final SendableChooser<Command> autoChooser;
 
         private final SlewRateLimiter m_xspeedLimiter = new SlewRateLimiter(3);
@@ -143,6 +143,11 @@ public class RobotContainer {
                 new JoystickButton(m_driverController, XboxController.Button.kY.value)
                                 .whileTrue(new CenterToTargetCommandPiCam(m_robotDrive, m_picam, true));
 
+                new JoystickButton(m_actionController, XboxController.Button.kB.value)
+                                .toggleOnTrue(m_intake.RunIntakeForwardCommand());
+
+                new JoystickButton(m_actionController, XboxController.Button.kX.value)
+                                .toggleOnTrue(m_intake.RunIntakeBackwardCommand());
 
 
                 
