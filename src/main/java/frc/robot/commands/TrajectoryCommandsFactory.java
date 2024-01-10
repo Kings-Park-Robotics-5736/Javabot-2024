@@ -40,8 +40,9 @@ public class TrajectoryCommandsFactory {
                             Constants.AutoConstants.kMaxAccelerationMetersPerSecondSquared,
                             Units.degreesToRadians(360), Units.degreesToRadians(540)),
                     new GoalEndState(0.0, endRotation));
+            path.preventFlipping = true;
 
-            AutoBuilder.followPathWithEvents(path).schedule();
+            AutoBuilder.followPath(path).schedule();
         });
     }
 
