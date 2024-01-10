@@ -89,6 +89,27 @@ public final class Constants {
     public static final double kMaxSpeedMetersPerSecond = 3;
     public static final double kMaxAccelerationMetersPerSecondSquared = 3;
   }
+  public static final class IntakeConstants {
+
+    public static final int kForwardSpeed = 4000;
+    public static final int kReverseSpeed = -3000;
+  }
+
+  public static final class LowerIntakeConstants {
+
+    public static final byte kDeviceId = 2;
+
+    public static final PidConstants kPidValues = new PidConstants(0.00001, 0, 0);
+    public static final FeedForwardConstants kFFValues = new FeedForwardConstants(0.06368, 0.12005, 0.0034381);
+  }
+
+  public static final class UpperIntakeConstants {
+
+    public static final byte kDeviceId = 3;
+
+    public static final PidConstants kPidValues = new PidConstants(0.00001, 0, 0);
+    public static final FeedForwardConstants kFFValues = new FeedForwardConstants(0.06368, 0.12005, 0.0034381);
+  }
 
   public static final class ModuleConstants {
     public static final double kMaxModuleAngularSpeedRadiansPerSecond = 15 * 2 * Math.PI;
