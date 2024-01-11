@@ -4,10 +4,12 @@
 
 package frc.robot.subsystems.drive;
 
-import com.ctre.phoenix.motorcontrol.NeutralMode;
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
-import com.ctre.phoenix.sensors.WPI_CANCoder;
-
+import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
+import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.StatusCode;
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
@@ -17,15 +19,15 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.ModuleConstants;
-import frc.robot.utils.MathUtils;
+import edu.wpi.first.math.util.Units;
 
 public class SwerveModule {
 
-  private final WPI_TalonFX m_driveMotor;
+  private final TalonFX m_driveMotor;
   private final int m_id;
-  private final WPI_TalonFX m_turningMotor;
+  private final TalonFX m_turningMotor;
 
-  private final WPI_CANCoder m_turningEncoder;
+  private final CANcoder m_turningEncoder;
   private final PIDController m_drivePIDController = new PIDController(DriveConstants.kPDrive, 0, 0);
   private final PIDController m_turnPIDController = new PIDController(ModuleConstants.kPModuleTurningNoController, 0, 0);
   // Using a TrapezoidProfile PIDController to allow for smooth turning
@@ -64,20 +66,29 @@ public class SwerveModule {
       double turningEncoderOffset) {
 
     m_id = driveMotorChannel;
-    m_driveMotor = new WPI_TalonFX(driveMotorChannel, canName);
-    m_turningMotor = new WPI_TalonFX(turningMotorChannel, canName);
+    m_driveMotor = new TalonFX(driveMotorChannel, canName);
+    m_turningMotor = new TalonFX(turningMotorChannel, canName);
 
     m_turningMotor.setInverted(invertTurning);
     m_driveMotor.setInverted(invertDrive);
 
-    m_driveMotor.setNeutralMode(NeutralMode.Brake);
-    m_turningMotor.setNeutralMode(NeutralMode.Brake);
+    m_driveMotor.setNeutralMode(NeutralModeValue.Brake);
+    m_turningMotor.setNeutralMode(NeutralModeValue.Brake);
 
-    m_turningEncoder = new WPI_CANCoder(turningEncoderChannel, canName);
-
-    m_turningEncoder.configFactoryDefault();
-    m_turningEncoder.configMagnetOffset(turningEncoderOffset);
-
+    m_turningEncoder = new CANcoder(turningEncoderChannel, canName);
+    var turning_config = new CANcoderConfiguration();
+    turning_config.MagnetSensor.MagnetOffset = turningEncoderOffset;
+    turning_config.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Unsigned_0To1;
+    StatusCode status = StatusCode.StatusCodeNotInitialized;
+    for(int i = 0; i < 5; i++){
+      status = m_turningEncoder.getConfigurator().apply(turning_config);
+      if ( status.isOK()){
+        break;
+      }
+    }
+    if(!status.isOK()) {
+      System.out.println("Could not apply configs, error code: " + status.toString());
+    }
     // Limit the PID Controller's input range between -pi and pi and set the input
     // to be continuous.
     m_turnPIDController.enableContinuousInput(-Math.PI, Math.PI);
@@ -85,20 +96,21 @@ public class SwerveModule {
   }
 
   private double getTurnEncoderPositionInRadians() {
-    double retVal = MathUtils.degreesToRadians(m_turningEncoder.getAbsolutePosition());
+    m_turningEncoder.getAbsolutePosition().refresh();
+    double retVal = Units.rotationsToRadians(m_turningEncoder.getAbsolutePosition().getValue());
     return retVal;
   }
 
   private double getDriveEncoderVelocity() {
-    // WARNING - unit from falcon encoder is per 100ms, so need to multiply by 10 to
-    // get to per 1s
-    return m_driveMotor.getSelectedSensorVelocity() * 10 * (2 * Math.PI * ModuleConstants.kWheelRadius)
-        / (ModuleConstants.kEncoderResolution * ModuleConstants.kDriveGearRatio);
+    m_driveMotor.getVelocity().refresh();
+    return m_driveMotor.getVelocity().getValue()  * (2 * Math.PI * ModuleConstants.kWheelRadius)
+        / ModuleConstants.kDriveGearRatio;
   }
 
   private double getDriveEncoderPosition() {
-    return m_driveMotor.getSelectedSensorPosition() * (2 * Math.PI * ModuleConstants.kWheelRadius)
-        / (ModuleConstants.kEncoderResolution * ModuleConstants.kDriveGearRatio);
+    m_driveMotor.getPosition().refresh();
+    return m_driveMotor.getPosition().getValue() * (2 * Math.PI * ModuleConstants.kWheelRadius)
+        / ModuleConstants.kDriveGearRatio;
   }
 
   /**
@@ -171,6 +183,6 @@ public class SwerveModule {
 
   /** Zeroes all the SwerveModule encoders. */
   public void resetEncoders() {
-    m_driveMotor.setSelectedSensorPosition(0);
+    m_driveMotor.setPosition(0);
   }
 }

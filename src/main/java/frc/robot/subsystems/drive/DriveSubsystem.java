@@ -4,8 +4,7 @@
 
 package frc.robot.subsystems.drive;
 
-import com.ctre.phoenix.sensors.WPI_Pigeon2;
-
+import com.ctre.phoenix6.hardware.Pigeon2;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -20,9 +19,11 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
-import frc.robot.utils.MathUtils;
+import edu.wpi.first.math.util.Units;
 import frc.robot.vision.Limelight;
+import com.pathplanner.lib.auto.AutoBuilder;
 
 public class DriveSubsystem extends SubsystemBase {
 
@@ -66,7 +67,7 @@ public class DriveSubsystem extends SubsystemBase {
       DriveConstants.kBackRightAngleOffset);
 
   // The gyro sensor
-  private final WPI_Pigeon2 m_gyro = new WPI_Pigeon2(0, "Canivore");
+  private final Pigeon2 m_gyro = new Pigeon2(0, "Canivore");
 
   /**
    * @brief This is a flag to lockout the joystick control of the robot.
@@ -102,16 +103,36 @@ public class DriveSubsystem extends SubsystemBase {
 
     m_gyro.setYaw(180);
 
+    AutoBuilder.configureHolonomic(
+      this::getPose, 
+      this::resetOdometry, 
+      this::getRobotRelativeSpeeds, 
+      this::driveRobotRelative, 
+      Constants.AutoConstants.pathFollowerConfig, 
+      () -> {
+        // Boolean supplier that controls when the path will be mirrored for the red alliance
+        // This will flip the path being followed to the red side of the field.
+        // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+
+        var alliance = DriverStation.getAlliance();
+        if (alliance.isPresent()) {
+            return alliance.get() == DriverStation.Alliance.Red;
+        }
+        return false;
+    },
+      this
+    );
+
     m_poseEstimator = new SwerveDrivePoseEstimator(
         DriveConstants.kDriveKinematics,
-        new Rotation2d(MathUtils.degreesToRadians(180)),
+        new Rotation2d(Units.degreesToRadians(180)),
         new SwerveModulePosition[] {
             m_frontLeft.getPosition(),
             m_frontRight.getPosition(),
             m_rearLeft.getPosition(),
             m_rearRight.getPosition()
         },
-        new Pose2d(0, 0, new Rotation2d(MathUtils.degreesToRadians(180))),
+        new Pose2d(0, 0, new Rotation2d(Units.degreesToRadians(180))),
         VecBuilder.fill(0.05, 0.05, Units.degreesToRadians(5)),
         VecBuilder.fill(0.5, 0.5, Units.degreesToRadians(30)));
 
@@ -159,11 +180,11 @@ public class DriveSubsystem extends SubsystemBase {
     var alliance = DriverStation.getAlliance();
     boolean validPose = ll.checkValidTarget();
 
-    if (alliance == DriverStation.Alliance.Red) {
+    if (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red) {
       poseWithTime = ll.getBotPoseRed();
-    } else if (alliance == DriverStation.Alliance.Blue) {
+    } else if (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Blue) {
       poseWithTime = ll.getBotPoseBlue();
-    } else {
+    } else{
       validPose = false;
       pose = new double[6]; // empty 6 position array
       poseWithTime= new TimestampedDoubleArray(0, 0, pose);
@@ -228,6 +249,13 @@ public class DriveSubsystem extends SubsystemBase {
     return m_poseEstimator.getEstimatedPosition();
   }
 
+  public ChassisSpeeds getRobotRelativeSpeeds(){
+    return DriveConstants.kDriveKinematics.toChassisSpeeds(m_frontLeft.getState(),
+                                                           m_frontRight.getState(),
+                                                           m_rearLeft.getState(),
+                                                           m_rearRight.getState());
+  }
+
   /**
    * Resets the odometry to the specified pose.
    *
@@ -286,7 +314,9 @@ public class DriveSubsystem extends SubsystemBase {
       m_rearRight.setDesiredState(swerveModuleStates[3]);
     }
   }
-
+  public void driveRobotRelative(ChassisSpeeds speeds){
+    this.drive(speeds.vxMetersPerSecond,speeds.vyMetersPerSecond,speeds.omegaRadiansPerSecond,false,false);
+  }
   /**
    * Sets the swerve ModuleStates.
    *

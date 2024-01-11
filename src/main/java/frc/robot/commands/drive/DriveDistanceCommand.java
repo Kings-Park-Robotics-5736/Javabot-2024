@@ -2,7 +2,7 @@ package frc.robot.commands.drive;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
 import frc.robot.Constants.CustomDriveDistanceCommandConstants;
 import frc.robot.Constants.DriveConstants;
@@ -12,7 +12,7 @@ import frc.robot.subsystems.drive.DriveSubsystem;
  * @brief This command is used to drive a specific distance
  *        It will drive straight from wherever the robot is currently facing.
  */
-public class DriveDistanceCommand extends CommandBase {
+public class DriveDistanceCommand extends Command {
 
     private final double m_meters;
     private final DriveSubsystem m_robotDrive;

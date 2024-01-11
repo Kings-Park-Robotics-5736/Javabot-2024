@@ -3,7 +3,7 @@ package frc.robot.commands.drive;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.DriveToTargetCommandConstants;
@@ -17,7 +17,7 @@ import frc.robot.vision.PiCamera;
  * 
  * @not Reaching target is defined as no longer being able to see it.
  */
-public class DriveToTargetCommand extends CommandBase {
+public class DriveToTargetCommand extends Command {
     private DriveSubsystem m_drive;
     private boolean m_gotTarget;
     private int m_gotTargetCounter;

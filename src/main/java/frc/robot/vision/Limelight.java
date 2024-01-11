@@ -2,13 +2,13 @@ package frc.robot.vision;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.DoubleArraySubscriber;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.TimestampedDoubleArray;
-import frc.robot.utils.MathUtils;
 
 /**
  * Limelight camera class
@@ -248,7 +248,7 @@ public class Limelight {
     }
 
     public Pose2d AsPose2d(double[] pose) {
-        return new Pose2d(pose[0], pose[1], new Rotation2d(MathUtils.degreesToRadians(pose[5])));
+        return new Pose2d(pose[0], pose[1], new Rotation2d(Units.degreesToRadians(pose[5])));
     }
 
     /**
