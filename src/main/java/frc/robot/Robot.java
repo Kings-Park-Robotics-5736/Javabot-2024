@@ -34,7 +34,7 @@ public class Robot extends TimedRobot {
 
     //PathPlannerServer.startServer(5811);
     m_robotContainer = new RobotContainer();
-    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+   
   }
 
   /**
@@ -66,6 +66,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void disabledPeriodic() {
+    m_robotContainer.publishAuto();
   }
 
   /**
@@ -84,6 +85,7 @@ public class Robot extends TimedRobot {
      */
 
     // schedule the autonomous command (example)
+     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();
     }

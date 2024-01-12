@@ -30,10 +30,15 @@ import frc.robot.vision.Limelight.LEDMode;
 import frc.robot.vision.PiCamera;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import com.pathplanner.lib.auto.NamedCommands;
+<<<<<<< HEAD
 import frc.robot.subsystems.shooter.ShooterSubsystem;
 
+=======
+import com.pathplanner.lib.commands.PathPlannerAuto;
+>>>>>>> origin/main
 
 import frc.robot.subsystems.intake.IntakeSubsystem;
+
 /*
  * This class is where the bulk of the robot should be declared.  Since Command-based is a
  * "declarative" paradigm, very little robot logic should actually be handled in the {@link Robot}
@@ -48,7 +53,10 @@ public class RobotContainer {
         public Limelight m_limelight = new Limelight("limelight");
         public Limelight m_limelight_side = new Limelight("limelight-side");
 
-        private final DriveSubsystem m_robotDrive = new DriveSubsystem(m_limelight,null);// use only 1 limelight for driving now since we dont have great measurements m_limelight_side);
+        private final DriveSubsystem m_robotDrive = new DriveSubsystem(m_limelight, null);// use only 1 limelight for
+                                                                                          // driving now since we dont
+                                                                                          // have great measurements
+                                                                                          // m_limelight_side);
 
         private final IntakeSubsystem m_intake = new IntakeSubsystem();
         private final ShooterSubsystem m_Shooter = new ShooterSubsystem();
@@ -60,7 +68,6 @@ public class RobotContainer {
 
         XboxController m_driverController = new XboxController(IOConstants.kDriverControllerPort);
         XboxController m_actionController = new XboxController(IOConstants.kActionControllerPort);
-        
 
         private void driveWithJoystick(Boolean fieldRelative) {
                 // Get the x speed. We are inverting this because Xbox controllers return
@@ -86,7 +93,7 @@ public class RobotContainer {
                 m_robotDrive.drive(xSpeed, ySpeed, rot, fieldRelative, true);
         }
 
-        private void InitializeNamedCommands(){
+        private void InitializeNamedCommands() {
                 NamedCommands.registerCommand("Forward1", new DriveDistanceCommand(m_robotDrive, 1));
                 NamedCommands.registerCommand("Forward0.5", new DriveDistanceCommand(m_robotDrive, 0.5));
                 NamedCommands.registerCommand("GrabTarget", new DriveToTargetCommand(m_robotDrive, m_picam, 2.25, 1));
@@ -98,16 +105,13 @@ public class RobotContainer {
          */
         public RobotContainer() {
 
-                InitializeNamedCommands(); //must do this first
+                InitializeNamedCommands(); // must do this first
 
                 // Configure the button bindings
                 configureButtonBindings();
 
-
                 // Set limelight LED to follow pipeline on startup
                 m_limelight.setLEDMode(LEDMode.PIPELINE);
-
-                
 
                 autoChooser = AutoBuilder.buildAutoChooser(); // Default auto will be `Commands.none()`
                 SmartDashboard.putData("Auto Mode", autoChooser);
@@ -132,16 +136,16 @@ public class RobotContainer {
          */
         private void configureButtonBindings() {
 
-                //BACK BUTTON: zero out the heading. Note, with vision pose, this should not be used anymore.
+                // BACK BUTTON: zero out the heading. Note, with vision pose, this should not be
+                // used anymore.
                 new JoystickButton(m_driverController, XboxController.Button.kBack.value)
                                 .onTrue(Commands.runOnce(() -> m_robotDrive.zeroHeading(), m_robotDrive));
 
-                //X BUTTON: drive forward 1 meter
+                // X BUTTON: drive forward 1 meter
                 new JoystickButton(m_driverController, XboxController.Button.kX.value)
                                 .whileTrue(new DriveDistanceCommand(m_robotDrive, 1));
 
-
-                //Y BUTTON: center on a game piece
+                // Y BUTTON: center on a game piece
                 new JoystickButton(m_driverController, XboxController.Button.kY.value)
                                 .whileTrue(new CenterToTargetCommandPiCam(m_robotDrive, m_picam, true));
 
@@ -155,16 +159,10 @@ public class RobotContainer {
                                 .toggleOnTrue(m_Shooter.RunShooterForwardCommand());
 
 
-                
-                //A BUTTON: Drive to game piece and return to where you started from
-                //new JoystickButton(m_driverController, XboxController.Button.kA.value)
-                 //               .onTrue(new HuntAndReturnCommand(m_robotDrive, m_picam, 1.5, 1.5));
-
-                //B BUTTON: Drive to a target, and stop when you reach it.
+                // B BUTTON: Drive to a target, and stop when you reach it.
                 new JoystickButton(m_driverController, XboxController.Button.kB.value)
                                 .whileTrue(new DriveToTargetCommand(m_robotDrive, m_picam, 1, 4));
 
-             
         }
 
         /**
@@ -174,7 +172,12 @@ public class RobotContainer {
          */
 
         public Command getAutonomousCommand() {
+                SmartDashboard.putString("Auto Running", autoChooser.getSelected().getName());
                 return autoChooser.getSelected();
+        }
+
+        public void publishAuto() {
+                SmartDashboard.putString("Auto Chosen", autoChooser.getSelected().getName());
         }
 
 }
