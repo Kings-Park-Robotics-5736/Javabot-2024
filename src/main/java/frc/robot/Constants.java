@@ -93,6 +93,7 @@ public final class Constants {
 
     public static final int kForwardSpeed = 4000;
     public static final int kReverseSpeed = -3000;
+    public static final int kTofId = 0;
   }
 
   public static final class LowerIntakeConstants {

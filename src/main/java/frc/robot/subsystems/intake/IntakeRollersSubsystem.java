@@ -7,10 +7,14 @@ import com.revrobotics.SparkPIDController;
 import com.revrobotics.RelativeEncoder;
 
 
+
+
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.Constants.IntakeConstants;
 import frc.robot.utils.Types.FeedForwardConstants;
 import frc.robot.utils.Types.PidConstants;
@@ -32,6 +36,7 @@ public class IntakeRollersSubsystem extends SubsystemBase {
         m_encoder = m_motor.getEncoder();
         name = _name;
 
+        
         m_pidController.setP(pidValues.p);
         m_pidController.setI(pidValues.i);
         m_pidController.setD(pidValues.d);
@@ -39,11 +44,17 @@ public class IntakeRollersSubsystem extends SubsystemBase {
         m_pidController.setFF(0);
         m_pidController.setOutputRange(-1, 1);
         m_feedforward = new SimpleMotorFeedforward(ffValues.ks, ffValues.kv, ffValues.ka);
+      
+        
 
     }
 
     @Override
     public void periodic() {
+
+     
+         
+
 
     }
 
@@ -73,6 +84,16 @@ public class IntakeRollersSubsystem extends SubsystemBase {
         m_stop = true;
         setSpeed(0);
     }
+    public boolean withinRange(){
+       /* if(m_tofSensor.getRange() < 5){
+            return true;
+        }
+        else{
+            return false;
+        }
+        */
+        return false;
+    }
 
     public Command StopIntakeCommand() {
         return this.runOnce(() -> StopIntake());
@@ -86,7 +107,7 @@ public class IntakeRollersSubsystem extends SubsystemBase {
                 },
                 () -> RunIntake(IntakeConstants.kForwardSpeed),
                 (interrupted) -> StopIntake(),
-                () -> m_stop, this);
+                () ->  withinRange(), this);
     }
 
     public Command RunIntakeBackwardCommand() {
@@ -100,3 +121,5 @@ public class IntakeRollersSubsystem extends SubsystemBase {
     }
 
 }
+
+

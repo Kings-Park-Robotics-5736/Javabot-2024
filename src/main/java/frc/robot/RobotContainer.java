@@ -30,6 +30,7 @@ import frc.robot.vision.Limelight.LEDMode;
 import frc.robot.vision.PiCamera;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import com.pathplanner.lib.auto.NamedCommands;
+import frc.robot.subsystems.shooter.ShooterSubsystem;
 
 
 import frc.robot.subsystems.intake.IntakeSubsystem;
@@ -50,6 +51,7 @@ public class RobotContainer {
         private final DriveSubsystem m_robotDrive = new DriveSubsystem(m_limelight,null);// use only 1 limelight for driving now since we dont have great measurements m_limelight_side);
 
         private final IntakeSubsystem m_intake = new IntakeSubsystem();
+        private final ShooterSubsystem m_Shooter = new ShooterSubsystem();
         private final SendableChooser<Command> autoChooser;
 
         private final SlewRateLimiter m_xspeedLimiter = new SlewRateLimiter(3);
@@ -148,6 +150,9 @@ public class RobotContainer {
 
                 new JoystickButton(m_actionController, XboxController.Button.kX.value)
                                 .toggleOnTrue(m_intake.RunIntakeBackwardCommand());
+
+                new JoystickButton(m_actionController, XboxController.Button.kA.value)
+                                .toggleOnTrue(m_Shooter.RunShooterForwardCommand());
 
 
                 
