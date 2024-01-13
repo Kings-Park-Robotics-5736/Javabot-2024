@@ -30,12 +30,9 @@ import frc.robot.vision.Limelight.LEDMode;
 import frc.robot.vision.PiCamera;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import com.pathplanner.lib.auto.NamedCommands;
-<<<<<<< HEAD
 import frc.robot.subsystems.shooter.ShooterSubsystem;
 
-=======
 import com.pathplanner.lib.commands.PathPlannerAuto;
->>>>>>> origin/main
 
 import frc.robot.subsystems.intake.IntakeSubsystem;
 
