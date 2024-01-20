@@ -181,7 +181,7 @@ public class DriveSubsystem extends SubsystemBase {
     boolean validPose = ll.checkValidTarget();
 
     if (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red) {
-      poseWithTime = ll.getBotPoseRed();
+      poseWithTime = ll.getBotPoseBlue();
     } else if (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Blue) {
       poseWithTime = ll.getBotPoseBlue();
     } else{
@@ -304,7 +304,7 @@ public class DriveSubsystem extends SubsystemBase {
       }
       var swerveModuleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(
           fieldRelative
-              ? ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rot, m_gyro.getRotation2d())
+              ? ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rot, getPose().getRotation())
               : new ChassisSpeeds(xSpeed, ySpeed, rot));
       SwerveDriveKinematics.desaturateWheelSpeeds(
           swerveModuleStates, DriveConstants.kMaxSpeedMetersPerSecond);

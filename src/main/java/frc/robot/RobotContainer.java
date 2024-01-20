@@ -8,6 +8,7 @@ import com.pathplanner.lib.auto.AutoBuilder;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -66,16 +67,22 @@ public class RobotContainer {
         private void driveWithJoystick(Boolean fieldRelative) {
                 // Get the x speed. We are inverting this because Xbox controllers return
                 // negative values when we push forward.
-                final var xSpeed = -m_xspeedLimiter
+                var xSpeed = -m_xspeedLimiter
                                 .calculate(MathUtil.applyDeadband(m_driverController.getLeftY(), 0.02))
                                 * DriveConstants.kMaxSpeedMetersPerSecond;
 
                 // Get the y speed or sideways/strafe speed. We are inverting this because
                 // we want a positive value when we pull to the left. Xbox controllers
                 // return positive values when you pull to the right by default.
-                final var ySpeed = -m_yspeedLimiter
+                var ySpeed = -m_yspeedLimiter
                                 .calculate(MathUtil.applyDeadband(m_driverController.getLeftX(), 0.02))
                                 * DriveConstants.kMaxSpeedMetersPerSecond;
+
+                var alliance = DriverStation.getAlliance();
+                if (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red) {
+                        xSpeed = -xSpeed;
+                        ySpeed = -ySpeed;
+                } 
 
                 // Get the rate of angular rotation. We are inverting this because we want a
                 // positive value when we pull to the left (remember, CCW is positive in
@@ -92,6 +99,8 @@ public class RobotContainer {
                 NamedCommands.registerCommand("Forward0.5", new DriveDistanceCommand(m_robotDrive, 0.5));
                 NamedCommands.registerCommand("GrabTarget", new DriveToTargetCommand(m_robotDrive, m_picam, 2.25, 1));
                 NamedCommands.registerCommand("ForceStop", Commands.runOnce(() -> m_robotDrive.forceStop()));
+                NamedCommands.registerCommand("RunIntake", m_intake.RunIntakeForwardCommand());
+                NamedCommands.registerCommand("DriveToNote", new DriveToTargetCommand(m_robotDrive, m_picam, 1, 1));
         }
 
         /**
@@ -172,6 +181,7 @@ public class RobotContainer {
 
         public void publishAuto() {
                 SmartDashboard.putString("Auto Chosen", autoChooser.getSelected().getName());
+                SmartDashboard.putNumber("Pi Theta", m_picam.getPiCamAngle());
         }
 
 }

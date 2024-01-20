@@ -58,6 +58,7 @@ public class DriveToTargetCommand extends Command {
 
         //acuire current pose to check total distance travelled
         m_startingPosition = m_drive.getPose();
+        System.out.println("Start " + m_startingPosition.getX() + " ,  " + m_startingPosition.getY() + ", " + m_startingPosition.getRotation().getRadians());
         
         //configure motion controller
         m_controller_theta.reset(m_drive.getHeadingInRadians());
@@ -140,6 +141,7 @@ public class DriveToTargetCommand extends Command {
 
         if ((maxDistance > 0 && getTotalDisplacement() > maxDistance)
                 || getTotalRotation() > DriveToTargetCommandConstants.kMaxRotation) {
+                    System.out.println(m_drive.getPose().getX() + " ,  " + m_drive.getPose().getY() + ", " +m_drive.getPose().getRotation().getRadians());
             // this is an error check to ensure we can't just run-away if we are fully auto
             System.out.println("---------------Overran-----------------");
             m_gotTarget = true;
