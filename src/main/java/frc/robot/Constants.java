@@ -107,8 +107,8 @@ public final class Constants {
 
     public static final byte kDeviceId = 3;
 
-    public static final PidConstants kPidValues = new PidConstants(0.00001, 0, 0);
-    public static final FeedForwardConstants kFFValues = new FeedForwardConstants(0.06368, 0.12005, 0.0034381);
+    public static final PidConstants kPidValues = new PidConstants(3.7415E-05, 0, 0);
+    public static final FeedForwardConstants kFFValues = new FeedForwardConstants(0.19204,0.12201,  0.0082481);
   }
 
   public static final class ModuleConstants {

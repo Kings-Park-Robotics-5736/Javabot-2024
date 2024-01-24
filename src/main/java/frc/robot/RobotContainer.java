@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.IOConstants;
 import frc.robot.commands.JoystickCommandsFactory;
@@ -26,6 +27,8 @@ import frc.robot.commands.drive.DriveDistanceCommand;
 import frc.robot.commands.drive.DriveToTargetCommand;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.utils.Types.DirectionType;
+import frc.robot.utils.Types.PositionType;
+import frc.robot.utils.Types.SysidMechanism;
 import frc.robot.vision.Limelight;
 import frc.robot.vision.Limelight.LEDMode;
 import frc.robot.vision.PiCamera;
@@ -33,6 +36,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 
+import frc.robot.subsystems.intake.IntakeRollersSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
 
 /*
@@ -44,6 +48,8 @@ import frc.robot.subsystems.intake.IntakeSubsystem;
 public class RobotContainer {
 
         // The robot's subsystems
+
+        private final SysidMechanism enabledSysid = SysidMechanism.NONE;
 
         private final PiCamera m_picam = new PiCamera();
         public Limelight m_limelight = new Limelight("limelight");
@@ -82,7 +88,7 @@ public class RobotContainer {
                 if (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red) {
                         xSpeed = -xSpeed;
                         ySpeed = -ySpeed;
-                } 
+                }
 
                 // Get the rate of angular rotation. We are inverting this because we want a
                 // positive value when we pull to the left (remember, CCW is positive in
@@ -111,7 +117,25 @@ public class RobotContainer {
                 InitializeNamedCommands(); // must do this first
 
                 // Configure the button bindings
-                configureButtonBindings();
+                switch (enabledSysid) {
+
+                        case INTAKE_TOP:
+                        case INTAKE_BOTTOM:
+                                configureButtonBindingsIntakeSysID();
+                                break;
+                        case NONE:
+                        default:
+                                configureButtonBindings();
+                                 // Configure default commands
+                                m_robotDrive.setDefaultCommand(
+                                                // The left stick controls translation of the robot.
+                                                // Turning is controlled by the X axis of the right stick.
+                                                new RunCommand(
+                                                                () -> driveWithJoystick(true),
+                                                                m_robotDrive));
+                                break;
+
+                }
 
                 // Set limelight LED to follow pipeline on startup
                 m_limelight.setLEDMode(LEDMode.PIPELINE);
@@ -119,13 +143,34 @@ public class RobotContainer {
                 autoChooser = AutoBuilder.buildAutoChooser(); // Default auto will be `Commands.none()`
                 SmartDashboard.putData("Auto Mode", autoChooser);
 
-                // Configure default commands
-                m_robotDrive.setDefaultCommand(
-                                // The left stick controls translation of the robot.
-                                // Turning is controlled by the X axis of the right stick.
-                                new RunCommand(
-                                                () -> driveWithJoystick(true),
-                                                m_robotDrive));
+               
+        }
+
+        private void configureButtonBindingsIntakeSysID() {
+                new JoystickButton(m_driverController, XboxController.Button.kA.value)
+                                .whileTrue(m_intake.sysIdQuasistatic(SysIdRoutine.Direction.kForward,
+                                                PositionType.TOP)
+                                                .alongWith(m_intake.sysIdQuasistatic(SysIdRoutine.Direction.kForward,
+                                                                PositionType.BOTTOM)));
+                new JoystickButton(m_driverController, XboxController.Button.kB.value)
+                                .whileTrue(m_intake.sysIdQuasistatic(SysIdRoutine.Direction.kReverse,
+                                                PositionType.TOP)
+                                                .alongWith(m_intake.sysIdQuasistatic(SysIdRoutine.Direction.kReverse,
+                                                                PositionType.BOTTOM)));
+                new JoystickButton(m_driverController, XboxController.Button.kX.value)
+                                .whileTrue(m_intake.sysIdDynamic(SysIdRoutine.Direction.kForward, PositionType.TOP)
+                                                .alongWith(m_intake.sysIdDynamic(SysIdRoutine.Direction.kForward,
+                                                                PositionType.BOTTOM)));
+                new JoystickButton(m_driverController, XboxController.Button.kY.value)
+                                .whileTrue(m_intake.sysIdDynamic(SysIdRoutine.Direction.kReverse, PositionType.TOP)
+                                                .alongWith(m_intake.sysIdDynamic(SysIdRoutine.Direction.kReverse,
+                                                                PositionType.BOTTOM)));
+
+                new JoystickButton(m_driverController, XboxController.Button.kLeftBumper.value)
+                                .toggleOnTrue(m_intake.RunIntakeForwardCommand());
+
+                new JoystickButton(m_driverController, XboxController.Button.kRightBumper.value)
+                                .toggleOnTrue(m_intake.RunIntakeBackwardCommand());
         }
 
         /**
@@ -152,19 +197,15 @@ public class RobotContainer {
                 new JoystickButton(m_driverController, XboxController.Button.kY.value)
                                 .whileTrue(new CenterToTargetCommandPiCam(m_robotDrive, m_picam, true));
 
+                // B BUTTON: Drive to a target, and stop when you reach it.
+                new JoystickButton(m_driverController, XboxController.Button.kB.value)
+                                .whileTrue(new DriveToTargetCommand(m_robotDrive, m_picam, 1, 4));
+
                 new JoystickButton(m_actionController, XboxController.Button.kB.value)
                                 .toggleOnTrue(m_intake.RunIntakeForwardCommand());
 
                 new JoystickButton(m_actionController, XboxController.Button.kX.value)
                                 .toggleOnTrue(m_intake.RunIntakeBackwardCommand());
-
-                // A BUTTON: Drive to game piece and return to where you started from
-                // new JoystickButton(m_driverController, XboxController.Button.kA.value)
-                // .onTrue(new HuntAndReturnCommand(m_robotDrive, m_picam, 1.5, 1.5));
-
-                // B BUTTON: Drive to a target, and stop when you reach it.
-                new JoystickButton(m_driverController, XboxController.Button.kB.value)
-                                .whileTrue(new DriveToTargetCommand(m_robotDrive, m_picam, 1, 4));
 
         }
 
