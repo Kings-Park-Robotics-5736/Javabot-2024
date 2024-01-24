@@ -74,14 +74,14 @@ public class RobotContainer {
                 // Get the x speed. We are inverting this because Xbox controllers return
                 // negative values when we push forward.
                 var xSpeed = -m_xspeedLimiter
-                                .calculate(MathUtil.applyDeadband(m_driverController.getLeftY(), 0.12))
+                                .calculate(MathUtil.applyDeadband(m_driverController.getLeftY(), 0.02))
                                 * DriveConstants.kMaxSpeedMetersPerSecond;
 
                 // Get the y speed or sideways/strafe speed. We are inverting this because
                 // we want a positive value when we pull to the left. Xbox controllers
                 // return positive values when you pull to the right by default.
                 var ySpeed = -m_yspeedLimiter
-                                .calculate(MathUtil.applyDeadband(m_driverController.getLeftX(), 0.12))
+                                .calculate(MathUtil.applyDeadband(m_driverController.getLeftX(), 0.02))
                                 * DriveConstants.kMaxSpeedMetersPerSecond;
 
                 var alliance = DriverStation.getAlliance();
