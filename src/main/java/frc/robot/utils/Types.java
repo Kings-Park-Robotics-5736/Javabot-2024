@@ -50,4 +50,20 @@ public final class Types {
     DOWN
   };
 
+  public enum PositionType{
+    TOP,
+    BOTTOM,
+    LEFT,
+    RIGHT
+  }
+
+  public enum SysidMechanism{
+    NONE,
+    INTAKE_TOP,
+    INTAKE_BOTTOM,
+    DRIVE,
+    SHOOTER_LEFT,
+    SHOOTER_RIGHT
+  }
+
 }
