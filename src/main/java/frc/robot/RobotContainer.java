@@ -97,7 +97,7 @@ public class RobotContainer {
                 final var rot = -m_rotLimiter.calculate(MathUtil.applyDeadband(m_driverController.getRightX(), 0.02))
                                 * DriveConstants.kMaxSpeedMetersPerSecond;
 
-                // m_robotDrive.drive(xSpeed, ySpeed, rot, fieldRelative, true);
+                m_robotDrive.drive(xSpeed, ySpeed, rot, fieldRelative, true);
         }
 
         private void InitializeNamedCommands() {
@@ -126,6 +126,13 @@ public class RobotContainer {
                         case NONE:
                         default:
                                 configureButtonBindings();
+                                 // Configure default commands
+                                m_robotDrive.setDefaultCommand(
+                                                // The left stick controls translation of the robot.
+                                                // Turning is controlled by the X axis of the right stick.
+                                                new RunCommand(
+                                                                () -> driveWithJoystick(true),
+                                                                m_robotDrive));
                                 break;
 
                 }
@@ -136,13 +143,7 @@ public class RobotContainer {
                 autoChooser = AutoBuilder.buildAutoChooser(); // Default auto will be `Commands.none()`
                 SmartDashboard.putData("Auto Mode", autoChooser);
 
-                // Configure default commands
-                m_robotDrive.setDefaultCommand(
-                                // The left stick controls translation of the robot.
-                                // Turning is controlled by the X axis of the right stick.
-                                new RunCommand(
-                                                () -> driveWithJoystick(true),
-                                                m_robotDrive));
+               
         }
 
         private void configureButtonBindingsIntakeSysID() {
