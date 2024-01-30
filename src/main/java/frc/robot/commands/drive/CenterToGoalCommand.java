@@ -34,6 +34,7 @@ public class CenterToGoalCommand extends CenterToTargetCommand {
     @Override
     public void initialize() {
         //m_fistTime=true;
+
         super.initialize();
 
     }
@@ -54,12 +55,13 @@ public class CenterToGoalCommand extends CenterToTargetCommand {
         //calculate the angle of our current pose to the target
         Pose2d robotPose = m_drive.getPose();
         Pose2d scoringPos;
-        double rotationOffset = 0;
+        double rotationOffset = ((int)(robotPose.getRotation().getDegrees() / 360)*360);
+        //since the robot pose keeps increasing (doesnt wrap around at 360), we need to do this to get the correct angle in the greate than 360 space.
         var alliance = DriverStation.getAlliance();
 
         if (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red) {
             scoringPos = ScoringPositions.kBlueScoringPosition;
-            rotationOffset = Units.degreesToRadians(180); //when facing the blue side of the field, that is 180 deg.
+            rotationOffset += Units.degreesToRadians(180); //when facing the blue side of the field, that is 180 deg.
         } else if (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Blue) {
             scoringPos = ScoringPositions.kRedScoringPosition;
         } else {
@@ -68,7 +70,7 @@ public class CenterToGoalCommand extends CenterToTargetCommand {
          
         var xDelta = robotPose.getTranslation().getX() - scoringPos.getTranslation().getX();
         var yDelta = robotPose.getTranslation().getY() - scoringPos.getTranslation().getY();
-        var angleToTarget = Math.atan(yDelta / xDelta ) + rotationOffset; //normally tan is x/y, byt in frc coords, it is y / x
+        var angleToTarget = Math.atan(yDelta / xDelta ) + rotationOffset; //normally tan is x/y, but in frc coords, it is y / x
 
         centerOnTarget(angleToTarget, true);
 
