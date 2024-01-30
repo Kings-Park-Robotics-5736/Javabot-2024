@@ -15,13 +15,25 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.TimestampedDoubleArray;
+import edu.wpi.first.units.Distance;
+import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.MutableMeasure;
+import edu.wpi.first.units.Velocity;
+import edu.wpi.first.units.Voltage;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
 import edu.wpi.first.math.util.Units;
+import static edu.wpi.first.units.MutableMeasure.mutable;
+import static edu.wpi.first.units.Units.Volts;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
 import frc.robot.vision.Limelight;
 import com.pathplanner.lib.auto.AutoBuilder;
 
@@ -87,6 +99,68 @@ public class DriveSubsystem extends SubsystemBase {
 
   private final SwerveDrivePoseEstimator m_poseEstimator;
 
+  // Mutable holder for unit-safe voltage values, persisted to avoid reallocation.
+  private final MutableMeasure<Voltage> m_appliedVoltage = mutable(Volts.of(0));
+  // Mutable holder for unit-safe linear distance values, persisted to avoid
+  // reallocation.
+  private final MutableMeasure<Distance> m_distance = mutable(Meters.of(0));
+  // Mutable holder for unit-safe linear velocity values, persisted to avoid
+  // reallocation.
+  private final MutableMeasure<Velocity<Distance>> m_velocity = mutable(MetersPerSecond.of(0));
+
+  private final SysIdRoutine m_sysIdRoutine = new SysIdRoutine(
+      // Empty config defaults to 1 volt/second ramp rate and 7 volt step voltage.
+      new SysIdRoutine.Config(),
+      new SysIdRoutine.Mechanism(
+          // Tell SysId how to plumb the driving voltage to the motors.
+          (Measure<Voltage> volts) -> {
+            m_frontLeft.getDriveMotor().setVoltage(volts.in(Volts));
+            m_frontRight.getDriveMotor().setVoltage(volts.in(Volts));
+            m_rearLeft.getDriveMotor().setVoltage(volts.in(Volts));
+            m_rearRight.getDriveMotor().setVoltage(volts.in(Volts));
+            m_frontLeft.lockTurningAtZero();
+            m_frontRight.lockTurningAtZero();
+            m_rearLeft.lockTurningAtZero();
+            m_rearRight.lockTurningAtZero();
+          },
+          // Tell SysId how to record a frame of data for each motor on the mechanism
+          // being
+          // characterized.
+          log -> {
+            log.motor("drive-front-left")
+                .voltage(
+                    m_appliedVoltage.mut_replace(
+                        m_frontLeft.getDriveMotor().get() * RobotController.getBatteryVoltage(), Volts))
+                .linearPosition(m_distance.mut_replace(m_frontLeft.getPosition().distanceMeters, Meters))
+                .linearVelocity(
+                    m_velocity.mut_replace(m_frontLeft.getState().speedMetersPerSecond, MetersPerSecond));
+            log.motor("drive-front-right")
+                .voltage(
+                    m_appliedVoltage.mut_replace(
+                        m_frontRight.getDriveMotor().get() * RobotController.getBatteryVoltage(), Volts))
+                .linearPosition(m_distance.mut_replace(m_frontRight.getPosition().distanceMeters, Meters))
+                .linearVelocity(
+                    m_velocity.mut_replace(m_frontRight.getState().speedMetersPerSecond, MetersPerSecond));
+            log.motor("drive-rear-left")
+                .voltage(
+                    m_appliedVoltage.mut_replace(
+                        m_rearLeft.getDriveMotor().get() * RobotController.getBatteryVoltage(), Volts))
+                .linearPosition(m_distance.mut_replace(m_rearLeft.getPosition().distanceMeters, Meters))
+                .linearVelocity(
+                    m_velocity.mut_replace(m_rearLeft.getState().speedMetersPerSecond, MetersPerSecond));
+            log.motor("drive-rear-right")
+                .voltage(
+                    m_appliedVoltage.mut_replace(
+                        m_rearRight.getDriveMotor().get() * RobotController.getBatteryVoltage(), Volts))
+                .linearPosition(m_distance.mut_replace(m_rearRight.getPosition().distanceMeters, Meters))
+                .linearVelocity(
+                    m_velocity.mut_replace(m_rearRight.getState().speedMetersPerSecond, MetersPerSecond));
+          },
+          // Tell SysId to make generated commands require this subsystem, suffix test
+          // state in
+          // WPILog with this subsystem's name ("drive")
+          this));
+
   /** Creates a new DriveSubsystem. */
   public DriveSubsystem(Limelight ll, Limelight l2) {
 
@@ -98,30 +172,30 @@ public class DriveSubsystem extends SubsystemBase {
 
     m_limelight = ll;
     m_limelight_side = l2;
-    
-    m_lastPoseUpdate=0;
+
+    m_lastPoseUpdate = 0;
 
     m_gyro.setYaw(180);
 
     AutoBuilder.configureHolonomic(
-      this::getPose, 
-      this::resetOdometry, 
-      this::getRobotRelativeSpeeds, 
-      this::driveRobotRelative, 
-      Constants.AutoConstants.pathFollowerConfig, 
-      () -> {
-        // Boolean supplier that controls when the path will be mirrored for the red alliance
-        // This will flip the path being followed to the red side of the field.
-        // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+        this::getPose,
+        this::resetOdometry,
+        this::getRobotRelativeSpeeds,
+        this::driveRobotRelative,
+        Constants.AutoConstants.pathFollowerConfig,
+        () -> {
+          // Boolean supplier that controls when the path will be mirrored for the red
+          // alliance
+          // This will flip the path being followed to the red side of the field.
+          // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
 
-        var alliance = DriverStation.getAlliance();
-        if (alliance.isPresent()) {
+          var alliance = DriverStation.getAlliance();
+          if (alliance.isPresent()) {
             return alliance.get() == DriverStation.Alliance.Red;
-        }
-        return false;
-    },
-      this
-    );
+          }
+          return false;
+        },
+        this);
 
     m_poseEstimator = new SwerveDrivePoseEstimator(
         DriveConstants.kDriveKinematics,
@@ -153,11 +227,9 @@ public class DriveSubsystem extends SubsystemBase {
         });
 
     addLimelightVisionMeasurement(m_limelight);
-    if(m_limelight_side != null){
+    if (m_limelight_side != null) {
       addLimelightVisionMeasurement(m_limelight_side);
     }
-    
-    
 
     SmartDashboard.putNumber("Gyro Rotation", m_gyro.getRotation2d().getDegrees());
     SmartDashboard.putNumber("Pose Rotation", getPose().getRotation().getDegrees());
@@ -166,15 +238,15 @@ public class DriveSubsystem extends SubsystemBase {
 
   }
 
-  private void addLimelightVisionMeasurement(Limelight ll){
-    
+  private void addLimelightVisionMeasurement(Limelight ll) {
+
     double[] pose;
     double transStd;
     double rotStd;
     long currentUpdateTime = 0;
     TimestampedDoubleArray poseWithTime;
 
-    if(!ll.getIsPipelineAprilTag()){
+    if (!ll.getIsPipelineAprilTag()) {
       return;
     }
     var alliance = DriverStation.getAlliance();
@@ -184,51 +256,53 @@ public class DriveSubsystem extends SubsystemBase {
       poseWithTime = ll.getBotPoseBlue();
     } else if (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Blue) {
       poseWithTime = ll.getBotPoseBlue();
-    } else{
+    } else {
       validPose = false;
       pose = new double[6]; // empty 6 position array
-      poseWithTime= new TimestampedDoubleArray(0, 0, pose);
+      poseWithTime = new TimestampedDoubleArray(0, 0, pose);
     }
 
-    if(!validPose){
+    if (!validPose) {
       return;
     }
-    
-    currentUpdateTime=poseWithTime.timestamp;
 
-    if( currentUpdateTime == m_lastPoseUpdate){
+    currentUpdateTime = poseWithTime.timestamp;
+
+    if (currentUpdateTime == m_lastPoseUpdate) {
       return;
     }
     m_lastPoseUpdate = currentUpdateTime;
 
-    //observed bad tracking when tag is very close to edge
+    // observed bad tracking when tag is very close to edge
     double offsetX = ll.getTargetOffsetX();
-      
-    if ( Math.abs(offsetX) < 32.5) {
+
+    if (Math.abs(offsetX) < 32.5) {
 
       pose = poseWithTime.value;
       Pose2d limelightPose = ll.AsPose2d(pose);
-      
-      double[] cameraToAprilTagPose = m_limelight.getTargetPoseCameraSpace();
-      double distanceToAprilTagSquared = cameraToAprilTagPose[0]*cameraToAprilTagPose[0] + cameraToAprilTagPose[2]*cameraToAprilTagPose[2];
-      double poseDelta = m_poseEstimator.getEstimatedPosition().getTranslation().getDistance(limelightPose.getTranslation());
 
-      if(distanceToAprilTagSquared < 9 && poseDelta < .5 ){
+      double[] cameraToAprilTagPose = m_limelight.getTargetPoseCameraSpace();
+      double distanceToAprilTagSquared = cameraToAprilTagPose[0] * cameraToAprilTagPose[0]
+          + cameraToAprilTagPose[2] * cameraToAprilTagPose[2];
+      double poseDelta = m_poseEstimator.getEstimatedPosition().getTranslation()
+          .getDistance(limelightPose.getTranslation());
+
+      if (distanceToAprilTagSquared < 9 && poseDelta < .5) {
         transStd = 0.5;
-        rotStd=10;
-      }else if (distanceToAprilTagSquared < 25){
+        rotStd = 10;
+      } else if (distanceToAprilTagSquared < 25) {
         transStd = 1.0;
-        rotStd=15;
-      }else{
+        rotStd = 15;
+      } else {
         transStd = 1.5;
-        rotStd=20;
+        rotStd = 20;
       }
-      if(limelightPose.getX() > .5){
+      if (limelightPose.getX() > .5) {
         // Apply vision measurements. pose[6] holds the latency/frame delay
         m_poseEstimator.addVisionMeasurement(
             limelightPose,
-           Timer.getFPGATimestamp() - (pose[6] / 1000.0),
-           VecBuilder.fill(transStd,transStd, Units.degreesToRadians(rotStd)));
+            Timer.getFPGATimestamp() - (pose[6] / 1000.0),
+            VecBuilder.fill(transStd, transStd, Units.degreesToRadians(rotStd)));
       }
     }
   }
@@ -249,11 +323,11 @@ public class DriveSubsystem extends SubsystemBase {
     return m_poseEstimator.getEstimatedPosition();
   }
 
-  public ChassisSpeeds getRobotRelativeSpeeds(){
+  public ChassisSpeeds getRobotRelativeSpeeds() {
     return DriveConstants.kDriveKinematics.toChassisSpeeds(m_frontLeft.getState(),
-                                                           m_frontRight.getState(),
-                                                           m_rearLeft.getState(),
-                                                           m_rearRight.getState());
+        m_frontRight.getState(),
+        m_rearLeft.getState(),
+        m_rearRight.getState());
   }
 
   /**
@@ -314,9 +388,11 @@ public class DriveSubsystem extends SubsystemBase {
       m_rearRight.setDesiredState(swerveModuleStates[3]);
     }
   }
-  public void driveRobotRelative(ChassisSpeeds speeds){
-    this.drive(speeds.vxMetersPerSecond,speeds.vyMetersPerSecond,speeds.omegaRadiansPerSecond,false,false);
+
+  public void driveRobotRelative(ChassisSpeeds speeds) {
+    this.drive(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond, speeds.omegaRadiansPerSecond, false, false);
   }
+
   /**
    * Sets the swerve ModuleStates.
    *
@@ -378,6 +454,14 @@ public class DriveSubsystem extends SubsystemBase {
 
   public void setRotateLockoutValue(double val) {
     m_rotateLockoutValue = val;
+  }
+
+  public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
+    return m_sysIdRoutine.quasistatic(direction);
+  }
+
+  public Command sysIdDynamic(SysIdRoutine.Direction direction) {
+    return m_sysIdRoutine.dynamic(direction);
   }
 
 }
