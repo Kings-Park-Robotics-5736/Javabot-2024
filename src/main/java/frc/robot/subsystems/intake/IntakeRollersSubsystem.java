@@ -33,7 +33,6 @@ public class IntakeRollersSubsystem extends SubsystemBase {
     private RelativeEncoder m_encoder;
     private SimpleMotorFeedforward m_feedforward;
     private final String name;
-    private boolean m_stop;
 
     /********************************************************
      * SysId variables
@@ -103,7 +102,7 @@ public class IntakeRollersSubsystem extends SubsystemBase {
      */
     public void RunIntake(int setpoint) {
 
-        double ff = m_feedforward.calculate(setpoint / 60);
+        double ff = m_feedforward.calculate(setpoint / 60);  //important, calculate needs rps, not rpm. Hence, / 60
         m_pidController.setReference(setpoint, CANSparkMax.ControlType.kVelocity, 0, ff, ArbFFUnits.kVoltage);
 
         // SmartDashboard.putNumber("Intake Speed: " + name, m_encoder.getVelocity());
@@ -111,33 +110,27 @@ public class IntakeRollersSubsystem extends SubsystemBase {
     }
 
     public void StopIntake() {
-        m_stop = true;
         setSpeed(0);
     }
 
-    public Command StopIntakeCommand() {
-        return this.runOnce(() -> StopIntake());
-    }
 
     public Command RunIntakeForwardCommand() {
         return new FunctionalCommand(
                 () -> {
                     System.out.println("-----------------Starting intake forward--------------");
-                    m_stop = false;
                 },
                 () -> RunIntake(IntakeConstants.kForwardSpeed),
                 (interrupted) -> StopIntake(),
-                () -> m_stop, this);
+                () -> false, this);
     }
 
     public Command RunIntakeBackwardCommand() {
         return new FunctionalCommand(
                 () -> {
-                    m_stop = false;
                 },
                 () -> RunIntake(IntakeConstants.kReverseSpeed),
                 (interrupted) -> StopIntake(),
-                () -> m_stop, this);
+                () -> false, this);
     }
 
     /***********************************************************

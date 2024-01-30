@@ -27,9 +27,6 @@ public class IntakeSubsystem extends SubsystemBase {
 
     }
 
-    public Command StopIntakeCommand() {
-        return Commands.parallel(top.StopIntakeCommand(), bottom.StopIntakeCommand());
-    }
 
     public Command RunIntakeForwardCommand() {
         return Commands.parallel(top.RunIntakeForwardCommand(), bottom.RunIntakeForwardCommand());
