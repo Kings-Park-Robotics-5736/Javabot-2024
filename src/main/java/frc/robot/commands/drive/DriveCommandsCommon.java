@@ -16,9 +16,10 @@ public class DriveCommandsCommon {
      * 
      * @param heading              The current robot heading
      * @param useCameraMeasurement The camera might not be updating fast enough (low
-     *                             frame rate). This means that we might be using a 
-     *                             stale value. If so, don't use the angle to 
-     *                             calculate a new goal; rather, keep going to old goal.
+     *                             frame rate). This means that we might be using a
+     *                             stale value. If so, don't use the angle to
+     *                             calculate a new goal; rather, keep going to old
+     *                             goal.
      * @param degPi                The reported angle of the target (i.e. from a
      *                             raspberryPi camera)
      * @param m_controller_theta   The motion controller for theta. It computes the
@@ -32,7 +33,7 @@ public class DriveCommandsCommon {
 
         double finalVelTheta = -100;
         if (degPi > -1000) {
-            
+
             final double turnOutput;
             if (useCameraMeasurement) {
                 turnOutput = m_controller_theta.calculate(heading,
@@ -46,6 +47,24 @@ public class DriveCommandsCommon {
             finalVelTheta = m_controller_theta.getSetpoint().velocity + vel_pid_theta;
 
         }
+        return finalVelTheta;
+    }
+
+    public static double calculateRotationToFieldPos(double heading, boolean useCameraMeasurement, double desiredRot,
+            ProfiledPIDController m_controller_theta) {
+
+        final double turnOutput;
+        if (useCameraMeasurement) {
+            turnOutput = m_controller_theta.calculate(heading,
+                    desiredRot);
+        } else {
+            turnOutput = m_controller_theta.calculate(heading);
+        }
+
+        double vel_pid_theta = turnOutput * DriveConstants.kMaxSpeedMetersPerSecond;
+
+        double finalVelTheta = m_controller_theta.getSetpoint().velocity + vel_pid_theta;
+
         return finalVelTheta;
     }
 }
