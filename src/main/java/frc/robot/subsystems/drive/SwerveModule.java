@@ -20,6 +20,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.ModuleConstants;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.motorcontrol.Talon;
 
 public class SwerveModule {
 
@@ -95,19 +96,26 @@ public class SwerveModule {
     m_turningPIDController.enableContinuousInput(-Math.PI, Math.PI);
   }
 
+  public TalonFX getTurningMotor(){
+    return m_turningMotor;
+  }
+  public TalonFX getDriveMotor(){
+    return m_driveMotor;
+  }
+
   private double getTurnEncoderPositionInRadians() {
     m_turningEncoder.getAbsolutePosition().refresh();
     double retVal = Units.rotationsToRadians(m_turningEncoder.getAbsolutePosition().getValue());
     return retVal;
   }
 
-  private double getDriveEncoderVelocity() {
+  private double getDriveEncoderVelocityMetersPerSecond() {
     m_driveMotor.getVelocity().refresh();
     return m_driveMotor.getVelocity().getValue()  * (2 * Math.PI * ModuleConstants.kWheelRadius)
         / ModuleConstants.kDriveGearRatio;
   }
 
-  private double getDriveEncoderPosition() {
+  private double getDriveEncoderPositionMeters() {
     m_driveMotor.getPosition().refresh();
     return m_driveMotor.getPosition().getValue() * (2 * Math.PI * ModuleConstants.kWheelRadius)
         / ModuleConstants.kDriveGearRatio;
@@ -120,7 +128,7 @@ public class SwerveModule {
    */
   public SwerveModuleState getState() {
     return new SwerveModuleState(
-        getDriveEncoderVelocity(), new Rotation2d(getTurnEncoderPositionInRadians()));
+        getDriveEncoderVelocityMetersPerSecond(), new Rotation2d(getTurnEncoderPositionInRadians()));
   }
 
   /**
@@ -130,7 +138,7 @@ public class SwerveModule {
    */
   public SwerveModulePosition getPosition() {
     return new SwerveModulePosition(
-        getDriveEncoderPosition(), new Rotation2d(getTurnEncoderPositionInRadians()));
+        getDriveEncoderPositionMeters(), new Rotation2d(getTurnEncoderPositionInRadians()));
   }
 
   /**
@@ -144,7 +152,7 @@ public class SwerveModule {
         new Rotation2d(getTurnEncoderPositionInRadians()));
 
     // Calculate the drive output from the drive PID controller.
-    final double driveOutput = m_drivePIDController.calculate(getDriveEncoderVelocity(), state.speedMetersPerSecond);
+    final double driveOutput = m_drivePIDController.calculate(getDriveEncoderVelocityMetersPerSecond(), state.speedMetersPerSecond);
 
     final double driveFeedforward = m_driveFeedforward.calculate(state.speedMetersPerSecond);
 
@@ -174,6 +182,12 @@ public class SwerveModule {
      * }
      */
     m_turningMotor.setVoltage(turnOutput + turnFeedforward);
+  }
+
+  public void lockTurningAtZero(){
+     double turnOutput = m_turnPIDController.calculate(getTurnEncoderPositionInRadians(),
+       0);
+       m_turningMotor.setVoltage(turnOutput);
   }
 
   public void forceStop() {
