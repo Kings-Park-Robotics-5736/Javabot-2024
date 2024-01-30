@@ -44,23 +44,16 @@ public class CenterToTargetCommandLimelight extends CenterToTargetCommand {
 
     @Override
     public void execute() {
-
-        //we check where the escalator is, and if it's not in the right place, we don't center
-        //when it is between 19 and 38, the escalator blocks the limelight
             
-        //we can only center if the limelight is done switching to the reflective pipeline
-        if (m_limelight.getIsPipelineReflective()) {
-            long lastUpdate = m_limelight.getLastOffsetXChange();
-            boolean useCameraMeasurement = false;
-            if (lastUpdate != m_lastUpdate) {
-                m_lastUpdate = lastUpdate;
-                useCameraMeasurement = true;
-            }
-            centerOnTarget(m_limelight.getTargetOffsetX(), useCameraMeasurement);
-        } else {
-            //System.out.println("Not reflective yet!");
-            stop();
+      
+        long lastUpdate = m_limelight.getLastOffsetXChange();
+        boolean useCameraMeasurement = false;
+        if (lastUpdate != m_lastUpdate) {
+            m_lastUpdate = lastUpdate;
+            useCameraMeasurement = true;
         }
+        centerOnTarget(m_limelight.getTargetOffsetX(), useCameraMeasurement);
+        
         
     }
 

@@ -111,6 +111,47 @@ public final class Constants {
     public static final FeedForwardConstants kFFValues = new FeedForwardConstants(0.19204,0.12201,  0.0082481);
   }
 
+
+public static final class ShooterConstants {
+
+  public static final int kDesiredSpeed = 5000;
+  public static final int kTolerance = 100;
+}
+
+public static final class LeftShooterConstants {
+  
+    //TODO: tune these values
+    public static final byte kDeviceId = 4;
+  
+    public static final PidConstants kPidValues = new PidConstants(0.00001, 0, 0);
+    public static final FeedForwardConstants kFFValues = new FeedForwardConstants(0.06368, 0.12005, 0.0034381);
+}
+
+public static final class RightShooterConstants {
+  //TODO: tune these values
+  public static final byte kDeviceId = 5;
+
+  public static final PidConstants kPidValues = new PidConstants(0.00001, 0, 0);
+  public static final FeedForwardConstants kFFValues = new FeedForwardConstants(0.06368, 0.12005, 0.0034381);
+}
+
+public static final class LeftKickupConstants {
+  //TODO: tune these values
+  public static final byte kDeviceId = 6;
+
+  public static final PidConstants kPidValues = new PidConstants(0.00001, 0, 0);
+  public static final FeedForwardConstants kFFValues = new FeedForwardConstants(0.06368, 0.12005, 0.0034381);
+}
+
+
+public static final class RightKickupConstants {
+  //TODO: tune these values
+  public static final byte kDeviceId = 7;
+
+  public static final PidConstants kPidValues = new PidConstants(0.00001, 0, 0);
+  public static final FeedForwardConstants kFFValues = new FeedForwardConstants(0.06368, 0.12005, 0.0034381);
+}
+
   public static final class ModuleConstants {
     public static final double kMaxModuleAngularSpeedRadiansPerSecond = 15 * 2 * Math.PI;
     public static final double kMaxModuleAngularAccelerationRadiansPerSecondSquared = 15 * 2 * Math.PI;
