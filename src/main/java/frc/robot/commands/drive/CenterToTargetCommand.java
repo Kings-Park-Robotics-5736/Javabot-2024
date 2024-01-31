@@ -21,13 +21,13 @@ import frc.robot.subsystems.drive.DriveSubsystem;
  */
 public abstract class CenterToTargetCommand extends Command {
 
-    private DriveSubsystem m_drive;
+    protected DriveSubsystem m_drive;
     private boolean m_infinite;
 
     private final TrapezoidProfile.Constraints m_constraints = new TrapezoidProfile.Constraints(
             DriveConstants.kMaxSpeedMetersPerSecond, DriveConstants.kMaxAccelerationMetersPerSecondSquared);
 
-    private final ProfiledPIDController m_controller_theta = new ProfiledPIDController(
+    protected final ProfiledPIDController m_controller_theta = new ProfiledPIDController(
             DriveToTargetCommandConstants.kPidValues.p, DriveToTargetCommandConstants.kPidValues.i,
             DriveToTargetCommandConstants.kPidValues.d, m_constraints,
             Constants.kDt);
