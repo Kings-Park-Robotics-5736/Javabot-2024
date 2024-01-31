@@ -59,10 +59,10 @@ public class CenterToGoalCommand extends CenterToTargetCommand {
         //since the robot pose keeps increasing (doesnt wrap around at 360), we need to do this to get the correct angle in the greate than 360 space.
         var alliance = DriverStation.getAlliance();
 
-        if (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red) {
+        if (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Blue) {
             scoringPos = ScoringPositions.kBlueScoringPosition;
             rotationOffset += Units.degreesToRadians(180); //when facing the blue side of the field, that is 180 deg.
-        } else if (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Blue) {
+        } else if (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red) {
             scoringPos = ScoringPositions.kRedScoringPosition;
         } else {
             return;
