@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.IOConstants;
+import frc.robot.commands.drive.CenterToGoalCommand;
 import frc.robot.commands.drive.CenterToTargetCommandPiCam;
 import frc.robot.commands.drive.DriveDistanceCommand;
 import frc.robot.commands.drive.DriveToTargetCommand;
@@ -201,6 +202,9 @@ public class RobotContainer {
                 // Y BUTTON: center on a game piece
                 new JoystickButton(m_driverController, XboxController.Button.kY.value)
                                 .whileTrue(new CenterToTargetCommandPiCam(m_robotDrive, m_picam, true));
+
+                new JoystickButton(m_driverController, XboxController.Button.kA.value)
+                                .whileTrue(new CenterToGoalCommand(m_robotDrive, true));
 
                 // B BUTTON: Drive to a target, and stop when you reach it.
                 new JoystickButton(m_driverController, XboxController.Button.kB.value)

@@ -193,7 +193,11 @@ public static final class RightKickupConstants {
     );
   }
 
-
+public static final class CenterToFieldPositionConstants {
+      public static final double kMaxSpeedMetersPerSecond = 9;
+    public static final double kMaxAccelerationMetersPerSecondSquared = 9;
+    public static final PidConstants kPidValues = new PidConstants(.5, 0, 0.00);
+}
 
   public static final class DriveToTargetCommandConstants {
 

@@ -7,7 +7,7 @@ import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.DriveToTargetCommandConstants;
 import frc.robot.subsystems.drive.DriveSubsystem;
-
+import frc.robot.utils.Types.PidConstants;
 
 /**
  * @brief This command centers the robot on the target. It does NOT drive to it
@@ -24,20 +24,32 @@ public abstract class CenterToTargetCommand extends Command {
     protected DriveSubsystem m_drive;
     private boolean m_infinite;
 
-    private final TrapezoidProfile.Constraints m_constraints = new TrapezoidProfile.Constraints(
+    private static final TrapezoidProfile.Constraints m_constraints = new TrapezoidProfile.Constraints(
             DriveConstants.kMaxSpeedMetersPerSecond, DriveConstants.kMaxAccelerationMetersPerSecondSquared);
 
-    protected final ProfiledPIDController m_controller_theta = new ProfiledPIDController(
-            DriveToTargetCommandConstants.kPidValues.p, DriveToTargetCommandConstants.kPidValues.i,
-            DriveToTargetCommandConstants.kPidValues.d, m_constraints,
-            Constants.kDt);
+    protected final ProfiledPIDController m_controller_theta;
 
-    public CenterToTargetCommand(DriveSubsystem robot_drive, boolean infinite) {
+    public CenterToTargetCommand(DriveSubsystem robot_drive, boolean infinite, TrapezoidProfile.Constraints constraints,
+            PidConstants pid) {
 
         this.m_drive = robot_drive;
         this.m_infinite = infinite;
 
-        // NOTE - we explicitly don't do the below line; else can't drive while centering
+        m_controller_theta = new ProfiledPIDController(
+                pid.p, pid.i, pid.d, constraints, Constants.kDt);
+
+        // NOTE - we explicitly don't do the below line; else can't drive while
+        // centering
+        // addRequirements(m_drive);
+
+    }
+
+    public CenterToTargetCommand(DriveSubsystem robot_drive, boolean infinite) {
+
+        this(robot_drive, infinite, m_constraints, DriveToTargetCommandConstants.kPidValues);
+
+        // NOTE - we explicitly don't do the below line; else can't drive while
+        // centering
         // addRequirements(m_drive);
 
     }
@@ -69,7 +81,7 @@ public abstract class CenterToTargetCommand extends Command {
         m_drive.drive(0, 0, 0, false, false);
     }
 
-    //to be implemented by the inherited classes.
+    // to be implemented by the inherited classes.
     protected abstract boolean checkTurningDone();
 
     protected void centerOnTarget(double angle, boolean useCameraMeasurement) {
