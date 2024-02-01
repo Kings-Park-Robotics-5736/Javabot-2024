@@ -90,6 +90,7 @@ public class DriveSubsystem extends SubsystemBase {
   private boolean m_joystickLockoutTranslate;
   private boolean m_joystickLockoutRotate;
   private double m_rotateLockoutValue;
+  private boolean m_joystickLockoutRotateFieldOriented;
   private double m_transXLockoutValue;
   private double m_transYLockoutValue;
   private long m_lastPoseUpdate;
@@ -166,6 +167,7 @@ public class DriveSubsystem extends SubsystemBase {
 
     m_joystickLockoutTranslate = false;
     m_joystickLockoutRotate = false;
+    m_joystickLockoutRotateFieldOriented = false;
 
     m_transXLockoutValue = 0;
     m_transYLockoutValue = 0;
@@ -371,7 +373,7 @@ public class DriveSubsystem extends SubsystemBase {
         rot = m_rotateLockoutValue;
         m_transXLockoutValue = xSpeed;
         m_transYLockoutValue = ySpeed;
-        fieldRelative = false;
+        fieldRelative = m_joystickLockoutRotateFieldOriented;
       } else if (m_joystickLockoutRotate && !joystick && !m_joystickLockoutTranslate) {
         xSpeed = m_transXLockoutValue;
         ySpeed = m_transYLockoutValue;
@@ -445,7 +447,12 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   public void setJoystickRotateLockout(boolean val) {
+   setJoystickRotateLockout(val, false);
+  }
+
+  public void setJoystickRotateLockout(boolean val, boolean shouldBeFieldOriented) {
     m_joystickLockoutRotate = val;
+    m_joystickLockoutRotateFieldOriented = shouldBeFieldOriented;
   }
 
   public void setJoystickTranslateLockout(boolean val) {
