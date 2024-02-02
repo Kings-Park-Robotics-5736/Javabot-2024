@@ -4,9 +4,10 @@ package frc.robot.subsystems.launcherAssembly.shooter;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+
 import frc.robot.Constants;
 import frc.robot.utils.Types.PositionType;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
 public class ShooterSubsystem extends SubsystemBase {
     private ShooterWheelSubsystem m_left_wheel;
@@ -14,9 +15,9 @@ public class ShooterSubsystem extends SubsystemBase {
 
     public ShooterSubsystem() {
         m_left_wheel = new ShooterWheelSubsystem(Constants.LeftShooterConstants.kPidValues,
-                Constants.LeftShooterConstants.kFFValues, Constants.LeftShooterConstants.kDeviceId, "Left");
+                Constants.LeftShooterConstants.kFFValues, Constants.LeftShooterConstants.kDeviceId, "Left",false);
         m_right_wheel = new ShooterWheelSubsystem(Constants.RightShooterConstants.kPidValues,
-                Constants.RightShooterConstants.kFFValues, Constants.RightShooterConstants.kDeviceId, "Right");
+                Constants.RightShooterConstants.kFFValues, Constants.RightShooterConstants.kDeviceId, "Right",false);
     }
 
     @Override

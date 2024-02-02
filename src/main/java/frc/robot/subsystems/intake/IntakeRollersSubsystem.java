@@ -48,6 +48,7 @@ public class IntakeRollersSubsystem extends SubsystemBase {
         m_motor.restoreFactoryDefaults();
         m_pidController = m_motor.getPIDController();
         m_encoder = m_motor.getEncoder();
+        
         name = _name;
 
         m_pidController.setP(pidValues.p);
