@@ -35,7 +35,7 @@ public class LauncherAssemblySubsystem extends SubsystemBase {
     }
 
     public Command RunShooterBackwardCommand() {
-        return m_shooter.RunShooterBackwardCommand();
+        return m_shooter.RunShooterBackwardCommand(false);
     }
 
     public Command RunKickupForwardCommand() {
@@ -83,6 +83,11 @@ public class LauncherAssemblySubsystem extends SubsystemBase {
     public Command RunShooterAndKickupForwardCommand() {
         return m_shooter.RunShooterForwardCommand(true).andThen(m_kickup.RunKickupForwardCommand()
                 .raceWith(Commands.waitSeconds(1)).andThen(m_shooter.StopShooterCommand()));
+    }
+
+    public Command runShooterBackwardCommand() {
+        return m_shooter.RunShooterBackwardCommand(true)
+        ;
     }
 
 }

@@ -11,12 +11,13 @@ public class KickupSubsystem extends SubsystemBase {
     
     private KickupWheelSubsystem m_left_wheel;
     private KickupWheelSubsystem m_right_wheel;
-
+// PidConstants pidValues, FeedForwardConstants ffValues, byte deviceId, String _name,
+//boolean isInverted)
     public KickupSubsystem() {
         m_left_wheel = new KickupWheelSubsystem(Constants.LeftKickupConstants.kPidValues,
-                Constants.LeftKickupConstants.kFFValues, Constants.LeftKickupConstants.kDeviceId, "Left");
+        Constants.LeftKickupConstants.kFFValues, Constants.LeftKickupConstants.kDeviceId, "Left",false);
         m_right_wheel = new KickupWheelSubsystem(Constants.RightKickupConstants.kPidValues,
-                Constants.RightKickupConstants.kFFValues, Constants.RightKickupConstants.kDeviceId, "Right");
+        Constants.RightKickupConstants.kFFValues, Constants.RightKickupConstants.kDeviceId, "Left",false);
     }
 
 

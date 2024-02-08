@@ -17,7 +17,7 @@ public class ShooterSubsystem extends SubsystemBase {
         m_left_wheel = new ShooterWheelSubsystem(Constants.LeftShooterConstants.kPidValues,
                 Constants.LeftShooterConstants.kFFValues, Constants.LeftShooterConstants.kDeviceId, "Left",false);
         m_right_wheel = new ShooterWheelSubsystem(Constants.RightShooterConstants.kPidValues,
-                Constants.RightShooterConstants.kFFValues, Constants.RightShooterConstants.kDeviceId, "Right",false);
+                Constants.RightShooterConstants.kFFValues, Constants.RightShooterConstants.kDeviceId, "Right",true);
     }
 
     @Override
@@ -36,8 +36,8 @@ public class ShooterSubsystem extends SubsystemBase {
         return Commands.parallel(m_left_wheel.RunShooterForwardCommand(FinishWhenAtTargetSpeed), m_right_wheel.RunShooterForwardCommand(FinishWhenAtTargetSpeed));
     }
 
-    public Command RunShooterBackwardCommand() {
-        return Commands.parallel(m_left_wheel.RunShooterBackwardCommand(), m_right_wheel.RunShooterBackwardCommand());
+    public Command RunShooterBackwardCommand(boolean FinishWhenAtTargetSpeed) {
+        return Commands.parallel(m_left_wheel.RunShooterBackwardCommand(FinishWhenAtTargetSpeed), m_right_wheel.RunShooterBackwardCommand(FinishWhenAtTargetSpeed));
     }
 
     public Command sysIdQuasistatic(SysIdRoutine.Direction direction, PositionType whichSide) {

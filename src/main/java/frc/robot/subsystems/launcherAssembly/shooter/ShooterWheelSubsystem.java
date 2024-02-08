@@ -17,6 +17,7 @@ import edu.wpi.first.units.MutableMeasure;
 import edu.wpi.first.units.Velocity;
 import edu.wpi.first.units.Voltage;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -28,7 +29,7 @@ import frc.robot.utils.Types.PidConstants;
 public class ShooterWheelSubsystem extends SubsystemBase {
 
     private final TalonFX m_motor;
-
+    private final Boolean invert;
     private final String name;
     private final VelocityVoltage m_voltageVelocity = new VelocityVoltage(0, 0, false, 0, 0, false, false, false);
     // do the values defined in velocity voltage ever change??
@@ -46,10 +47,10 @@ public class ShooterWheelSubsystem extends SubsystemBase {
         m_motor = new TalonFX(deviceId, "rio");
         TalonFXConfiguration configs = new TalonFXConfiguration();
         StatusCode status = StatusCode.StatusCodeNotInitialized;
+        invert = isInverted;
         name = _name;
-
-        m_motor.setNeutralMode(NeutralModeValue.Coast);
-        m_motor.setInverted(isInverted);
+        //m_motor.setNeutralMode(NeutralModeValue.Coast);
+        //m_motor.setInverted(isInverted);
 
         configs.Slot0.kP = 0.15; // An error of 1 rotation per second results in 2V output
         configs.Slot0.kI = 0.002; // An error of 1 rotation per second increases output by 0.5V every second
@@ -62,11 +63,21 @@ public class ShooterWheelSubsystem extends SubsystemBase {
         // will these P I D and V
         // values ever change?
 
+         
+
         for (int i = 0; i < 5; ++i) {
             status = m_motor.getConfigurator().apply(configs);
             if (status.isOK())
                 break;
+            else{
+                System.out.println("Motor Initialization Failed");
+            }
+
+
         }
+        m_motor.setNeutralMode(NeutralModeValue.Coast);
+        m_motor.setInverted(isInverted);
+        
 
         m_sysIdRoutine = new SysIdRoutine(
                 // Empty config defaults to 1 volt/second ramp rate and 7 volt step voltage.
@@ -103,6 +114,8 @@ public class ShooterWheelSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         // leave blank
+       // System.out.println(name + "isInverted" +invert);
+        //SmartDashboard.putNumber(name, getSpeedRotationsPerMinuts())
     }
 
     /**
@@ -190,26 +203,33 @@ public class ShooterWheelSubsystem extends SubsystemBase {
                 () -> {
                     System.out.println("-----------------Starting shooter forward--------------");
                 },
-                () -> RunShooter(Constants.ShooterConstants.kDesiredSpeed),
+                () -> {RunShooter((int)SmartDashboard.getNumber("Fwd Speed",0)/60);
+                        SmartDashboard.putNumber("Fwd vel",getSpeedRotationsPerMinuts());},
                 (interrupted) -> {
-                    if (FinishWhenAtTargetSpeed) {
+                    if (!FinishWhenAtTargetSpeed) {
                         StopShooter();
                     }
                 },
                 () -> {
-                    return !FinishWhenAtTargetSpeed && isAtDesiredSpeed();
+                    return FinishWhenAtTargetSpeed && isAtDesiredSpeed();
                 }, this);
 
         // return null; // Todo: Replace this line with a proper command
     }
 
-    public Command RunShooterBackwardCommand() {
+    public Command RunShooterBackwardCommand(boolean FinishWhenAtTargetSpeed) {
         return new FunctionalCommand(
-                () -> {
+                () -> {System.out.println("-----------------Starting shooter Backward--------------");
                 },
-                () -> RunShooter(Constants.ShooterConstants.kReverseSpeed),
-                (interrupted) -> StopShooter(),
-                () -> false, this);
+                () -> RunShooter((int)SmartDashboard.getNumber("Rev Speed",0)/60),
+                (interrupted) -> {
+                    if (!FinishWhenAtTargetSpeed) {
+                        StopShooter();
+                    }
+                },
+                () -> {
+                    return FinishWhenAtTargetSpeed && isAtDesiredSpeed();
+                }, this);
     }
 
     public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {

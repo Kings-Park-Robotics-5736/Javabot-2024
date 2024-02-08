@@ -26,6 +26,7 @@ import frc.robot.commands.drive.DriveDistanceCommand;
 import frc.robot.commands.drive.DriveToTargetCommand;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
+import frc.robot.subsystems.launcherAssembly.LauncherAssemblySubsystem;
 import frc.robot.utils.Types.PositionType;
 import frc.robot.utils.Types.SysidMechanism;
 import frc.robot.vision.Limelight;
@@ -54,6 +55,7 @@ public class RobotContainer {
                                                                                           // m_limelight_side);
 
         private final IntakeSubsystem m_intake = new IntakeSubsystem();
+        private final LauncherAssemblySubsystem m_Launcher = new LauncherAssemblySubsystem();
         private final SendableChooser<Command> autoChooser;
 
         private final SlewRateLimiter m_xspeedLimiter = new SlewRateLimiter(3);
@@ -106,6 +108,8 @@ public class RobotContainer {
          * The container for the robot. Contains subsystems, OI devices, and commands.
          */
         public RobotContainer() {
+                SmartDashboard.putNumber("Fwd Speed",0);
+                SmartDashboard.putNumber("Rev Speed",0);
 
                 InitializeNamedCommands(); // must do this first
 
@@ -189,22 +193,22 @@ public class RobotContainer {
          * {@link JoystickButton}.
          */
         private void configureButtonBindings() {
-
+/* 
                 // BACK BUTTON: zero out the heading. Note, with vision pose, this should not be
                 // used anymore.
                 new JoystickButton(m_driverController, XboxController.Button.kBack.value)
                                 .onTrue(Commands.runOnce(() -> m_robotDrive.zeroHeading(), m_robotDrive));
 
                 // X BUTTON: drive forward 1 meter
-                new JoystickButton(m_driverController, XboxController.Button.kX.value)
-                                .whileTrue(new DriveDistanceCommand(m_robotDrive, 1));
+               // new JoystickButton(m_driverController, XboxController.Button.kX.value)
+                 //               .whileTrue(new DriveDistanceCommand(m_robotDrive, 1));
 
                 // Y BUTTON: center on a game piece
                 new JoystickButton(m_driverController, XboxController.Button.kY.value)
                                 .whileTrue(new CenterToTargetCommandPiCam(m_robotDrive, m_picam, true));
 
-                new JoystickButton(m_driverController, XboxController.Button.kA.value)
-                                .whileTrue(new CenterToGoalCommand(m_robotDrive, true));
+               // new JoystickButton(m_driverController, XboxController.Button.kA.value)
+                 //               .whileTrue(new CenterToGoalCommand(m_robotDrive,m_limelight, true));
 
                 // B BUTTON: Drive to a target, and stop when you reach it.
                 new JoystickButton(m_driverController, XboxController.Button.kB.value)
@@ -216,7 +220,20 @@ public class RobotContainer {
                 new JoystickButton(m_actionController, XboxController.Button.kX.value)
                                 .toggleOnTrue(m_intake.RunIntakeBackwardCommand());
 
+                new JoystickButton(m_actionController, XboxController.Button.kB.value)
+                                .toggleOnTrue(m_intake.RunIntakeForwardCommand());
 
+                new JoystickButton(m_actionController, XboxController.Button.kX.value)
+                                .toggleOnTrue(m_intake.RunIntakeBackwardCommand());
+
+*/
+
+                new JoystickButton(m_actionController, XboxController.Button.kX.value)
+                                .whileTrue(m_Launcher.RunShooterBackwardCommand());
+                new JoystickButton(m_actionController, XboxController.Button.kA.value)
+                                .whileTrue(m_Launcher.RunKickupForwardCommand());
+                new JoystickButton(m_actionController, XboxController.Button.kB.value)
+                                .whileTrue(m_Launcher.RunShooterForwardCommand());
         }
 
         /**

@@ -11,8 +11,8 @@ import com.pathplanner.lib.util.ReplanningConfig;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.utils.Types.FeedForwardConstants;
-import frc.robot.utils.Types.Limits;
 import frc.robot.utils.Types.PidConstants;
 
 /**
@@ -94,7 +94,32 @@ public final class Constants {
     public static final int kForwardSpeed = 4000;
     public static final int kReverseSpeed = -3000;
   }
+  public static final class ClimbConstants {
+    //TODO tune these values
+    public static final int kForwardSpeed = 4000;
+    public static final int kReverseSpeed = -3000;
+  }
+  public static final class LeftClimbConstants {
 
+    public static final byte kDeviceId = 16;
+//TODO tune these values
+    public static final PidConstants kPidValues = new PidConstants(0.00001, 0, 0);
+    public static final FeedForwardConstants kFFValues = new FeedForwardConstants(0.06368, 0.12005, 0.0034381);
+  }
+
+  public static final class RightClimbConstants {
+
+    public static final byte kDeviceId = 17;
+//TODO tune these values
+    public static final PidConstants kPidValues = new PidConstants(3.7415E-05, 0, 0);
+    public static final FeedForwardConstants kFFValues = new FeedForwardConstants(0.19204,0.12201,  0.0082481);
+  }
+
+
+
+
+
+  
   public static final class LowerIntakeConstants {
 
     public static final byte kDeviceId = 2;
@@ -110,18 +135,26 @@ public final class Constants {
     public static final PidConstants kPidValues = new PidConstants(3.7415E-05, 0, 0);
     public static final FeedForwardConstants kFFValues = new FeedForwardConstants(0.19204,0.12201,  0.0082481);
   }
+  public static final class ArmConstants {
 
+    public static final byte kLeaderDeviceId = 3;
+    public static final byte kFollowerDeviceId = 3;
+//TODO tune these values
+    public static final PidConstants kPidValues = new PidConstants(3.7415E-05, 0, 0);
+    public static final FeedForwardConstants kFFValues = new FeedForwardConstants(0.19204,0.12201,  0.0082481);
+  }
 
 public static final class ShooterConstants {
 
-  public static final int kDesiredSpeed = 5000;
+  public static final int kDesiredSpeed = (int) SmartDashboard.getNumber("Fwd Speed",0);//40; 
+  public static final int kReverseSpeed = (int) SmartDashboard.getNumber("Rev Speed",0);//-16;
   public static final int kTolerance = 100;
 }
 
 public static final class LeftShooterConstants {
   
     //TODO: tune these values
-    public static final byte kDeviceId = 4;
+    public static final byte kDeviceId = 0;
   
     public static final PidConstants kPidValues = new PidConstants(0.00001, 0, 0);
     public static final FeedForwardConstants kFFValues = new FeedForwardConstants(0.06368, 0.12005, 0.0034381);
@@ -129,15 +162,19 @@ public static final class LeftShooterConstants {
 
 public static final class RightShooterConstants {
   //TODO: tune these values
-  public static final byte kDeviceId = 5;
+  public static final byte kDeviceId = 1;
 
   public static final PidConstants kPidValues = new PidConstants(0.00001, 0, 0);
   public static final FeedForwardConstants kFFValues = new FeedForwardConstants(0.06368, 0.12005, 0.0034381);
 }
+public static final class kickupConstants {
 
+    public static final int kForwardSpeed = 4000;
+    public static final int kReverseSpeed = -3000;
+  }
 public static final class LeftKickupConstants {
   //TODO: tune these values
-  public static final byte kDeviceId = 6;
+  public static final byte kDeviceId = 2;
 
   public static final PidConstants kPidValues = new PidConstants(0.00001, 0, 0);
   public static final FeedForwardConstants kFFValues = new FeedForwardConstants(0.06368, 0.12005, 0.0034381);
