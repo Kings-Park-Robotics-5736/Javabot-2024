@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
+import frc.robot.Constants.ShooterConstants;
 import frc.robot.utils.Types.FeedForwardConstants;
 import frc.robot.utils.Types.PidConstants;
 
@@ -57,6 +58,7 @@ public class ShooterWheelSubsystem extends SubsystemBase {
         configs.Slot0.kD = 0.0; // A change of 1 rotation per second squared results in 0.01 volts output
         configs.Slot0.kV = 0.12; // Falcon 500 is a 500kV motor, 500rpm per V = 8.333 rps per V, 1/8.33 = 0.12
                                  // volts / Rotation per second
+        configs.Slot0.kA = 3.00;
         // Peak output of 8 volts
         configs.Voltage.PeakForwardVoltage = 12;
         configs.Voltage.PeakReverseVoltage = -12;
@@ -176,28 +178,7 @@ public class ShooterWheelSubsystem extends SubsystemBase {
      * @return
      */
 
-    /*
-     * 
-     * 
-     * 
-     * example from kitbot code
-     * 
-     * public Command ChargeCommand(boolean isinfinite) {
-     * return new FunctionalCommand(
-     * () -> {
-     * System.out.println("-----------------Charge--------------");
-     * 
-     * },
-     * () -> RunShooter(-6000),
-     * (interrupted) -> {
-     * if(isinfinite) {StopShooter();}
-     * },
-     * () -> {return !isinfinite && isShooterAtFullSpeed();});
-     * }
-     * 
-     * 
-     * 
-     */
+
     public Command RunShooterForwardCommand(boolean FinishWhenAtTargetSpeed) {
         return new FunctionalCommand(
                 () -> {
@@ -206,7 +187,7 @@ public class ShooterWheelSubsystem extends SubsystemBase {
                 () -> {RunShooter((int)SmartDashboard.getNumber("Fwd Speed",0)/60);
                         SmartDashboard.putNumber("Fwd vel",getSpeedRotationsPerMinuts());},
                 (interrupted) -> {
-                    if (!FinishWhenAtTargetSpeed) {
+                    if (!FinishWhenAtTargetSpeed)  {
                         StopShooter();
                     }
                 },
@@ -221,7 +202,7 @@ public class ShooterWheelSubsystem extends SubsystemBase {
         return new FunctionalCommand(
                 () -> {System.out.println("-----------------Starting shooter Backward--------------");
                 },
-                () -> RunShooter((int)SmartDashboard.getNumber("Rev Speed",0)/60),
+                () -> RunShooter(ShooterConstants.kReverseSpeed/60),
                 (interrupted) -> {
                     if (!FinishWhenAtTargetSpeed) {
                         StopShooter();
@@ -231,6 +212,53 @@ public class ShooterWheelSubsystem extends SubsystemBase {
                     return FinishWhenAtTargetSpeed && isAtDesiredSpeed();
                 }, this);
     }
+
+
+//commands to test with spin
+
+
+    public Command RunShooterForwardWITHSPINCommand(boolean FinishWhenAtTargetSpeed) {
+        return new FunctionalCommand(
+                () -> {
+                    System.out.println("-----------------Starting shooter forward--------------");
+                },
+                () -> {RunShooter((int)SmartDashboard.getNumber(name+" Setpoint", 0)/60);
+                        SmartDashboard.putNumber(name+"Speed",getSpeedRotationsPerMinuts());},
+                (interrupted) -> {
+                    if (!FinishWhenAtTargetSpeed)  {
+                        StopShooter();
+                    }
+                },
+                () -> {
+                    return FinishWhenAtTargetSpeed && isAtDesiredSpeed();
+                }, this);
+
+        // return null; // Todo: Replace this line with a proper command
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
         return m_sysIdRoutine.quasistatic(direction); // Todo: Replace this line with a proper command done

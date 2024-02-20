@@ -3,6 +3,7 @@ package frc.robot.subsystems.launcherAssembly.arm;
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
+import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.StrictFollower;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -33,8 +34,10 @@ public class ArmSubsystem extends SubsystemBase {
 private final TalonFX m_follower;
 private final TalonFX m_leader;
     
-    private final VelocityVoltage m_voltageVelocity = new VelocityVoltage(0, 0, false, 0, 0, false, false, false);
-    // do the values defined in velocity voltage ever change??
+   // private final VelocityVoltage m_voltageVelocity = new VelocityVoltage(0, 0, false, 0, 0, false, false, false);
+   final PositionVoltage m_PositionVoltage = new PositionVoltage(0).withSlot(0);
+ 
+   // do the values defined in velocity voltage ever change??
 
     /********************************************************
      * SysId variables
@@ -60,7 +63,7 @@ public ArmSubsystem(){
         configs.Slot0.kP = 0.15; // An error of 1 rotation per second results in 2V output
         configs.Slot0.kI = 0.002; // An error of 1 rotation per second increases output by 0.5V every second
         configs.Slot0.kD = 0.0; // A change of 1 rotation per second squared results in 0.01 volts output
-        configs.Slot0.kV = 0.12; // Falcon 500 is a 500kV motor, 500rpm per V = 8.333 rps per V, 1/8.33 = 0.12
+        //configs.Slot0.kV = 0.12; // Falcon 500 is a 500kV motor, 500rpm per V = 8.333 rps per V, 1/8.33 = 0.12
                                  // volts / Rotation per second
         // Peak output of 8 volts
         configs.Voltage.PeakForwardVoltage = 12;
@@ -145,17 +148,26 @@ public ArmSubsystem(){
      * @param setpoint of the motor, in rotations / minute (important, minute not
      *                 seconds)
      */
-    public void RunShooter(int setpoint) {
+    public void RunArmToPos(int setpoint) {
         // double ff = m_feedforward.calculate(setpoint / 60); //important, calculate
         // needs rps, not rpm. Hence, / 60
         // m_pidController.setReference(setpoint, CANSparkMax.ControlType.kVelocity, 0,
         // ff, ArbFFUnits.kVoltage);
         // Commented out above is the way its used in the intake subsystem
         // Should be using a feed forward?? or voltage velocity?
-       m_leader.setControl(m_voltageVelocity.withVelocity(setpoint));
+       m_leader.setControl(m_PositionVoltage.withPosition(setpoint));
         // Todo: hint, look at the same method in IntakeRollerSubsystem
     }
-
+    public void RunArmWithVelocity(int setpoint) {
+        // double ff = m_feedforward.calculate(setpoint / 60); //important, calculate
+        // needs rps, not rpm. Hence, / 60
+        // m_pidController.setReference(setpoint, CANSparkMax.ControlType.kVelocity, 0,
+        // ff, ArbFFUnits.kVoltage);
+        // Commented out above is the way its used in the intake subsystem
+        // Should be using a feed forward?? or voltage velocity?
+       m_leader.setControl(m_PositionVoltage.withPosition(setpoint));
+        // Todo: hint, look at the same method in IntakeRollerSubsystem
+    }
     /**
      * Stop the motor
      */
@@ -176,32 +188,57 @@ public ArmSubsystem(){
 
     /*
      * 
-     * 
-     * 
-     * example from kitbot code
-     * 
-     * public Command ChargeCommand(boolean isinfinite) {
-     * return new FunctionalCommand(
-     * () -> {
-     * System.out.println("-----------------Charge--------------");
-     * 
-     * },
-     * () -> RunShooter(-6000),
-     * (interrupted) -> {
-     * if(isinfinite) {StopShooter();}
-     * },
-     * () -> {return !isinfinite && isShooterAtFullSpeed();});
-     * }
-     * 
-     * 
-     * 
+
      */
-    public Command RunShooterForwardCommand(boolean FinishWhenAtTargetSpeed) {
+
+        public Command RunArm10Command() {
+        return new FunctionalCommand(
+                () -> {
+                    System.out.println("-----------------Starting Arm to position 10--------------");
+                },
+                () -> RunArmToPos(10),
+                (interrupted) -> {
+                    StopArm();
+                },
+                () -> {
+                    return false;
+                }, this);
+    }
+        public Command RunArmForwardCommand() {
+        return new FunctionalCommand(
+                () -> {
+                    System.out.println("-----------------Starting Arm to position 10--------------");
+                },
+                () -> RunArmToPos(10),
+                (interrupted) -> {
+                    StopArm();
+                },
+                () -> {
+                    return false;
+                }, this);
+    }
+        public Command RunArmCommand() {
+        return new FunctionalCommand(
+                () -> {
+                    System.out.println("-----------------Starting Arm to position 10--------------");
+                },
+                () -> RunArmToPos(10),
+                (interrupted) -> {
+                    StopArm();
+                },
+                () -> {
+                    return false;
+                }, this);
+    }
+
+
+     /* 
+    public Command RunArmForwardCommand(boolean FinishWhenAtTargetSpeed) {
         return new FunctionalCommand(
                 () -> {
                     System.out.println("-----------------Starting shooter forward--------------");
                 },
-                () -> RunShooter(Constants.ShooterConstants.kDesiredSpeed),
+                () -> RunArm(Constants.ShooterConstants.kDesiredSpeed),
                 (interrupted) -> {
                     if (FinishWhenAtTargetSpeed) {
                         StopArm();
@@ -214,15 +251,16 @@ public ArmSubsystem(){
         // return null; // Todo: Replace this line with a proper command
     }
 
-    public Command RunShooterBackwardCommand() {
+    public Command RunArmBackwardCommand() {
         return new FunctionalCommand(
                 () -> {
                 },
-                () -> RunShooter(Constants.ShooterConstants.kReverseSpeed),
+                () -> RunArm(Constants.ShooterConstants.kReverseSpeed),
                 (interrupted) -> StopArm(),
-                () -> false, this);
+                () -> false, this)
+                print "penis";
     }
-
+*/
     public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
         return m_sysIdRoutine.quasistatic(direction); // Todo: Replace this line with a proper command done
     }

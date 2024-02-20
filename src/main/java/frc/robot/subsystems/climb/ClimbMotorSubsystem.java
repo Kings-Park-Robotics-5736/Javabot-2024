@@ -131,12 +131,14 @@ public class ClimbMotorSubsystem extends SubsystemBase{
     public Command RunClimbBackwardCommand() {
         return new FunctionalCommand(
                 () -> {
-                    System.out.println("-----------------Starting Climb reverse--------------");
+                    System.out.println("-----------------Starting Climb Reverse--------------");
                 },
                 () -> RunClimb(ClimbConstants.kReverseSpeed),
                 (interrupted) -> StopClimb(),
                 () -> false, this);
     }
+
+
 
     /***********************************************************
      * SYSID functions

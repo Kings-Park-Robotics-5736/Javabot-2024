@@ -84,11 +84,12 @@ public class SwerveModule {
     for(int i = 0; i < 5; i++){
       status = m_turningEncoder.getConfigurator().apply(turning_config);
       if ( status.isOK()){
+        
         break;
       }
     }
     if(!status.isOK()) {
-      System.out.println("Could not apply configs, error code: " + status.toString());
+      System.out.println(" SWERVE Could not apply configs, error code: " + status.toString());
     }
     // Limit the PID Controller's input range between -pi and pi and set the input
     // to be continuous.

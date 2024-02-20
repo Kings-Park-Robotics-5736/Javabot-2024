@@ -52,21 +52,21 @@ public final class Constants {
     public static final boolean kFrontRightTurningEncoderReversed = true;
     public static final boolean kRearRightTurningEncoderReversed = true;
 
-    public static final boolean kFrontLeftDriveReversed = false;
+    public static final boolean kFrontLeftDriveReversed = true;
     public static final boolean kRearLeftDriveReversed = false;
     public static final boolean kFrontRightDriveReversed = true;
     public static final boolean kRearRightDriveReversed = true;
 
-    public static final double kFrontLeftAngleOffset = -94.395 /360.0; //unit is from -1 to 1, normalized
-    public static final double kFrontRightAngleOffset = -68.8 /360.0;
-    public static final double kBackLeftAngleOffset = -257.52 /360.0;
-    public static final double kBackRightAngleOffset = -316.143 /360.0;
+    public static final double kFrontLeftAngleOffset = -0.189941;//0.358643; //unit is from -1 to 1, normalized
+    public static final double kFrontRightAngleOffset = -0.920654;
+    public static final double kBackLeftAngleOffset = -0.733887;
+    public static final double kBackRightAngleOffset = 0.487793;
 
     // Distance between centers of right and left wheels on robot
-    public static final double kTrackWidth = 0.482;
+    public static final double kTrackWidth = 0.60325;
 
     // Distance between front and back wheels on robot
-    public static final double kWheelBase = 0.61;
+    public static final double kWheelBase = 0.55245;
 
     public static final String kCanName = "Canivore";
 
@@ -147,14 +147,14 @@ public final class Constants {
 public static final class ShooterConstants {
 
   public static final int kDesiredSpeed = (int) SmartDashboard.getNumber("Fwd Speed",0);//40; 
-  public static final int kReverseSpeed = (int) SmartDashboard.getNumber("Rev Speed",0);//-16;
+  public static final int kReverseSpeed = -500;
   public static final int kTolerance = 100;
 }
 
 public static final class LeftShooterConstants {
   
     //TODO: tune these values
-    public static final byte kDeviceId = 0;
+    public static final byte kDeviceId = 1;
   
     public static final PidConstants kPidValues = new PidConstants(0.00001, 0, 0);
     public static final FeedForwardConstants kFFValues = new FeedForwardConstants(0.06368, 0.12005, 0.0034381);
@@ -162,7 +162,7 @@ public static final class LeftShooterConstants {
 
 public static final class RightShooterConstants {
   //TODO: tune these values
-  public static final byte kDeviceId = 1;
+  public static final byte kDeviceId = 0;
 
   public static final PidConstants kPidValues = new PidConstants(0.00001, 0, 0);
   public static final FeedForwardConstants kFFValues = new FeedForwardConstants(0.06368, 0.12005, 0.0034381);

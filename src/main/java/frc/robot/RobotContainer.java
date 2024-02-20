@@ -110,6 +110,9 @@ public class RobotContainer {
         public RobotContainer() {
                 SmartDashboard.putNumber("Fwd Speed",0);
                 SmartDashboard.putNumber("Rev Speed",0);
+                SmartDashboard.putNumber("Left Setpoint",0);
+                SmartDashboard.putNumber("Right Setpoint",0);
+                SmartDashboard.putNumber("t2", 0);
 
                 InitializeNamedCommands(); // must do this first
 
@@ -230,12 +233,21 @@ public class RobotContainer {
 
                 new JoystickButton(m_actionController, XboxController.Button.kX.value)
                                 .whileTrue(m_Launcher.RunShooterBackwardCommand());
+                                
                 new JoystickButton(m_actionController, XboxController.Button.kA.value)
                                 .whileTrue(m_Launcher.RunKickupForwardCommand());
-                new JoystickButton(m_actionController, XboxController.Button.kB.value)
-                                .whileTrue(m_Launcher.RunShooterForwardCommand());
-        }
 
+
+                new JoystickButton(m_actionController, XboxController.Button.kB.value)
+                                .whileTrue(m_Launcher.RunShooterForwardWITHSPINCommand());
+        
+
+         new JoystickButton(m_driverController, XboxController.Button.kA.value)
+                                .whileTrue(m_intake.RunIntakeForwardCommand());
+        
+        new JoystickButton(m_driverController, XboxController.Button.kB.value)
+                                .whileTrue(m_intake.RunIntakeBackwardCommand());
+        }
         /**
          * Use this to pass the autonomous command to the main {@link Robot} class.
          *

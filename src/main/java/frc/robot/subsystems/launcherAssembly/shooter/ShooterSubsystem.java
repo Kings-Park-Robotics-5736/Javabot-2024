@@ -1,6 +1,7 @@
 package frc.robot.subsystems.launcherAssembly.shooter;
 
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -39,6 +40,17 @@ public class ShooterSubsystem extends SubsystemBase {
     public Command RunShooterBackwardCommand(boolean FinishWhenAtTargetSpeed) {
         return Commands.parallel(m_left_wheel.RunShooterBackwardCommand(FinishWhenAtTargetSpeed), m_right_wheel.RunShooterBackwardCommand(FinishWhenAtTargetSpeed));
     }
+
+    public Command RunShooterForwardWITHSPINCommand(boolean FinishWhenAtTargetSpeed) {
+        
+        return Commands.parallel(m_left_wheel.RunShooterForwardWITHSPINCommand(FinishWhenAtTargetSpeed), m_right_wheel.RunShooterForwardWITHSPINCommand(FinishWhenAtTargetSpeed));
+    }
+
+
+
+
+
+
 
     public Command sysIdQuasistatic(SysIdRoutine.Direction direction, PositionType whichSide) {
         if (whichSide == PositionType.LEFT) {

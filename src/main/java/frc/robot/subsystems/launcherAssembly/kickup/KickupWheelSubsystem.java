@@ -37,13 +37,14 @@ import static edu.wpi.first.units.MutableMeasure.mutable;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Volts;
-
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 public class KickupWheelSubsystem extends SubsystemBase {
-
+    
   private final TalonFX m_motor;
 
     private final String name;
     private final VelocityVoltage m_voltageVelocity = new VelocityVoltage(0, 0, false, 0, 0, false, false, false);
+    private final TrapezoidProfile.Constraints m_constraints = new TrapezoidProfile.Constraints(10,20);
     // do the values defined in velocity voltage ever change??
 
     /********************************************************
@@ -65,8 +66,9 @@ public class KickupWheelSubsystem extends SubsystemBase {
         StatusCode status = StatusCode.StatusCodeNotInitialized;
         name = _name;
 
+
         m_motor.setNeutralMode(NeutralModeValue.Brake);
-        m_motor.setInverted(isInverted);
+        m_motor.setInverted(false);
 
         configs.Slot0.kP = 0.15; // An error of 1 rotation per second results in 2V output
         configs.Slot0.kI = 0.002; // An error of 1 rotation per second increases output by 0.5V every second
@@ -79,14 +81,17 @@ public class KickupWheelSubsystem extends SubsystemBase {
         // will these P I D and V
         // values ever change?
 
+
         for (int i = 0; i < 5; ++i) {
             status = m_motor.getConfigurator().apply(configs);
             if (status.isOK())
                 break;
             else{
-                System.out.println("Motor Initialization Failed");
+                System.out.println(name+"Motor Initialization Failed");
             }
         }
+ m_motor.setInverted(isInverted);
+
         m_sysIdRoutine = new SysIdRoutine(
             // Empty config defaults to 1 volt/second ramp rate and 7 volt step voltage.
             new SysIdRoutine.Config(),
@@ -97,7 +102,7 @@ public class KickupWheelSubsystem extends SubsystemBase {
                         m_motor.set(volts.in(Volts) / RobotController.getBatteryVoltage());
                     },
                     log -> {
-                        log.motor(("intake-" + name))
+                        log.motor(("Kickup-" + name))
                                 .voltage(m_appliedVoltage.mut_replace(
                                         m_motor.get() * RobotController.getBatteryVoltage(), Volts))
                                 .angularPosition(m_distance.mut_replace(m_motor.getPosition().refresh().getValue(),

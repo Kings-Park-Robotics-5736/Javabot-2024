@@ -36,7 +36,21 @@ public class ClimbSubsystem extends SubsystemBase {
         return Commands.parallel(right.RunClimbBackwardCommand(), left.RunClimbBackwardCommand());
     }
 
+// hutch wants an option to run the climb independly (possibly)
+    public Command RunLeftClimbForwardCommand() {
+        return left.RunClimbForwardCommand();
+    }
 
+    public Command RunRightClimbForwardCommand() {
+        return right.RunClimbForwardCommand();
+    }
+    public Command RunLeftClimbBackwardCommand() {
+        return left.RunClimbBackwardCommand();
+    }
+
+    public Command RunRightClimbBackwardCommand() {
+        return right.RunClimbBackwardCommand();
+    }
 
 
 

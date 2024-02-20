@@ -1,5 +1,6 @@
 package frc.robot.subsystems.launcherAssembly;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -33,7 +34,9 @@ public class LauncherAssemblySubsystem extends SubsystemBase {
     public Command RunShooterForwardCommand() {
         return m_shooter.RunShooterForwardCommand(false);
     }
-
+    public Command RunShooterForwardWITHSPINCommand() {
+        return m_shooter.RunShooterForwardWITHSPINCommand(false);
+    }
     public Command RunShooterBackwardCommand() {
         return m_shooter.RunShooterBackwardCommand(false);
     }
