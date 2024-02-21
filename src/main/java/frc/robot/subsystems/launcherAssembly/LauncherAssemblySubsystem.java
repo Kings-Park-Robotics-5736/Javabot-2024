@@ -1,12 +1,12 @@
 package frc.robot.subsystems.launcherAssembly;
 
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import java.util.function.DoubleSupplier;
+
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.subsystems.launcherAssembly.arm.ArmSubsystem;
-import frc.robot.subsystems.launcherAssembly.flap.FlapSubsystem;
 import frc.robot.subsystems.launcherAssembly.kickup.KickupSubsystem;
 import frc.robot.subsystems.launcherAssembly.shooter.ShooterSubsystem;
 import frc.robot.utils.Types.PositionType;
@@ -16,13 +16,11 @@ public class LauncherAssemblySubsystem extends SubsystemBase {
     private final ArmSubsystem m_arm;
     private final ShooterSubsystem m_shooter;
     private final KickupSubsystem m_kickup;
-    private final FlapSubsystem m_flap;
 
     public LauncherAssemblySubsystem() {
         m_arm = new ArmSubsystem();
         m_shooter = new ShooterSubsystem();
         m_kickup = new KickupSubsystem();
-        m_flap = new FlapSubsystem();
     }
 
     @Override
@@ -34,9 +32,7 @@ public class LauncherAssemblySubsystem extends SubsystemBase {
     public Command RunShooterForwardCommand() {
         return m_shooter.RunShooterForwardCommand(false);
     }
-    public Command RunShooterForwardWITHSPINCommand() {
-        return m_shooter.RunShooterForwardWITHSPINCommand(false);
-    }
+
     public Command RunShooterBackwardCommand() {
         return m_shooter.RunShooterBackwardCommand(false);
     }
@@ -59,12 +55,12 @@ public class LauncherAssemblySubsystem extends SubsystemBase {
         return m_shooter.sysIdDynamic(direction, whichMotor);
     }
 
-    public Command sysIdKickupQuasistatic(SysIdRoutine.Direction direction, PositionType whichMotor) {
-        return m_kickup.sysIdQuasistatic(direction, whichMotor);
+    public Command sysIdKickupQuasistatic(SysIdRoutine.Direction direction) {
+        return m_kickup.sysIdQuasistatic(direction);
     }
 
-    public Command sysIdKickupDynamic(SysIdRoutine.Direction direction, PositionType whichMotor) {
-        return m_kickup.sysIdDynamic(direction, whichMotor);
+    public Command sysIdKickupDynamic(SysIdRoutine.Direction direction) {
+        return m_kickup.sysIdDynamic(direction);
     }
 
     // Composed Commands:
@@ -88,9 +84,11 @@ public class LauncherAssemblySubsystem extends SubsystemBase {
                 .raceWith(Commands.waitSeconds(1)).andThen(m_shooter.StopShooterCommand()));
     }
 
-    public Command runShooterBackwardCommand() {
-        return m_shooter.RunShooterBackwardCommand(true)
-        ;
+    public Command RunArmUpManualSpeedCommand(DoubleSupplier getSpeed) {
+        return m_arm.RunArmUpManualSpeedCommand(getSpeed);
+    }
+    public Command RunArmDownManualSpeedCommand(DoubleSupplier getSpeed) {
+        return m_arm.RunArmDownManualSpeedCommand(getSpeed);
     }
 
 }

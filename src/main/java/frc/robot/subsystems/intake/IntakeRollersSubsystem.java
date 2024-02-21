@@ -18,6 +18,7 @@ import edu.wpi.first.units.MutableMeasure;
 import edu.wpi.first.units.Velocity;
 import edu.wpi.first.units.Voltage;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -25,6 +26,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.IntakeConstants;
 import frc.robot.utils.Types.FeedForwardConstants;
 import frc.robot.utils.Types.PidConstants;
+
 
 public class IntakeRollersSubsystem extends SubsystemBase {
 
@@ -96,6 +98,8 @@ public class IntakeRollersSubsystem extends SubsystemBase {
         m_motor.set(speed);
     }
 
+
+
     /**
      * 
      * @param setpoint of the motor, in rotations / minute (important, minute not
@@ -106,7 +110,7 @@ public class IntakeRollersSubsystem extends SubsystemBase {
         double ff = m_feedforward.calculate(setpoint / 60);  //important, calculate needs rps, not rpm. Hence, / 60
         m_pidController.setReference(setpoint, CANSparkMax.ControlType.kVelocity, 0, ff, ArbFFUnits.kVoltage);
 
-        // SmartDashboard.putNumber("Intake Speed: " + name, m_encoder.getVelocity());
+         SmartDashboard.putNumber("Intake Speed: " + name, m_encoder.getVelocity());
 
     }
 

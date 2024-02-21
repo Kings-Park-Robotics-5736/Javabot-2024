@@ -11,12 +11,15 @@ import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.MutableMeasure;
 import edu.wpi.first.units.Velocity;
 import edu.wpi.first.units.Voltage;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
@@ -30,10 +33,16 @@ import frc.robot.utils.Types.PidConstants;
 public class ShooterWheelSubsystem extends SubsystemBase {
 
     private final TalonFX m_motor;
-    private final Boolean invert;
+    private final Boolean m_invert;
     private final String name;
+    private double m_forwardSpeed;
+    private double m_reverseSpeed;
+    private double startTime = 0;
+
     private final VelocityVoltage m_voltageVelocity = new VelocityVoltage(0, 0, false, 0, 0, false, false, false);
-    // do the values defined in velocity voltage ever change??
+    private SimpleMotorFeedforward m_feedforward;
+    private TrapezoidProfile profile;
+
 
     /********************************************************
      * SysId variables
@@ -43,43 +52,46 @@ public class ShooterWheelSubsystem extends SubsystemBase {
     private final MutableMeasure<Velocity<Angle>> m_velocity = mutable(RotationsPerSecond.of(0));
     private final SysIdRoutine m_sysIdRoutine;
 
+
+
     public ShooterWheelSubsystem(PidConstants pidValues, FeedForwardConstants ffValues, byte deviceId, String _name,
-            boolean isInverted) {
+            boolean isInverted, double forwardSpeed, double reverseSpeed) {
+
         m_motor = new TalonFX(deviceId, "rio");
         TalonFXConfiguration configs = new TalonFXConfiguration();
         StatusCode status = StatusCode.StatusCodeNotInitialized;
-        invert = isInverted;
+        m_invert = isInverted;
         name = _name;
-        //m_motor.setNeutralMode(NeutralModeValue.Coast);
-        //m_motor.setInverted(isInverted);
+        m_forwardSpeed = forwardSpeed;
+        m_reverseSpeed = reverseSpeed;
 
-        configs.Slot0.kP = 0.15; // An error of 1 rotation per second results in 2V output
-        configs.Slot0.kI = 0.002; // An error of 1 rotation per second increases output by 0.5V every second
+        configs.Slot0.kP = pidValues.p; // An error of 1 rotation per second results in 2V output
+        configs.Slot0.kI = pidValues.i; // An error of 1 rotation per second increases output by 0.5V every second
         configs.Slot0.kD = 0.0; // A change of 1 rotation per second squared results in 0.01 volts output
-        configs.Slot0.kV = 0.12; // Falcon 500 is a 500kV motor, 500rpm per V = 8.333 rps per V, 1/8.33 = 0.12
-                                 // volts / Rotation per second
-        configs.Slot0.kA = 3.00;
-        // Peak output of 8 volts
+        configs.Slot0.kV = 0.0;// 0.12; // Falcon 500 is a 500kV motor, 500rpm per V = 8.333 rps per V, 1/8.33
+                               // = 0.12
+                               // volts / Rotation per second
+        configs.Slot0.kA = 0.0;// 3.00;
         configs.Voltage.PeakForwardVoltage = 12;
         configs.Voltage.PeakReverseVoltage = -12;
-        // will these P I D and V
-        // values ever change?
 
-         
+        m_feedforward = new SimpleMotorFeedforward(ffValues.ks, ffValues.kv, ffValues.ka);
 
         for (int i = 0; i < 5; ++i) {
             status = m_motor.getConfigurator().apply(configs);
             if (status.isOK())
                 break;
-            else{
+            else {
                 System.out.println("Motor Initialization Failed");
             }
 
+        }
 
+        if (!status.isOK()) {
+            System.out.println("!!!!!ERROR!!!! Could not initialize the " + name + " Shooter Motor. Restart robot!");
         }
         m_motor.setNeutralMode(NeutralModeValue.Coast);
         m_motor.setInverted(isInverted);
-        
 
         m_sysIdRoutine = new SysIdRoutine(
                 // Empty config defaults to 1 volt/second ramp rate and 7 volt step voltage.
@@ -91,7 +103,7 @@ public class ShooterWheelSubsystem extends SubsystemBase {
                             m_motor.set(volts.in(Volts) / RobotController.getBatteryVoltage());
                         },
                         log -> {
-                            log.motor(("intake-" + name))
+                            log.motor(("shooter-" + name))
                                     .voltage(m_appliedVoltage.mut_replace(
                                             m_motor.get() * RobotController.getBatteryVoltage(), Volts))
                                     .angularPosition(m_distance.mut_replace(m_motor.getPosition().refresh().getValue(),
@@ -102,24 +114,19 @@ public class ShooterWheelSubsystem extends SubsystemBase {
 
                         },
                         this));
-
-        // Todo
-        // for sysid on this wheel (a falcon 500), use the following motor/encoder
-        // commands:
-        // to get speed: m_motor.getVelocity().refresh().getValue()
-        // to get position: m_encoder.getPosition().refresh().getValue()
-        // note unit for speed from the falcon encoder is RPS, not RPM
-        // done lesssgoooo
-
     }
 
     @Override
     public void periodic() {
-        // leave blank
-       // System.out.println(name + "isInverted" +invert);
-        //SmartDashboard.putNumber(name, getSpeedRotationsPerMinuts())
     }
 
+    public void setNewForwardSpeed(double speed) {
+        m_forwardSpeed = speed;
+    }
+
+    public void setNewReverseSpeed(double speed) {
+        m_reverseSpeed = speed;
+    }
     /**
      * 
      * Set the speed of the intake motor (-1 to 1)
@@ -130,17 +137,13 @@ public class ShooterWheelSubsystem extends SubsystemBase {
         m_motor.set(speed);
     }
 
-    public int getSpeedRotationsPerMinuts() {
+    public int getSpeedRotationsPerMinute() {
         double rpm = m_motor.getVelocity().refresh().getValue() * 60;
         return (int) rpm;
-        // please let me know if i shouldn't have done it like this (the conversion)
-        // Todo: Replace this line with a proper command, reading the value from the
-        // encoder. PAY ATTENTION TO UNITS!
-
     }
 
     public boolean isAtDesiredSpeed() {
-        return Math.abs(getSpeedRotationsPerMinuts()
+        return Math.abs(getSpeedRotationsPerMinute()
                 - Constants.ShooterConstants.kDesiredSpeed) < Constants.ShooterConstants.kTolerance;
     }
 
@@ -149,15 +152,13 @@ public class ShooterWheelSubsystem extends SubsystemBase {
      * @param setpoint of the motor, in rotations / minute (important, minute not
      *                 seconds)
      */
-    public void RunShooter(int setpoint) {
-        // double ff = m_feedforward.calculate(setpoint / 60); //important, calculate
+    public void RunShooterWithMotionProfile() {
+
+        double currTime = Timer.getFPGATimestamp();
+        var setpoint = profile.calculate(currTime - startTime);
+        double ff = m_feedforward.calculate(setpoint.position / 60); // important, calculate
         // needs rps, not rpm. Hence, / 60
-        // m_pidController.setReference(setpoint, CANSparkMax.ControlType.kVelocity, 0,
-        // ff, ArbFFUnits.kVoltage);
-        // Commented out above is the way its used in the intake subsystem
-        // Should be using a feed forward?? or voltage velocity?
-        m_motor.setControl(m_voltageVelocity.withVelocity(setpoint));
-        // Todo: hint, look at the same method in IntakeRollerSubsystem
+        m_motor.setControl(m_voltageVelocity.withFeedForward(ff).withVelocity(setpoint.position / 60));
     }
 
     /**
@@ -165,6 +166,19 @@ public class ShooterWheelSubsystem extends SubsystemBase {
      */
     public void StopShooter() {
         setSpeed(0);
+    }
+
+    /**
+     * @brief Initializes the motion profile for the elevator
+     * @param setpoint of the motor, in absolute rotations
+     */
+    private void InitMotionProfile(double setpoint) {
+        profile = new TrapezoidProfile(new TrapezoidProfile.Constraints(6000, 20000),
+                new TrapezoidProfile.State(setpoint, 0),
+                new TrapezoidProfile.State(getSpeedRotationsPerMinute(), 0));
+
+        startTime = Timer.getFPGATimestamp();
+
     }
 
     /**
@@ -178,16 +192,18 @@ public class ShooterWheelSubsystem extends SubsystemBase {
      * @return
      */
 
-
     public Command RunShooterForwardCommand(boolean FinishWhenAtTargetSpeed) {
         return new FunctionalCommand(
                 () -> {
                     System.out.println("-----------------Starting shooter forward--------------");
+                    InitMotionProfile(m_forwardSpeed);
                 },
-                () -> {RunShooter((int)SmartDashboard.getNumber("Fwd Speed",0)/60);
-                        SmartDashboard.putNumber("Fwd vel",getSpeedRotationsPerMinuts());},
+                () -> {
+                    RunShooterWithMotionProfile();
+                    SmartDashboard.putNumber(name + " Shooter Fwd vel", getSpeedRotationsPerMinute());
+                },
                 (interrupted) -> {
-                    if (!FinishWhenAtTargetSpeed)  {
+                    if (!FinishWhenAtTargetSpeed) {
                         StopShooter();
                     }
                 },
@@ -195,14 +211,15 @@ public class ShooterWheelSubsystem extends SubsystemBase {
                     return FinishWhenAtTargetSpeed && isAtDesiredSpeed();
                 }, this);
 
-        // return null; // Todo: Replace this line with a proper command
     }
 
     public Command RunShooterBackwardCommand(boolean FinishWhenAtTargetSpeed) {
         return new FunctionalCommand(
-                () -> {System.out.println("-----------------Starting shooter Backward--------------");
+                () -> {
+                    System.out.println("-----------------Starting shooter Backward--------------");
+                    InitMotionProfile(m_reverseSpeed);
                 },
-                () -> RunShooter(ShooterConstants.kReverseSpeed/60),
+                () -> RunShooterWithMotionProfile(),
                 (interrupted) -> {
                     if (!FinishWhenAtTargetSpeed) {
                         StopShooter();
@@ -212,53 +229,6 @@ public class ShooterWheelSubsystem extends SubsystemBase {
                     return FinishWhenAtTargetSpeed && isAtDesiredSpeed();
                 }, this);
     }
-
-
-//commands to test with spin
-
-
-    public Command RunShooterForwardWITHSPINCommand(boolean FinishWhenAtTargetSpeed) {
-        return new FunctionalCommand(
-                () -> {
-                    System.out.println("-----------------Starting shooter forward--------------");
-                },
-                () -> {RunShooter((int)SmartDashboard.getNumber(name+" Setpoint", 0)/60);
-                        SmartDashboard.putNumber(name+"Speed",getSpeedRotationsPerMinuts());},
-                (interrupted) -> {
-                    if (!FinishWhenAtTargetSpeed)  {
-                        StopShooter();
-                    }
-                },
-                () -> {
-                    return FinishWhenAtTargetSpeed && isAtDesiredSpeed();
-                }, this);
-
-        // return null; // Todo: Replace this line with a proper command
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
         return m_sysIdRoutine.quasistatic(direction); // Todo: Replace this line with a proper command done

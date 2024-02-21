@@ -63,7 +63,8 @@ public final class Types {
     INTAKE_BOTTOM,
     DRIVE,
     SHOOTER_LEFT,
-    SHOOTER_RIGHT
+    SHOOTER_RIGHT,
+    KICKUP_RIGHT,
   }
 
 }

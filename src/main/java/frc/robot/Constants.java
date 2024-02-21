@@ -13,6 +13,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.utils.Types.FeedForwardConstants;
+import frc.robot.utils.Types.Limits;
 import frc.robot.utils.Types.PidConstants;
 
 /**
@@ -57,7 +58,7 @@ public final class Constants {
     public static final boolean kFrontRightDriveReversed = true;
     public static final boolean kRearRightDriveReversed = true;
 
-    public static final double kFrontLeftAngleOffset = -0.189941;//0.358643; //unit is from -1 to 1, normalized
+    public static final double kFrontLeftAngleOffset = -0.189941;// 0.358643; //unit is from -1 to 1, normalized
     public static final double kFrontRightAngleOffset = -0.920654;
     public static final double kBackLeftAngleOffset = -0.733887;
     public static final double kBackRightAngleOffset = 0.487793;
@@ -89,20 +90,23 @@ public final class Constants {
     public static final double kMaxSpeedMetersPerSecond = 3;
     public static final double kMaxAccelerationMetersPerSecondSquared = 3;
   }
+
   public static final class IntakeConstants {
 
     public static final int kForwardSpeed = 4000;
     public static final int kReverseSpeed = -3000;
   }
+
   public static final class ClimbConstants {
-    //TODO tune these values
+    // TODO tune these values
     public static final int kForwardSpeed = 4000;
     public static final int kReverseSpeed = -3000;
   }
+
   public static final class LeftClimbConstants {
 
     public static final byte kDeviceId = 16;
-//TODO tune these values
+    // TODO tune these values
     public static final PidConstants kPidValues = new PidConstants(0.00001, 0, 0);
     public static final FeedForwardConstants kFFValues = new FeedForwardConstants(0.06368, 0.12005, 0.0034381);
   }
@@ -110,84 +114,82 @@ public final class Constants {
   public static final class RightClimbConstants {
 
     public static final byte kDeviceId = 17;
-//TODO tune these values
+    // TODO tune these values
     public static final PidConstants kPidValues = new PidConstants(3.7415E-05, 0, 0);
-    public static final FeedForwardConstants kFFValues = new FeedForwardConstants(0.19204,0.12201,  0.0082481);
+    public static final FeedForwardConstants kFFValues = new FeedForwardConstants(0.19204, 0.12201, 0.0082481);
   }
 
-
-
-
-
-  
   public static final class LowerIntakeConstants {
 
     public static final byte kDeviceId = 2;
 
-    public static final PidConstants kPidValues = new PidConstants(0.00001, 0, 0);
-    public static final FeedForwardConstants kFFValues = new FeedForwardConstants(0.06368, 0.12005, 0.0034381);
+    public static final PidConstants kPidValues = new PidConstants(5.1248E-06, 0, 0);
+    public static final FeedForwardConstants kFFValues = new FeedForwardConstants(0.2672, 0.12568, 0.0065158);
   }
 
   public static final class UpperIntakeConstants {
 
     public static final byte kDeviceId = 3;
 
-    public static final PidConstants kPidValues = new PidConstants(3.7415E-05, 0, 0);
-    public static final FeedForwardConstants kFFValues = new FeedForwardConstants(0.19204,0.12201,  0.0082481);
+    public static final PidConstants kPidValues = new PidConstants(5.1248E-06, 0, 0);
+    public static final FeedForwardConstants kFFValues = new FeedForwardConstants(0.2672, 0.12568, 0.0065158);
   }
+
   public static final class ArmConstants {
 
-    public static final byte kLeaderDeviceId = 3;
-    public static final byte kFollowerDeviceId = 3;
-//TODO tune these values
+    public static final byte kLeaderDeviceId = 9;
+    public static final byte kFollowerDeviceId = 10;
+    public static final String kCanName = "Canivore";
+
+    public static final int kMaxVelocity = 120;
+    public static final int kMaxAcceleration = 150;
+    // TODO tune these values
     public static final PidConstants kPidValues = new PidConstants(3.7415E-05, 0, 0);
-    public static final FeedForwardConstants kFFValues = new FeedForwardConstants(0.19204,0.12201,  0.0082481);
+    public static final FeedForwardConstants kFFValues = new FeedForwardConstants(.1, 0.1, 0.1, 0.1);
+   
+    public static final double kPositionTolerance = 1.0;
+    public static final double kStaleTolerance = .5;
+    public static final double kDiffThreshold = 0.15;
+    public static final int kStaleThreshold = 10;
+
+    public static final Limits kLimits = new Limits(0, 62);
+
+
   }
 
-public static final class ShooterConstants {
+  public static final class ShooterConstants {
 
-  public static final int kDesiredSpeed = (int) SmartDashboard.getNumber("Fwd Speed",0);//40; 
-  public static final int kReverseSpeed = -500;
-  public static final int kTolerance = 100;
-}
+    public static final int kDesiredSpeed = 5000; //RPM
+    public static final int kReverseSpeed = -500; //RPM
+    public static final int kTolerance = 100; //RPM
+  }
 
-public static final class LeftShooterConstants {
-  
-    //TODO: tune these values
+  public static final class LeftShooterConstants {
     public static final byte kDeviceId = 1;
-  
-    public static final PidConstants kPidValues = new PidConstants(0.00001, 0, 0);
-    public static final FeedForwardConstants kFFValues = new FeedForwardConstants(0.06368, 0.12005, 0.0034381);
-}
 
-public static final class RightShooterConstants {
-  //TODO: tune these values
-  public static final byte kDeviceId = 0;
+    public static final PidConstants kPidValues = new PidConstants(0.046382, 0, 0);
+    public static final FeedForwardConstants kFFValues = new FeedForwardConstants(0.027074, 0.11543, 0.041808);
+  }
 
-  public static final PidConstants kPidValues = new PidConstants(0.00001, 0, 0);
-  public static final FeedForwardConstants kFFValues = new FeedForwardConstants(0.06368, 0.12005, 0.0034381);
-}
-public static final class kickupConstants {
+  public static final class RightShooterConstants {
+    public static final byte kDeviceId = 0;
+
+    public static final PidConstants kPidValues = new PidConstants(0.016382, 0, 0);
+    public static final FeedForwardConstants kFFValues = new FeedForwardConstants(0.030934, 0.11591, 0.047642);
+  }
+
+  public static final class kickupConstants {
 
     public static final int kForwardSpeed = 4000;
     public static final int kReverseSpeed = -3000;
   }
-public static final class LeftKickupConstants {
-  //TODO: tune these values
-  public static final byte kDeviceId = 2;
 
-  public static final PidConstants kPidValues = new PidConstants(0.00001, 0, 0);
-  public static final FeedForwardConstants kFFValues = new FeedForwardConstants(0.06368, 0.12005, 0.0034381);
-}
+  public static final class RightKickupConstants {
+    public static final byte kDeviceId = 2;
 
-
-public static final class RightKickupConstants {
-  //TODO: tune these values
-  public static final byte kDeviceId = 7;
-
-  public static final PidConstants kPidValues = new PidConstants(0.00001, 0, 0);
-  public static final FeedForwardConstants kFFValues = new FeedForwardConstants(0.06368, 0.12005, 0.0034381);
-}
+    public static final PidConstants kPidValues = new PidConstants(0.001873, 0, 0);
+    public static final FeedForwardConstants kFFValues = new FeedForwardConstants(0.058711, 0.11659, 0.0016706);
+  }
 
   public static final class ModuleConstants {
     public static final double kMaxModuleAngularSpeedRadiansPerSecond = 15 * 2 * Math.PI;
@@ -221,20 +223,22 @@ public static final class RightKickupConstants {
     public static final TrapezoidProfile.Constraints kThetaControllerConstraints = new TrapezoidProfile.Constraints(
         kMaxAngularSpeedRadiansPerSecond, kMaxAngularSpeedRadiansPerSecondSquared);
 
-     public static final HolonomicPathFollowerConfig pathFollowerConfig = new HolonomicPathFollowerConfig(
-      new PIDConstants(5.0, 0, 0), // Translation constants 
-      new PIDConstants(5.0, 0, 0), // Rotation constants 
-      kMaxSpeedMetersPerSecond, 
-      new Translation2d(DriveConstants.kWheelBase / 2, DriveConstants.kTrackWidth / 2).getNorm(), // Drive base radius (distance from center to furthest module) 
-      new ReplanningConfig()
-    );
+    public static final HolonomicPathFollowerConfig pathFollowerConfig = new HolonomicPathFollowerConfig(
+        new PIDConstants(5.0, 0, 0), // Translation constants
+        new PIDConstants(5.0, 0, 0), // Rotation constants
+        kMaxSpeedMetersPerSecond,
+        new Translation2d(DriveConstants.kWheelBase / 2, DriveConstants.kTrackWidth / 2).getNorm(), // Drive base radius
+                                                                                                    // (distance from
+                                                                                                    // center to
+                                                                                                    // furthest module)
+        new ReplanningConfig());
   }
 
-public static final class CenterToFieldPositionConstants {
-      public static final double kMaxSpeedMetersPerSecond = 9;
+  public static final class CenterToFieldPositionConstants {
+    public static final double kMaxSpeedMetersPerSecond = 9;
     public static final double kMaxAccelerationMetersPerSecondSquared = 9;
     public static final PidConstants kPidValues = new PidConstants(.5, 0, 0.00);
-}
+  }
 
   public static final class DriveToTargetCommandConstants {
 

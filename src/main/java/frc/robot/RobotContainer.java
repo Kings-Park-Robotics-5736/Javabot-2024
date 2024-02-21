@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.IOConstants;
@@ -43,7 +44,7 @@ public class RobotContainer {
 
         // The robot's subsystems
 
-        private final SysidMechanism enabledSysid = SysidMechanism.NONE;
+        private final SysidMechanism enabledSysid = SysidMechanism.KICKUP_RIGHT;
 
         private final PiCamera m_picam = new PiCamera();
         public Limelight m_limelight = new Limelight("limelight");
@@ -108,10 +109,10 @@ public class RobotContainer {
          * The container for the robot. Contains subsystems, OI devices, and commands.
          */
         public RobotContainer() {
-                SmartDashboard.putNumber("Fwd Speed",0);
-                SmartDashboard.putNumber("Rev Speed",0);
-                SmartDashboard.putNumber("Left Setpoint",0);
-                SmartDashboard.putNumber("Right Setpoint",0);
+                SmartDashboard.putNumber("Fwd Speed", 0);
+                SmartDashboard.putNumber("Rev Speed", 0);
+                SmartDashboard.putNumber("Left Setpoint", 0);
+                SmartDashboard.putNumber("Right Setpoint", 0);
                 SmartDashboard.putNumber("t2", 0);
 
                 InitializeNamedCommands(); // must do this first
@@ -125,6 +126,15 @@ public class RobotContainer {
                                 break;
                         case DRIVE:
                                 configureButtonBindingsDriveSysID();
+                                break;
+                        case SHOOTER_LEFT:
+                                configureButtonBindingsShooterLeftSysID();
+                                break;
+                        case SHOOTER_RIGHT:
+                                configureButtonBindingsShooterRightSysID();
+                                break;
+                        case KICKUP_RIGHT:
+                                configButtonBindingsKickupRightSysID();
                                 break;
                         case NONE:
                         default:
@@ -186,6 +196,65 @@ public class RobotContainer {
                                 .toggleOnTrue(m_intake.RunIntakeBackwardCommand());
         }
 
+        private void configureButtonBindingsShooterLeftSysID() {
+                new JoystickButton(m_driverController, XboxController.Button.kA.value)
+                                .whileTrue(m_Launcher.sysIdShooterQuasistatic(SysIdRoutine.Direction.kForward,
+                                                PositionType.LEFT));
+                new JoystickButton(m_driverController, XboxController.Button.kB.value)
+                                .whileTrue(m_Launcher.sysIdShooterQuasistatic(SysIdRoutine.Direction.kReverse,
+                                                PositionType.LEFT));
+                new JoystickButton(m_driverController, XboxController.Button.kX.value)
+                                .whileTrue(m_Launcher.sysIdShooterDynamic(SysIdRoutine.Direction.kForward,
+                                                PositionType.LEFT));
+                new JoystickButton(m_driverController, XboxController.Button.kY.value)
+                                .whileTrue(m_Launcher.sysIdShooterDynamic(SysIdRoutine.Direction.kReverse,
+                                                PositionType.LEFT));
+
+                new JoystickButton(m_driverController, XboxController.Button.kLeftBumper.value)
+                                .toggleOnTrue(m_Launcher.RunShooterForwardCommand());
+
+                new JoystickButton(m_driverController, XboxController.Button.kRightBumper.value)
+                                .toggleOnTrue(m_Launcher.RunShooterBackwardCommand());
+        }
+
+        private void configureButtonBindingsShooterRightSysID() {
+                new JoystickButton(m_driverController, XboxController.Button.kA.value)
+                                .whileTrue(m_Launcher.sysIdShooterQuasistatic(SysIdRoutine.Direction.kForward,
+                                                PositionType.RIGHT));
+                new JoystickButton(m_driverController, XboxController.Button.kB.value)
+                                .whileTrue(m_Launcher.sysIdShooterQuasistatic(SysIdRoutine.Direction.kReverse,
+                                                PositionType.RIGHT));
+                new JoystickButton(m_driverController, XboxController.Button.kX.value)
+                                .whileTrue(m_Launcher.sysIdShooterDynamic(SysIdRoutine.Direction.kForward,
+                                                PositionType.RIGHT));
+                new JoystickButton(m_driverController, XboxController.Button.kY.value)
+                                .whileTrue(m_Launcher.sysIdShooterDynamic(SysIdRoutine.Direction.kReverse,
+                                                PositionType.RIGHT));
+
+                new JoystickButton(m_driverController, XboxController.Button.kLeftBumper.value)
+                                .toggleOnTrue(m_Launcher.RunShooterForwardCommand());
+
+                new JoystickButton(m_driverController, XboxController.Button.kRightBumper.value)
+                                .toggleOnTrue(m_Launcher.RunShooterBackwardCommand());
+        }
+
+        private void configButtonBindingsKickupRightSysID() {
+                new JoystickButton(m_driverController, XboxController.Button.kA.value)
+                                .whileTrue(m_Launcher.sysIdKickupQuasistatic(SysIdRoutine.Direction.kForward));
+                new JoystickButton(m_driverController, XboxController.Button.kB.value)
+                                .whileTrue(m_Launcher.sysIdKickupQuasistatic(SysIdRoutine.Direction.kReverse));
+                new JoystickButton(m_driverController, XboxController.Button.kX.value)
+                                .whileTrue(m_Launcher.sysIdKickupDynamic(SysIdRoutine.Direction.kForward));
+                new JoystickButton(m_driverController, XboxController.Button.kY.value)
+                                .whileTrue(m_Launcher.sysIdKickupDynamic(SysIdRoutine.Direction.kReverse));
+
+                new JoystickButton(m_driverController, XboxController.Button.kLeftBumper.value)
+                                .toggleOnTrue(m_Launcher.RunKickupForwardCommand());
+
+                new JoystickButton(m_driverController, XboxController.Button.kRightBumper.value)
+                                .toggleOnTrue(m_Launcher.RunKickupBackwardCommand());
+        }
+
         /**
          * Use this method to define your button->command mappings. Buttons can be
          * created by
@@ -196,58 +265,64 @@ public class RobotContainer {
          * {@link JoystickButton}.
          */
         private void configureButtonBindings() {
-/* 
-                // BACK BUTTON: zero out the heading. Note, with vision pose, this should not be
-                // used anymore.
-                new JoystickButton(m_driverController, XboxController.Button.kBack.value)
-                                .onTrue(Commands.runOnce(() -> m_robotDrive.zeroHeading(), m_robotDrive));
+                /*
+                 * // BACK BUTTON: zero out the heading. Note, with vision pose, this should not
+                 * be
+                 * // used anymore.
+                 * new JoystickButton(m_driverController, XboxController.Button.kBack.value)
+                 * .onTrue(Commands.runOnce(() -> m_robotDrive.zeroHeading(), m_robotDrive));
+                 * 
+                 * // X BUTTON: drive forward 1 meter
+                 * // new JoystickButton(m_driverController, XboxController.Button.kX.value)
+                 * // .whileTrue(new DriveDistanceCommand(m_robotDrive, 1));
+                 * 
+                 * // Y BUTTON: center on a game piece
+                 * new JoystickButton(m_driverController, XboxController.Button.kY.value)
+                 * .whileTrue(new CenterToTargetCommandPiCam(m_robotDrive, m_picam, true));
+                 * 
+                 * // new JoystickButton(m_driverController, XboxController.Button.kA.value)
+                 * // .whileTrue(new CenterToGoalCommand(m_robotDrive,m_limelight, true));
+                 * 
+                 * // B BUTTON: Drive to a target, and stop when you reach it.
+                 * new JoystickButton(m_driverController, XboxController.Button.kB.value)
+                 * .whileTrue(new DriveToTargetCommand(m_robotDrive, m_picam, 1, 4));
+                 * 
+                 * new JoystickButton(m_actionController, XboxController.Button.kB.value)
+                 * .toggleOnTrue(m_intake.RunIntakeForwardCommand());
+                 * 
+                 * new JoystickButton(m_actionController, XboxController.Button.kX.value)
+                 * .toggleOnTrue(m_intake.RunIntakeBackwardCommand());
+                 * 
+                 * new JoystickButton(m_actionController, XboxController.Button.kB.value)
+                 * .toggleOnTrue(m_intake.RunIntakeForwardCommand());
+                 * 
+                 * new JoystickButton(m_actionController, XboxController.Button.kX.value)
+                 * .toggleOnTrue(m_intake.RunIntakeBackwardCommand());
+                 * 
+                 */
 
-                // X BUTTON: drive forward 1 meter
-               // new JoystickButton(m_driverController, XboxController.Button.kX.value)
-                 //               .whileTrue(new DriveDistanceCommand(m_robotDrive, 1));
+                /*
+                 * new JoystickButton(m_actionController, XboxController.Button.kX.value)
+                 * .whileTrue(m_Launcher.RunShooterBackwardCommand());
+                 * 
+                 * new JoystickButton(m_actionController, XboxController.Button.kA.value)
+                 * .whileTrue(m_Launcher.RunKickupForwardCommand());
+                 */
 
-                // Y BUTTON: center on a game piece
-                new JoystickButton(m_driverController, XboxController.Button.kY.value)
-                                .whileTrue(new CenterToTargetCommandPiCam(m_robotDrive, m_picam, true));
+                new Trigger(() -> {
+                        return m_actionController.getRightTriggerAxis() > 0;
+                }).whileTrue(m_Launcher.RunArmUpManualSpeedCommand(() -> m_actionController.getRightTriggerAxis()));
+                new Trigger(() -> {
+                        return m_actionController.getLeftTriggerAxis() > 0;
+                }).whileTrue(m_Launcher.RunArmDownManualSpeedCommand(() -> -m_actionController.getLeftTriggerAxis()));
 
-               // new JoystickButton(m_driverController, XboxController.Button.kA.value)
-                 //               .whileTrue(new CenterToGoalCommand(m_robotDrive,m_limelight, true));
-
-                // B BUTTON: Drive to a target, and stop when you reach it.
-                new JoystickButton(m_driverController, XboxController.Button.kB.value)
-                                .whileTrue(new DriveToTargetCommand(m_robotDrive, m_picam, 1, 4));
-
-                new JoystickButton(m_actionController, XboxController.Button.kB.value)
-                                .toggleOnTrue(m_intake.RunIntakeForwardCommand());
-
-                new JoystickButton(m_actionController, XboxController.Button.kX.value)
-                                .toggleOnTrue(m_intake.RunIntakeBackwardCommand());
-
-                new JoystickButton(m_actionController, XboxController.Button.kB.value)
-                                .toggleOnTrue(m_intake.RunIntakeForwardCommand());
-
-                new JoystickButton(m_actionController, XboxController.Button.kX.value)
-                                .toggleOnTrue(m_intake.RunIntakeBackwardCommand());
-
-*/
-
-                new JoystickButton(m_actionController, XboxController.Button.kX.value)
-                                .whileTrue(m_Launcher.RunShooterBackwardCommand());
-                                
-                new JoystickButton(m_actionController, XboxController.Button.kA.value)
-                                .whileTrue(m_Launcher.RunKickupForwardCommand());
-
-
-                new JoystickButton(m_actionController, XboxController.Button.kB.value)
-                                .whileTrue(m_Launcher.RunShooterForwardWITHSPINCommand());
-        
-
-         new JoystickButton(m_driverController, XboxController.Button.kA.value)
+                new JoystickButton(m_driverController, XboxController.Button.kA.value)
                                 .whileTrue(m_intake.RunIntakeForwardCommand());
-        
-        new JoystickButton(m_driverController, XboxController.Button.kB.value)
+
+                new JoystickButton(m_driverController, XboxController.Button.kB.value)
                                 .whileTrue(m_intake.RunIntakeBackwardCommand());
         }
+
         /**
          * Use this to pass the autonomous command to the main {@link Robot} class.
          *
