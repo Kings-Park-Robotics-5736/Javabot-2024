@@ -44,7 +44,7 @@ public class RobotContainer {
 
         // The robot's subsystems
 
-        private final SysidMechanism enabledSysid = SysidMechanism.KICKUP_RIGHT;
+        private final SysidMechanism enabledSysid = SysidMechanism.NONE;
 
         private final PiCamera m_picam = new PiCamera();
         public Limelight m_limelight = new Limelight("limelight");
