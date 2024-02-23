@@ -1,4 +1,4 @@
-package frc.robot.subsystems.intake;
+package frc.robot.subsystems.climb;
 
 import static edu.wpi.first.units.MutableMeasure.mutable;
 import static edu.wpi.first.units.Units.Rotations;
@@ -18,33 +18,30 @@ import edu.wpi.first.units.MutableMeasure;
 import edu.wpi.first.units.Velocity;
 import edu.wpi.first.units.Voltage;
 import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.Constants.IntakeConstants;
+import frc.robot.Constants.ClimbConstants;
 import frc.robot.utils.Types.FeedForwardConstants;
 import frc.robot.utils.Types.PidConstants;
 
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-public class IntakeRollersSubsystem extends SubsystemBase {
-
+public class ClimbMotorSubsystem extends SubsystemBase{
     private CANSparkMax m_motor;
     private SparkPIDController m_pidController;
     private RelativeEncoder m_encoder;
     private SimpleMotorFeedforward m_feedforward;
     private final String name;
 
-    /********************************************************
-     * SysId variables
-     ********************************************************/
     private final MutableMeasure<Voltage> m_appliedVoltage = mutable(Volts.of(0));
     private final MutableMeasure<Angle> m_distance = mutable(Rotations.of(0));
     private final MutableMeasure<Velocity<Angle>> m_velocity = mutable(RotationsPerSecond.of(0));
     private final SysIdRoutine m_sysIdRoutine;
 
-    public IntakeRollersSubsystem(PidConstants pidValues, FeedForwardConstants ffValues, byte deviceId, String _name) {
+    public ClimbMotorSubsystem(PidConstants pidValues, FeedForwardConstants ffValues, byte deviceId, String _name,boolean isInverted) {
+
 
         m_motor = new CANSparkMax(deviceId, MotorType.kBrushless);
         m_motor.restoreFactoryDefaults();
@@ -71,7 +68,7 @@ public class IntakeRollersSubsystem extends SubsystemBase {
                             m_motor.set(volts.in(Volts) / RobotController.getBatteryVoltage());
                         },
                         log -> {
-                            log.motor(("intake-" + name))
+                            log.motor(("Climb-" + name))
                                     .voltage(m_appliedVoltage.mut_replace(
                                             m_motor.get() * RobotController.getBatteryVoltage(), Volts))
                                     .angularPosition(m_distance.mut_replace(m_encoder.getPosition(), Rotations))
@@ -81,7 +78,11 @@ public class IntakeRollersSubsystem extends SubsystemBase {
 
                         },
                         this));
+
+
     }
+    
+    
 
     @Override
     public void periodic() {
@@ -90,7 +91,7 @@ public class IntakeRollersSubsystem extends SubsystemBase {
 
     /**
      * 
-     * Set the speed of the intake motor (-1 to 1)
+     * Set the speed of the *climb* motor (-1 to 1)
      * 
      * @param speed
      */
@@ -98,45 +99,46 @@ public class IntakeRollersSubsystem extends SubsystemBase {
         m_motor.set(speed);
     }
 
-
-
     /**
      * 
      * @param setpoint of the motor, in rotations / minute (important, minute not
      *                 seconds)
      */
-    public void RunIntake(int setpoint) {
+    public void RunClimb(int setpoint) {
 
         double ff = m_feedforward.calculate(setpoint / 60);  //important, calculate needs rps, not rpm. Hence, / 60
         m_pidController.setReference(setpoint, CANSparkMax.ControlType.kVelocity, 0, ff, ArbFFUnits.kVoltage);
 
-         SmartDashboard.putNumber("Intake Speed: " + name, m_encoder.getVelocity());
+        
 
     }
 
-    public void StopIntake() {
+    public void StopClimb() {
         setSpeed(0);
     }
 
 
-    public Command RunIntakeForwardCommand() {
+    public Command RunClimbForwardCommand() {
         return new FunctionalCommand(
                 () -> {
-                    System.out.println("-----------------Starting intake forward--------------");
+                    System.out.println("-----------------Starting Climb forward--------------");
                 },
-                () -> RunIntake(IntakeConstants.kForwardSpeed),
-                (interrupted) -> StopIntake(),
+                () -> RunClimb(ClimbConstants.kForwardSpeed),
+                (interrupted) -> StopClimb(),
                 () -> false, this);
     }
 
-    public Command RunIntakeBackwardCommand() {
+    public Command RunClimbBackwardCommand() {
         return new FunctionalCommand(
                 () -> {
+                    System.out.println("-----------------Starting Climb Reverse--------------");
                 },
-                () -> RunIntake(IntakeConstants.kReverseSpeed),
-                (interrupted) -> StopIntake(),
+                () -> RunClimb(ClimbConstants.kReverseSpeed),
+                (interrupted) -> StopClimb(),
                 () -> false, this);
     }
+
+
 
     /***********************************************************
      * SYSID functions
@@ -150,3 +152,4 @@ public class IntakeRollersSubsystem extends SubsystemBase {
     }
 
 }
+

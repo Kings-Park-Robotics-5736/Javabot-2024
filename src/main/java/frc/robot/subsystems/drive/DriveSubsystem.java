@@ -4,7 +4,14 @@
 
 package frc.robot.subsystems.drive;
 
+import static edu.wpi.first.units.MutableMeasure.mutable;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.Volts;
+
 import com.ctre.phoenix6.hardware.Pigeon2;
+import com.pathplanner.lib.auto.AutoBuilder;
+
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -29,13 +36,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
-import edu.wpi.first.math.util.Units;
-import static edu.wpi.first.units.MutableMeasure.mutable;
-import static edu.wpi.first.units.Units.Volts;
-import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.MetersPerSecond;
 import frc.robot.vision.Limelight;
-import com.pathplanner.lib.auto.AutoBuilder;
 
 public class DriveSubsystem extends SubsystemBase {
 
@@ -447,7 +448,7 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   public void setJoystickRotateLockout(boolean val) {
-   setJoystickRotateLockout(val, false);
+    setJoystickRotateLockout(val, false);
   }
 
   public void setJoystickRotateLockout(boolean val, boolean shouldBeFieldOriented) {
