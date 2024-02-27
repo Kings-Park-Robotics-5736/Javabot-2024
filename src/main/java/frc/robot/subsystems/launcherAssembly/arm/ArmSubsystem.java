@@ -100,6 +100,10 @@ public class ArmSubsystem extends SubsystemBase {
             System.out.println("!!!!!ERROR!!!! Could not initialize the Leader Arm Motor. Restart robot!");
         }
 
+        m_leader.setNeutralMode(NeutralModeValue.Brake);
+        m_follower.setNeutralMode(NeutralModeValue.Brake);
+
+
         m_sysIdRoutine = new SysIdRoutine(
                 // Empty config defaults to 1 volt/second ramp rate and 7 volt step voltage.
                 new SysIdRoutine.Config(null, Volts.of(2), null),

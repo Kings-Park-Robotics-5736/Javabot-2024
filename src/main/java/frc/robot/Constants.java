@@ -121,7 +121,7 @@ public final class Constants {
 
   public static final class LowerIntakeConstants {
 
-    public static final byte kDeviceId = 2;
+    public static final byte kDeviceId = 1;
 
     public static final PidConstants kPidValues = new PidConstants(5.1248E-06, 0, 0);
     public static final FeedForwardConstants kFFValues = new FeedForwardConstants(0.2672, 0.12568, 0.0065158);
