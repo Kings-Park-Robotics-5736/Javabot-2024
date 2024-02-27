@@ -62,6 +62,14 @@ public class LauncherAssemblySubsystem extends SubsystemBase {
     public Command sysIdKickupDynamic(SysIdRoutine.Direction direction) {
         return m_kickup.sysIdDynamic(direction);
     }
+    
+    public Command sysIdArmQuasistatic(SysIdRoutine.Direction direction) {
+        return m_arm.sysIdQuasistatic(direction);
+    }
+
+    public Command sysIdArmDynamic(SysIdRoutine.Direction direction) {
+        return m_arm.sysIdDynamic(direction);
+    }
 
     // Composed Commands:
 
@@ -89,6 +97,10 @@ public class LauncherAssemblySubsystem extends SubsystemBase {
     }
     public Command RunArmDownManualSpeedCommand(DoubleSupplier getSpeed) {
         return m_arm.RunArmDownManualSpeedCommand(getSpeed);
+    }
+
+    public Command RunArmToPositionCommand(double position){
+        return m_arm.RunArmToPositionCommand(position);
     }
 
 }

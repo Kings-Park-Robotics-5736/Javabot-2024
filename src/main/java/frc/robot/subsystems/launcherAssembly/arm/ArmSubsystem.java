@@ -15,6 +15,8 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Measure;
@@ -31,6 +33,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.ArmConstants;
+import frc.robot.Constants.DriveConstants;
 import frc.robot.utils.Types.Limits;
 
 public class ArmSubsystem extends SubsystemBase {
@@ -43,12 +46,11 @@ public class ArmSubsystem extends SubsystemBase {
     private double lastPosition = 0;
 
     private ArmFeedforward m_feedforward;
-    private TrapezoidProfile m_profile;
-    private double startTime = 0;
+    private final ProfiledPIDController m_controller = new ProfiledPIDController(ArmConstants.kPidValues.p, ArmConstants.kPidValues.i, ArmConstants.kPidValues.d,
+    new TrapezoidProfile.Constraints(ArmConstants.kMaxVelocity, ArmConstants.kMaxAcceleration));
 
     private DutyCycleEncoder m_encoder;
 
-    final PositionVoltage m_PositionVoltage = new PositionVoltage(0).withSlot(0);
 
     /********************************************************
      * SysId variables
@@ -66,22 +68,13 @@ public class ArmSubsystem extends SubsystemBase {
         TalonFXConfiguration configs = new TalonFXConfiguration();
 
         m_encoder = new DutyCycleEncoder(0);
-        m_leader.setNeutralMode(NeutralModeValue.Brake);
+        
 
         m_feedforward = new ArmFeedforward(ArmConstants.kFFValues.ks, ArmConstants.kFFValues.kg,
                 ArmConstants.kFFValues.kv, ArmConstants.kFFValues.ka);
         m_follower.setControl(new Follower(m_leader.getDeviceID(), false));
         // set m_strictFollower to strict-follow m_leader
         // strict followers ignore the leader's invert and use their own
-
-        configs.Slot0.kP = 0.15; // An error of 1 rotation per second results in 2V output
-        configs.Slot0.kI = 0.002; // An error of 1 rotation per second increases output by 0.5V every second
-        configs.Slot0.kD = 0.0; // A change of 1 rotation per second squared results in 0.01 volts output
-        // configs.Slot0.kV = 0.12; // Falcon 500 is a 500kV motor, 500rpm per V = 8.333
-        // rps per V, 1/8.33 = 0.12
-        // volts / Rotation per second
-        configs.Voltage.PeakForwardVoltage = 12;
-        configs.Voltage.PeakReverseVoltage = -12;
 
         StatusCode status = StatusCode.StatusCodeNotInitialized;
         for (int i = 0; i < 5; ++i) {
@@ -101,13 +94,15 @@ public class ArmSubsystem extends SubsystemBase {
                 break;
         }
 
+        m_leader.setNeutralMode(NeutralModeValue.Brake);
+
         if (!status.isOK()) {
             System.out.println("!!!!!ERROR!!!! Could not initialize the Leader Arm Motor. Restart robot!");
         }
 
         m_sysIdRoutine = new SysIdRoutine(
                 // Empty config defaults to 1 volt/second ramp rate and 7 volt step voltage.
-                new SysIdRoutine.Config(null, Volts.of(5), null),
+                new SysIdRoutine.Config(null, Volts.of(2), null),
                 new SysIdRoutine.Mechanism(
                         (Measure<Voltage> volts) -> {
                             // CANNOT use set voltage, it does not work. This normalizes the voltage between
@@ -164,24 +159,19 @@ public class ArmSubsystem extends SubsystemBase {
      * @param setpoint of the motor, in absolute rotations
      */
     private void InitMotionProfile(double setpoint) {
-        m_profile = new TrapezoidProfile(
-                new TrapezoidProfile.Constraints(ArmConstants.kMaxVelocity, ArmConstants.kMaxAcceleration),
-                new TrapezoidProfile.State(setpoint, 0),
-                new TrapezoidProfile.State(getArmPosition(), 0));
-
-        startTime = Timer.getFPGATimestamp();
+        m_controller.reset(m_encoder.get());
+        m_controller.setTolerance(ArmConstants.kPositionTolerance);
+        m_controller.setGoal(new TrapezoidProfile.State(setpoint, 0));
 
     }
 
     public void RunArmToPos() {
 
-        double currTime = Timer.getFPGATimestamp();
-        var setpoint = m_profile.calculate(currTime - startTime);
-        double ff = m_feedforward.calculate(setpoint.position, setpoint.velocity);
+        double pid_output = m_controller.calculate(m_encoder.get());
+        double ff = m_feedforward.calculate(m_controller.getSetpoint().position, m_controller.getSetpoint().velocity);
 
-        m_leader.setControl(m_PositionVoltage.withFeedForward(ff).withPosition(setpoint.position));
+        m_leader.setVoltage(pid_output + ff);
         SmartDashboard.putNumber("Arm Position", getArmPosition() );
-        // Todo: hint, look at the same method in IntakeRollerSubsystem
     }
 
     /**
@@ -210,7 +200,7 @@ public class ArmSubsystem extends SubsystemBase {
 
         // calculate the difference between the current position and the motion profile
         // final position
-        double delta = Math.abs(getArmPosition() - m_profile.calculate(m_profile.totalTime()).position);
+        double delta = Math.abs(getArmPosition() - m_controller.getGoal().position);
 
         // we say that the elevator has reached its target if it is within
         // kDiffThreshold of the target,
@@ -243,7 +233,7 @@ public class ArmSubsystem extends SubsystemBase {
      * @return
      */
 
-    public Command RunArmToositionCommand(double setpoint) {
+    public Command RunArmToPositionCommand(double setpoint) {
         return new FunctionalCommand(
                 () -> {
                     System.out.println("-----------------Starting Arm to position " + setpoint + " --------------");
@@ -281,7 +271,7 @@ public class ArmSubsystem extends SubsystemBase {
                     System.out.println("-----------------Manual Speed Arm Down Starting--------------");
                 },
                 () -> {
-                    setSpeed(-getSpeed.getAsDouble());
+                    setSpeed(getSpeed.getAsDouble());
                     SmartDashboard.putNumber("Arm Position", getArmPosition() );
                 },
                 (interrupted) -> {

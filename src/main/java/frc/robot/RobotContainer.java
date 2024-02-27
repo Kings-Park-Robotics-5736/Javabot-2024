@@ -136,6 +136,9 @@ public class RobotContainer {
                         case KICKUP_RIGHT:
                                 configButtonBindingsKickupRightSysID();
                                 break;
+                        case ARM:
+                                configButtonBindingsArmSysID();
+                                break;
                         case NONE:
                         default:
                                 configureButtonBindings();
@@ -247,6 +250,23 @@ public class RobotContainer {
                                 .whileTrue(m_Launcher.sysIdKickupDynamic(SysIdRoutine.Direction.kForward));
                 new JoystickButton(m_driverController, XboxController.Button.kY.value)
                                 .whileTrue(m_Launcher.sysIdKickupDynamic(SysIdRoutine.Direction.kReverse));
+
+                new JoystickButton(m_driverController, XboxController.Button.kLeftBumper.value)
+                                .toggleOnTrue(m_Launcher.RunKickupForwardCommand());
+
+                new JoystickButton(m_driverController, XboxController.Button.kRightBumper.value)
+                                .toggleOnTrue(m_Launcher.RunKickupBackwardCommand());
+        }
+
+        private void configButtonBindingsArmSysID() {
+                new JoystickButton(m_driverController, XboxController.Button.kA.value)
+                                .whileTrue(m_Launcher.sysIdArmQuasistatic(SysIdRoutine.Direction.kForward));
+                new JoystickButton(m_driverController, XboxController.Button.kB.value)
+                                .whileTrue(m_Launcher.sysIdArmQuasistatic(SysIdRoutine.Direction.kReverse));
+                new JoystickButton(m_driverController, XboxController.Button.kX.value)
+                                .whileTrue(m_Launcher.sysIdArmDynamic(SysIdRoutine.Direction.kForward));
+                new JoystickButton(m_driverController, XboxController.Button.kY.value)
+                                .whileTrue(m_Launcher.sysIdArmDynamic(SysIdRoutine.Direction.kReverse));
 
                 new JoystickButton(m_driverController, XboxController.Button.kLeftBumper.value)
                                 .toggleOnTrue(m_Launcher.RunKickupForwardCommand());
