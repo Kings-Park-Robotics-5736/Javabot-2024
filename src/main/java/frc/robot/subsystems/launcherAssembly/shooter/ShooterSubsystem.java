@@ -26,10 +26,10 @@ public class ShooterSubsystem extends SubsystemBase {
                 Constants.RightShooterConstants.kFFValues, Constants.RightShooterConstants.kDeviceId, "Right", true,
                 Constants.ShooterConstants.kDesiredSpeed, Constants.ShooterConstants.kReverseSpeed);
 
-        leftForwardSpeed = Constants.ShooterConstants.kDesiredSpeed;
-        rightForwardSpeed = Constants.ShooterConstants.kDesiredSpeed;
-        leftReverseSpeed = Constants.ShooterConstants.kReverseSpeed;
-        rightReverseSpeed = Constants.ShooterConstants.kReverseSpeed;
+        leftForwardSpeed = 0;
+        rightForwardSpeed =0;
+        leftReverseSpeed = 0;
+        rightReverseSpeed = 0;
     }
 
     @Override

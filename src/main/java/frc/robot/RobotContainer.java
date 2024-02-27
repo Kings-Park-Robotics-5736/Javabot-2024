@@ -10,7 +10,9 @@ import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -26,6 +28,8 @@ import frc.robot.commands.drive.CenterToTargetCommandPiCam;
 import frc.robot.commands.drive.DriveDistanceCommand;
 import frc.robot.commands.drive.DriveToTargetCommand;
 import frc.robot.subsystems.drive.DriveSubsystem;
+import frc.robot.subsystems.launcherAssembly.kickup.KickupSubsystem;
+import frc.robot.subsystems.launcherAssembly.shooter.ShooterSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.launcherAssembly.LauncherAssemblySubsystem;
 import frc.robot.utils.Types.PositionType;
@@ -56,7 +60,10 @@ public class RobotContainer {
                                                                                           // m_limelight_side);
 
         private final IntakeSubsystem m_intake = new IntakeSubsystem();
+        private final KickupSubsystem m_kickup = new KickupSubsystem();
+        private final ShooterSubsystem m_shooter = new ShooterSubsystem();
         private final LauncherAssemblySubsystem m_Launcher = new LauncherAssemblySubsystem();
+        private final PowerDistribution PDH = new PowerDistribution(1, ModuleType.kRev);
         private final SendableChooser<Command> autoChooser;
 
         private final SlewRateLimiter m_xspeedLimiter = new SlewRateLimiter(3);
@@ -140,6 +147,10 @@ public class RobotContainer {
                         default:
                                 configureButtonBindings();
                                 // Configure default commands
+                                PDH.setSwitchableChannel(true);
+                                // Enable LEDS
+                                // will this happen when we turn on/push code?
+                                // or on enable
                                 m_robotDrive.setDefaultCommand(
                                                 // The left stick controls translation of the robot.
                                                 // Turning is controlled by the X axis of the right stick.
@@ -312,15 +323,43 @@ public class RobotContainer {
                 new Trigger(() -> {
                         return m_actionController.getRightTriggerAxis() > 0;
                 }).whileTrue(m_Launcher.RunArmUpManualSpeedCommand(() -> m_actionController.getRightTriggerAxis()));
+
+
                 new Trigger(() -> {
                         return m_actionController.getLeftTriggerAxis() > 0;
-                }).whileTrue(m_Launcher.RunArmDownManualSpeedCommand(() -> -m_actionController.getLeftTriggerAxis()));
+                }).whileTrue(m_Launcher.RunArmDownManualSpeedCommand(() -> m_actionController.getLeftTriggerAxis()));
 
-                new JoystickButton(m_driverController, XboxController.Button.kA.value)
-                                .whileTrue(m_intake.RunIntakeForwardCommand());
 
-                new JoystickButton(m_driverController, XboxController.Button.kB.value)
-                                .whileTrue(m_intake.RunIntakeBackwardCommand());
+
+                new JoystickButton(m_driverController, XboxController.Button.kLeftBumper.value).toggleOnTrue(m_intake.RunIntakeForwardCommand());
+                new JoystickButton(m_driverController, XboxController.Button.kRightBumper.value).toggleOnTrue(m_intake.RunIntakeBackwardCommand());
+        
+        
+        
+                new JoystickButton(m_actionController, XboxController.Button.kRightBumper.value)
+                                .whileTrue(m_kickup.RunKickupForwardCommand());
+
+
+
+                new JoystickButton(m_actionController, XboxController.Button.kA.value)
+                                .whileTrue(m_shooter.RunShooterForwardCommand(false));        
+        
+                                
+                new JoystickButton(m_actionController, XboxController.Button.kB.value)
+                                .whileTrue(m_shooter.RunShooterBackwardCommand(false));  
+
+
+
+        /*
+        *
+        * new JoystickButton(m_driverController, XboxController.Button.kX.value).onTrue()
+        *       
+        * Commands.runOnce(() -> m_robotDrive.forceStop())
+        * 
+        * 
+        * 
+           */
+        
         }
 
         /**
