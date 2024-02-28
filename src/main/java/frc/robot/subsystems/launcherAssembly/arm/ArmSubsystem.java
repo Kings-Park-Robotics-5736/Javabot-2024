@@ -96,6 +96,7 @@ public class ArmSubsystem extends SubsystemBase {
 
         m_leader.setNeutralMode(NeutralModeValue.Brake);
 
+
         if (!status.isOK()) {
             System.out.println("!!!!!ERROR!!!! Could not initialize the Leader Arm Motor. Restart robot!");
         }
