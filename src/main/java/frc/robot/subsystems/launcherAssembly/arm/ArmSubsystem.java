@@ -1,6 +1,9 @@
 package frc.robot.subsystems.launcherAssembly.arm;
 
 import static edu.wpi.first.units.MutableMeasure.mutable;
+import static edu.wpi.first.units.Units.Radian;
+import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Volts;
@@ -56,8 +59,8 @@ public class ArmSubsystem extends SubsystemBase {
      * SysId variables
      ********************************************************/
     private final MutableMeasure<Voltage> m_appliedVoltage = mutable(Volts.of(0));
-    private final MutableMeasure<Angle> m_distance = mutable(Rotations.of(0));
-    private final MutableMeasure<Velocity<Angle>> m_velocity = mutable(RotationsPerSecond.of(0));
+    private final MutableMeasure<Angle> m_distance = mutable(Radians.of(0));
+    private final MutableMeasure<Velocity<Angle>> m_velocity = mutable(RadiansPerSecond.of(0));
     private final SysIdRoutine m_sysIdRoutine;
 
     public ArmSubsystem() {
@@ -68,7 +71,6 @@ public class ArmSubsystem extends SubsystemBase {
         TalonFXConfiguration configs = new TalonFXConfiguration();
 
         m_encoder = new DutyCycleEncoder(0);
-        
 
         m_feedforward = new ArmFeedforward(ArmConstants.kFFValues.ks, ArmConstants.kFFValues.kg,
                 ArmConstants.kFFValues.kv, ArmConstants.kFFValues.ka);
@@ -94,8 +96,6 @@ public class ArmSubsystem extends SubsystemBase {
                 break;
         }
 
-        m_leader.setNeutralMode(NeutralModeValue.Brake);
-
         if (!status.isOK()) {
             System.out.println("!!!!!ERROR!!!! Could not initialize the Leader Arm Motor. Restart robot!");
         }
@@ -118,12 +118,12 @@ public class ArmSubsystem extends SubsystemBase {
                                     .voltage(m_appliedVoltage.mut_replace(
                                             m_leader.get() * RobotController.getBatteryVoltage(), Volts))
                                     .angularPosition(m_distance.mut_replace(
-                                            m_leader.getPosition().refresh().getValue() / 11.666667,
-                                            Rotations))
+                                            getFalconAngleRadians(),
+                                            Radians))
                                     .angularVelocity(
                                             m_velocity.mut_replace(
-                                                    m_leader.getVelocity().refresh().getValue() / 11.666667,
-                                                    RotationsPerSecond));
+                                                   getFalconAngularVelocityRadiansPerSec(),
+                                                    RadiansPerSecond));
 
                         },
                         this));
@@ -132,6 +132,8 @@ public class ArmSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         // leave blank
+        SmartDashboard.putNumber("Falcon Angle", Math.toDegrees(getFalconAngleRadians()));
+        SmartDashboard.putNumber("Falcon Angular Velocity", getFalconAngularVelocityRadiansPerSec());
     }
 
     /**
@@ -144,18 +146,23 @@ public class ArmSubsystem extends SubsystemBase {
         m_leader.set(speed);
     }
 
-    public int getSpeedRotationsPerMinute() {
-        double rpm = m_leader.getVelocity().refresh().getValue() * 60;
-        return (int) rpm;
-    }
 
-    public boolean isAtDesiredSpeed() {
-        return Math.abs(getSpeedRotationsPerMinute()
-                - Constants.ShooterConstants.kDesiredSpeed) < Constants.ShooterConstants.kTolerance;
-    }
-
+    
     public double getArmPosition() {
-        return m_encoder.get();
+        return getFalconAngleRadians();
+       //return getArmAngleRadians();
+    }
+
+    public double getFalconAngleRadians(){
+        return (m_leader.getPosition().refresh().getValue() / 46.666667) * 2 * Math.PI + Math.toRadians(Constants.ArmConstants.falconOffsetAngleDegrees);
+    }
+        
+    public double getFalconAngularVelocityRadiansPerSec(){
+        return  (m_leader.getVelocity().refresh().getValue() / 46.666667) * 2 * Math.PI;
+    }
+
+    public double getArmAngleRadians(){
+        return m_encoder.getAbsolutePosition()* 2 * Math.PI + Math.toRadians(ArmConstants.armEncoderOffsetAngleDegrees);
     }
 
     /**
@@ -163,7 +170,7 @@ public class ArmSubsystem extends SubsystemBase {
      * @param setpoint of the motor, in absolute rotations
      */
     private void InitMotionProfile(double setpoint) {
-        m_controller.reset(m_encoder.get());
+        m_controller.reset(getArmPosition());
         m_controller.setTolerance(ArmConstants.kPositionTolerance);
         m_controller.setGoal(new TrapezoidProfile.State(setpoint, 0));
 
@@ -171,11 +178,12 @@ public class ArmSubsystem extends SubsystemBase {
 
     public void RunArmToPos() {
 
-        double pid_output = m_controller.calculate(m_encoder.get());
+        double pid_output = m_controller.calculate(getArmPosition());
         double ff = m_feedforward.calculate(m_controller.getSetpoint().position, m_controller.getSetpoint().velocity);
 
         m_leader.setVoltage(pid_output + ff);
         SmartDashboard.putNumber("Arm Position", getArmPosition() );
+        SmartDashboard.putNumber("SetpointVelocity", m_controller.getSetpoint().velocity);
     }
 
     /**
@@ -228,10 +236,7 @@ public class ArmSubsystem extends SubsystemBase {
 
     /**
      * 
-     * @param FinishWhenAtTargetSpeed When this is set, this command should finish
-     *                                once a call to isAtDesiredSpeed returns true.
-     *                                When this is false, this command should never
-     *                                end.
+     * @param setpoint the desired arm position IN RADIANS
      * @note When FinishWhenAtTargetSpeed is true, the StopShooter() should not be
      *       called when the command finishes.
      * @return
@@ -260,6 +265,9 @@ public class ArmSubsystem extends SubsystemBase {
                 () -> {
                     setSpeed(getSpeed.getAsDouble());
                     SmartDashboard.putNumber("Arm Position", getArmPosition() );
+                    SmartDashboard.putNumber("Falcon Arm Pos:", m_leader.getPosition().refresh().getValue() / 46.666667);
+                    SmartDashboard.putNumber("Falcon Arm Pos RAW:", m_leader.getPosition().refresh().getValue());
+                    
                 },
                 (interrupted) -> {
                     StopArm();
@@ -277,6 +285,8 @@ public class ArmSubsystem extends SubsystemBase {
                 () -> {
                     setSpeed(getSpeed.getAsDouble());
                     SmartDashboard.putNumber("Arm Position", getArmPosition() );
+                    SmartDashboard.putNumber("Falcon Arm Pos:", m_leader.getPosition().refresh().getValue() / 46.666667);
+                    SmartDashboard.putNumber("Falcon Arm Pos RAW:", m_leader.getPosition().refresh().getValue());
                 },
                 (interrupted) -> {
                     StopArm();
@@ -295,3 +305,4 @@ public class ArmSubsystem extends SubsystemBase {
     }
 
 }
+//56.6

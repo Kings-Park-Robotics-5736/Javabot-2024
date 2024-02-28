@@ -48,7 +48,7 @@ public class RobotContainer {
 
         // The robot's subsystems
 
-        private final SysidMechanism enabledSysid = SysidMechanism.NONE;
+        private final SysidMechanism enabledSysid = SysidMechanism.ARM;
 
         private final PiCamera m_picam = new PiCamera();
         public Limelight m_limelight = new Limelight("limelight");
@@ -280,10 +280,19 @@ public class RobotContainer {
                                 .whileTrue(m_Launcher.sysIdArmDynamic(SysIdRoutine.Direction.kReverse));
 
                 new JoystickButton(m_driverController, XboxController.Button.kLeftBumper.value)
-                                .toggleOnTrue(m_Launcher.RunKickupForwardCommand());
+                                .whileTrue(m_Launcher.RunArmToPositionCommand(0));
 
                 new JoystickButton(m_driverController, XboxController.Button.kRightBumper.value)
-                                .toggleOnTrue(m_Launcher.RunKickupBackwardCommand());
+                                .whileTrue(m_Launcher.RunArmToPositionCommand(0));
+
+                 new Trigger(() -> {
+                        return m_driverController.getRightTriggerAxis() > 0;
+                }).whileTrue(m_Launcher.RunArmUpManualSpeedCommand(() -> m_driverController.getRightTriggerAxis()));
+
+
+                new Trigger(() -> {
+                        return m_driverController.getLeftTriggerAxis() > 0;
+                }).whileTrue(m_Launcher.RunArmDownManualSpeedCommand(() -> -m_driverController.getLeftTriggerAxis()));
         }
 
         /**

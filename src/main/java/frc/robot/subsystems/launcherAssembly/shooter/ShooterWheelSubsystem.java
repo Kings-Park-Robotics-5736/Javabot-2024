@@ -155,10 +155,7 @@ public class ShooterWheelSubsystem extends SubsystemBase {
     public void RunShooterWithMotionProfile() {
 
         double currTime = Timer.getFPGATimestamp();
-        System.out.println("Current Time: " + currTime);
-        System.out.println("Start Time: " + startTime);
         var setpoint = profile.calculate(currTime - startTime);
-        System.out.println("Setpoint: " + setpoint.position);
         double ff = m_feedforward.calculate(setpoint.position / 60); // important, calculate
         // needs rps, not rpm. Hence, / 60
         m_motor.setControl(m_voltageVelocity.withFeedForward(ff).withVelocity(setpoint.position / 60));
