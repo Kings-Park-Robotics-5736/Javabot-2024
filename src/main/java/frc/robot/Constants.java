@@ -160,6 +160,9 @@ public final class Constants {
     public static final double falconErrorThresh = Math.toRadians(2);
     public static final double falconErrorCount = 10;
 
+    public static final double intakeAngle = Math.toRadians(35);
+    public static final double ampAngle = Math.toRadians(110);
+
   }
 
   public static final class ShooterConstants {

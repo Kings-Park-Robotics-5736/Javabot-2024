@@ -131,17 +131,17 @@ public class ArmSubsystem extends SubsystemBase {
 
                         },
                         this));
+
+        InitMotionProfile(getArmPosition());
     }
 
     @Override
     public void periodic() {
         // leave blank
-        SmartDashboard.putNumber("Falcon Angle", Math.toDegrees((getFalconAngleRadians())));
-        SmartDashboard.putNumber("Falcon Angle Rad", ((getFalconAngleRadians())));
-
+        SmartDashboard.putNumber("Falcon Angle Deg", Math.toDegrees((getFalconAngleRadians())));
         SmartDashboard.putNumber("Falcon Angular Velocity", getFalconAngularVelocityRadiansPerSec());
-
         SmartDashboard.putNumber("Arm Angle Deg", Math.toDegrees(getArmAngleRadians()));
+        SmartDashboard.putNumber("Falcon Angle Error Deg", Math.toDegrees(Math.abs(getFalconAngleRadians() - getArmAngleRadians())));
 
         if (Math.abs(getFalconAngularVelocityRadiansPerSec()) < .001) {
             double falconError = Math.abs(getFalconAngleRadians() - getArmAngleRadians());
@@ -156,6 +156,8 @@ public class ArmSubsystem extends SubsystemBase {
             }
 
         }
+
+        RunArmToPos();
     }
 
     /**
@@ -193,27 +195,21 @@ public class ArmSubsystem extends SubsystemBase {
         m_controller.reset(getArmPosition());
         m_controller.setTolerance(ArmConstants.kPositionTolerance);
         m_controller.setGoal(new TrapezoidProfile.State(setpoint, 0));
-        SmartDashboard.putNumber("Init Profile Initial Arm", Math.toDegrees((getArmPosition())));
-        SmartDashboard.putNumber("Init Profile Initial Setpoint", Math.toDegrees((setpoint)));
-
-        emergencyStop = false;
-
     }
 
     public void RunArmToPos() {
 
-        if(!emergencyStop){
-            double pid_output = m_controller.calculate(getArmPosition());
-            double ff = m_feedforward.calculate(m_controller.getSetpoint().position, m_controller.getSetpoint().velocity);
+        double pid_output = m_controller.calculate(getArmPosition());
+        double ff = m_feedforward.calculate(m_controller.getSetpoint().position, m_controller.getSetpoint().velocity);
 
-            m_leader.setVoltage(pid_output + ff);
-            SmartDashboard.putNumber("Arm Position", getArmPosition());
-            SmartDashboard.putNumber("SetpointVelocity", m_controller.getSetpoint().velocity);
-        }
-
+        m_leader.setVoltage(pid_output + ff);
+        SmartDashboard.putNumber("SetpointVelocity", m_controller.getSetpoint().velocity);
+        
+        //if we are about to overextend, instantly stop and go back to intake position.
         if (getArmAngleRadians() > ArmConstants.kLimits.high) {
             StopArm();
             emergencyStop = true;
+            InitMotionProfile(ArmConstants.intakeAngle);
         }
     }
 
@@ -280,9 +276,10 @@ public class ArmSubsystem extends SubsystemBase {
                     System.out.println("-----------------Starting Arm to position " + setpoint + " --------------");
                     InitMotionProfile(setpoint);
                 },
-                () -> RunArmToPos(),
+                () -> {},
                 (interrupted) -> {
                     StopArm();
+                    emergencyStop = false;
                 },
                 () -> {
                     return isFinished();
@@ -296,11 +293,6 @@ public class ArmSubsystem extends SubsystemBase {
                 },
                 () -> {
                     setSpeed(getSpeed.getAsDouble());
-                    SmartDashboard.putNumber("Arm Position", getArmPosition());
-                    SmartDashboard.putNumber("Falcon Arm Pos:",
-                            m_leader.getPosition().refresh().getValue() / 46.666667);
-                    SmartDashboard.putNumber("Falcon Arm Pos RAW:", m_leader.getPosition().refresh().getValue());
-
                 },
                 (interrupted) -> {
                     StopArm();
@@ -317,10 +309,6 @@ public class ArmSubsystem extends SubsystemBase {
                 },
                 () -> {
                     setSpeed(getSpeed.getAsDouble());
-                    SmartDashboard.putNumber("Arm Position", getArmPosition());
-                    SmartDashboard.putNumber("Falcon Arm Pos:",
-                            m_leader.getPosition().refresh().getValue() / 46.666667);
-                    SmartDashboard.putNumber("Falcon Arm Pos RAW:", m_leader.getPosition().refresh().getValue());
                 },
                 (interrupted) -> {
                     StopArm();
