@@ -283,7 +283,7 @@ public class RobotContainer {
                                 .whileTrue(m_Launcher.RunArmToPositionCommand(0));
 
                 new JoystickButton(m_driverController, XboxController.Button.kRightBumper.value)
-                                .whileTrue(m_Launcher.RunArmToPositionCommand(0));
+                                .whileTrue(m_Launcher.RunArmToPositionCommand(Math.toRadians(-25)));
 
                  new Trigger(() -> {
                         return m_driverController.getRightTriggerAxis() > 0;

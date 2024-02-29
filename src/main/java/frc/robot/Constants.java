@@ -141,20 +141,24 @@ public final class Constants {
     public static final byte kFollowerDeviceId = 10;
     public static final String kCanName = "Canivore";
 
-    public static final int kMaxVelocity = (int) Math.PI/2; //max velocity is 90 deg / sec
-    public static final int kMaxAcceleration = (int) Math.PI/4; //max accel is 45 deg/sec^2
-    public static final PidConstants kPidValues = new PidConstants(0/*5.3718*/, 0, 0);
-    public static final FeedForwardConstants kFFValues = new FeedForwardConstants(.14343, 5.0537, 0.41886, 0.47304);
+    public static final double kMaxVelocity = (double) 2 * Math.PI; //max velocity is 90 deg / sec
+    public static final double kMaxAcceleration = (double)2 *  Math.PI; //max accel is 45 deg/sec^2
+    public static final PidConstants kPidValues = new PidConstants(20/*5.3718*/, 0, .1);
+
+    public static final FeedForwardConstants kFFValues = new FeedForwardConstants(.061459, 3.2533, 0.57096, 0.39434);
    
     public static final double kPositionTolerance = Math.toRadians(3.0);
     public static final double kStaleTolerance = Math.toRadians(2);
     public static final double kDiffThreshold = Math.toRadians(1);
     public static final int kStaleThreshold = 10;
 
-    public static final double falconOffsetAngleDegrees = 45;
-    public static final double armEncoderOffsetAngleDegrees = 0;
+    public static final double falconOffsetAngleDegrees = 35;
+    public static final double armEncoderOffsetAngleDegrees =-203;
 
-    public static final Limits kLimits = new Limits(0, 62);
+    public static final Limits kLimits = new Limits(0, Math.toRadians(-120));
+
+    public static final double falconErrorThresh = Math.toRadians(2);
+    public static final double falconErrorCount = 10;
 
   }
 

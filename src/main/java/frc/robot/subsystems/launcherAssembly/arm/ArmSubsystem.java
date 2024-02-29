@@ -44,16 +44,18 @@ public class ArmSubsystem extends SubsystemBase {
     private final TalonFX m_follower;
     private final TalonFX m_leader;
 
+    private boolean emergencyStop;
 
     private int staleCounter = 0;
     private double lastPosition = 0;
+    private double falconErrorCounter = 0;
 
     private ArmFeedforward m_feedforward;
-    private final ProfiledPIDController m_controller = new ProfiledPIDController(ArmConstants.kPidValues.p, ArmConstants.kPidValues.i, ArmConstants.kPidValues.d,
-    new TrapezoidProfile.Constraints(ArmConstants.kMaxVelocity, ArmConstants.kMaxAcceleration));
+    private final ProfiledPIDController m_controller = new ProfiledPIDController(ArmConstants.kPidValues.p,
+            ArmConstants.kPidValues.i, ArmConstants.kPidValues.d,
+            new TrapezoidProfile.Constraints(ArmConstants.kMaxVelocity, ArmConstants.kMaxAcceleration));
 
     private DutyCycleEncoder m_encoder;
-
 
     /********************************************************
      * SysId variables
@@ -62,6 +64,7 @@ public class ArmSubsystem extends SubsystemBase {
     private final MutableMeasure<Angle> m_distance = mutable(Radians.of(0));
     private final MutableMeasure<Velocity<Angle>> m_velocity = mutable(RadiansPerSecond.of(0));
     private final SysIdRoutine m_sysIdRoutine;
+    private double falconAngleOffset;
 
     public ArmSubsystem() {
 
@@ -103,6 +106,7 @@ public class ArmSubsystem extends SubsystemBase {
         m_leader.setNeutralMode(NeutralModeValue.Brake);
         m_follower.setNeutralMode(NeutralModeValue.Brake);
 
+        falconAngleOffset = Math.toRadians(ArmConstants.falconOffsetAngleDegrees);
 
         m_sysIdRoutine = new SysIdRoutine(
                 // Empty config defaults to 1 volt/second ramp rate and 7 volt step voltage.
@@ -122,7 +126,7 @@ public class ArmSubsystem extends SubsystemBase {
                                             Radians))
                                     .angularVelocity(
                                             m_velocity.mut_replace(
-                                                   getFalconAngularVelocityRadiansPerSec(),
+                                                    getFalconAngularVelocityRadiansPerSec(),
                                                     RadiansPerSecond));
 
                         },
@@ -132,8 +136,26 @@ public class ArmSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         // leave blank
-        SmartDashboard.putNumber("Falcon Angle", Math.toDegrees(getFalconAngleRadians()));
+        SmartDashboard.putNumber("Falcon Angle", Math.toDegrees((getFalconAngleRadians())));
+        SmartDashboard.putNumber("Falcon Angle Rad", ((getFalconAngleRadians())));
+
         SmartDashboard.putNumber("Falcon Angular Velocity", getFalconAngularVelocityRadiansPerSec());
+
+        SmartDashboard.putNumber("Arm Angle Deg", Math.toDegrees(getArmAngleRadians()));
+
+        if (Math.abs(getFalconAngularVelocityRadiansPerSec()) < .001) {
+            double falconError = Math.abs(getFalconAngleRadians() - getArmAngleRadians());
+            if (falconError > ArmConstants.falconErrorThresh) {
+                falconErrorCounter++;
+            } else {
+                falconErrorCounter = 0;
+            }
+            if (falconErrorCounter > ArmConstants.falconErrorCount) {
+                falconAngleOffset += falconError;
+                falconErrorCounter = 0;
+            }
+
+        }
     }
 
     /**
@@ -146,23 +168,21 @@ public class ArmSubsystem extends SubsystemBase {
         m_leader.set(speed);
     }
 
-
-    
     public double getArmPosition() {
         return getFalconAngleRadians();
-       //return getArmAngleRadians();
     }
 
-    public double getFalconAngleRadians(){
-        return (m_leader.getPosition().refresh().getValue() / 46.666667) * 2 * Math.PI + Math.toRadians(Constants.ArmConstants.falconOffsetAngleDegrees);
-    }
-        
-    public double getFalconAngularVelocityRadiansPerSec(){
-        return  (m_leader.getVelocity().refresh().getValue() / 46.666667) * 2 * Math.PI;
+    public double getFalconAngleRadians() {
+        return (m_leader.getPosition().refresh().getValue() / 31.82) * 2 * Math.PI + falconAngleOffset;
     }
 
-    public double getArmAngleRadians(){
-        return m_encoder.getAbsolutePosition()* 2 * Math.PI + Math.toRadians(ArmConstants.armEncoderOffsetAngleDegrees);
+    public double getFalconAngularVelocityRadiansPerSec() {
+        return (m_leader.getVelocity().refresh().getValue() / 31.82) * 2 * Math.PI;
+    }
+
+    public double getArmAngleRadians() {
+        return m_encoder.getAbsolutePosition() * 2 * Math.PI
+                + Math.toRadians(ArmConstants.armEncoderOffsetAngleDegrees);
     }
 
     /**
@@ -173,17 +193,28 @@ public class ArmSubsystem extends SubsystemBase {
         m_controller.reset(getArmPosition());
         m_controller.setTolerance(ArmConstants.kPositionTolerance);
         m_controller.setGoal(new TrapezoidProfile.State(setpoint, 0));
+        SmartDashboard.putNumber("Init Profile Initial Arm", Math.toDegrees((getArmPosition())));
+        SmartDashboard.putNumber("Init Profile Initial Setpoint", Math.toDegrees((setpoint)));
+
+        emergencyStop = false;
 
     }
 
     public void RunArmToPos() {
 
-        double pid_output = m_controller.calculate(getArmPosition());
-        double ff = m_feedforward.calculate(m_controller.getSetpoint().position, m_controller.getSetpoint().velocity);
+        if(!emergencyStop){
+            double pid_output = m_controller.calculate(getArmPosition());
+            double ff = m_feedforward.calculate(m_controller.getSetpoint().position, m_controller.getSetpoint().velocity);
 
-        m_leader.setVoltage(pid_output + ff);
-        SmartDashboard.putNumber("Arm Position", getArmPosition() );
-        SmartDashboard.putNumber("SetpointVelocity", m_controller.getSetpoint().velocity);
+            m_leader.setVoltage(pid_output + ff);
+            SmartDashboard.putNumber("Arm Position", getArmPosition());
+            SmartDashboard.putNumber("SetpointVelocity", m_controller.getSetpoint().velocity);
+        }
+
+        if (getArmAngleRadians() > ArmConstants.kLimits.high) {
+            StopArm();
+            emergencyStop = true;
+        }
     }
 
     /**
@@ -222,16 +253,17 @@ public class ArmSubsystem extends SubsystemBase {
     }
 
     private Boolean isFinished() {
-        var isFinished = armReachedTarget() || !isWithinLimits();
-        return isFinished;
+         var isFinished = emergencyStop || armReachedTarget();
+        return isFinished;// isFinished;
     }
 
     private Boolean isWithinLimits() {
-        return true;
-        /* Below needs to be verified with setup
-        return (m_leader.get() < 0 && getArmPosition() > ArmConstants.kLimits.low)
-                || (m_leader.get() > 0 && getArmPosition() < ArmConstants.kLimits.high);
-        */
+        /*
+         * Below needs to be verified with setup
+         * return (m_leader.get() < 0 && getArmPosition() > ArmConstants.kLimits.low)
+         * || (m_leader.get() > 0 && getArmPosition() < ArmConstants.kLimits.high);
+         */
+        return getArmAngleRadians() < ArmConstants.kLimits.high && getFalconAngularVelocityRadiansPerSec() > 0;
     }
 
     /**
@@ -264,16 +296,17 @@ public class ArmSubsystem extends SubsystemBase {
                 },
                 () -> {
                     setSpeed(getSpeed.getAsDouble());
-                    SmartDashboard.putNumber("Arm Position", getArmPosition() );
-                    SmartDashboard.putNumber("Falcon Arm Pos:", m_leader.getPosition().refresh().getValue() / 46.666667);
+                    SmartDashboard.putNumber("Arm Position", getArmPosition());
+                    SmartDashboard.putNumber("Falcon Arm Pos:",
+                            m_leader.getPosition().refresh().getValue() / 46.666667);
                     SmartDashboard.putNumber("Falcon Arm Pos RAW:", m_leader.getPosition().refresh().getValue());
-                    
+
                 },
                 (interrupted) -> {
                     StopArm();
                 },
                 () -> {
-                    return false;
+                    return isWithinLimits();
                 }, this);
     }
 
@@ -284,15 +317,16 @@ public class ArmSubsystem extends SubsystemBase {
                 },
                 () -> {
                     setSpeed(getSpeed.getAsDouble());
-                    SmartDashboard.putNumber("Arm Position", getArmPosition() );
-                    SmartDashboard.putNumber("Falcon Arm Pos:", m_leader.getPosition().refresh().getValue() / 46.666667);
+                    SmartDashboard.putNumber("Arm Position", getArmPosition());
+                    SmartDashboard.putNumber("Falcon Arm Pos:",
+                            m_leader.getPosition().refresh().getValue() / 46.666667);
                     SmartDashboard.putNumber("Falcon Arm Pos RAW:", m_leader.getPosition().refresh().getValue());
                 },
                 (interrupted) -> {
                     StopArm();
                 },
                 () -> {
-                    return false;
+                    return isWithinLimits();
                 }, this);
     }
 
@@ -305,4 +339,4 @@ public class ArmSubsystem extends SubsystemBase {
     }
 
 }
-//56.6
+// 56.6
