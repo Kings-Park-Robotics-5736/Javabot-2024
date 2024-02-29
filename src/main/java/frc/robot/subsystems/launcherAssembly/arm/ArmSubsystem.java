@@ -99,6 +99,12 @@ public class ArmSubsystem extends SubsystemBase {
                 break;
         }
 
+<<<<<<< HEAD
+=======
+        m_leader.setNeutralMode(NeutralModeValue.Brake);
+
+
+>>>>>>> origin/luancherAssembyButtons/passthroughs
         if (!status.isOK()) {
             System.out.println("!!!!!ERROR!!!! Could not initialize the Leader Arm Motor. Restart robot!");
         }
