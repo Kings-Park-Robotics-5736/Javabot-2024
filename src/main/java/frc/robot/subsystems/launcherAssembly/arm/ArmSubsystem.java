@@ -1,11 +1,8 @@
 package frc.robot.subsystems.launcherAssembly.arm;
 
 import static edu.wpi.first.units.MutableMeasure.mutable;
-import static edu.wpi.first.units.Units.Radian;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.Rotations;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
 import java.util.function.DoubleSupplier;
@@ -13,12 +10,10 @@ import java.util.function.DoubleSupplier;
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.Angle;
@@ -26,18 +21,15 @@ import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.MutableMeasure;
 import edu.wpi.first.units.Velocity;
 import edu.wpi.first.units.Voltage;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.Constants;
 import frc.robot.Constants.ArmConstants;
-import frc.robot.Constants.DriveConstants;
-import frc.robot.utils.Types.Limits;
 
 public class ArmSubsystem extends SubsystemBase {
 
@@ -49,6 +41,7 @@ public class ArmSubsystem extends SubsystemBase {
     private int staleCounter = 0;
     private double lastPosition = 0;
     private double falconErrorCounter = 0;
+    private boolean manualControl = true;
 
     private ArmFeedforward m_feedforward;
     private final ProfiledPIDController m_controller = new ProfiledPIDController(ArmConstants.kPidValues.p,
@@ -66,10 +59,14 @@ public class ArmSubsystem extends SubsystemBase {
     private final SysIdRoutine m_sysIdRoutine;
     private double falconAngleOffset;
 
+    private DigitalInput m_noteSensor;
+
     public ArmSubsystem() {
 
         m_leader = new TalonFX(ArmConstants.kLeaderDeviceId, ArmConstants.kCanName);
         m_follower = new TalonFX(ArmConstants.kFollowerDeviceId, ArmConstants.kCanName);
+
+        m_noteSensor = new DigitalInput(ArmConstants.kNoteSensorDIO);
 
         TalonFXConfiguration configs = new TalonFXConfiguration();
 
@@ -156,8 +153,13 @@ public class ArmSubsystem extends SubsystemBase {
             }
 
         }
+        if(!manualControl){
+            RunArmToPos();
+        }
+    }
 
-        RunArmToPos();
+    public boolean hasNote(){
+        return !m_noteSensor.get();
     }
 
     /**
@@ -275,10 +277,10 @@ public class ArmSubsystem extends SubsystemBase {
                 () -> {
                     System.out.println("-----------------Starting Arm to position " + setpoint + " --------------");
                     InitMotionProfile(setpoint);
+                    manualControl = false;
                 },
                 () -> {},
                 (interrupted) -> {
-                    StopArm();
                     emergencyStop = false;
                 },
                 () -> {
@@ -290,6 +292,7 @@ public class ArmSubsystem extends SubsystemBase {
         return new FunctionalCommand(
                 () -> {
                     System.out.println("-----------------Manual Speed Arm Up Starting--------------");
+                    manualControl = true;
                 },
                 () -> {
                     setSpeed(getSpeed.getAsDouble());
@@ -306,6 +309,7 @@ public class ArmSubsystem extends SubsystemBase {
         return new FunctionalCommand(
                 () -> {
                     System.out.println("-----------------Manual Speed Arm Down Starting--------------");
+                    manualControl = true;
                 },
                 () -> {
                     setSpeed(getSpeed.getAsDouble());
@@ -327,4 +331,3 @@ public class ArmSubsystem extends SubsystemBase {
     }
 
 }
-// 56.6

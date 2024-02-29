@@ -11,8 +11,8 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -23,13 +23,11 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.IOConstants;
-import frc.robot.commands.drive.CenterToGoalCommand;
-import frc.robot.commands.drive.CenterToTargetCommandPiCam;
+import frc.robot.commands.JoystickCommandsFactory;
+import frc.robot.commands.RobotCommandsFactory;
 import frc.robot.commands.drive.DriveDistanceCommand;
 import frc.robot.commands.drive.DriveToTargetCommand;
 import frc.robot.subsystems.drive.DriveSubsystem;
-import frc.robot.subsystems.launcherAssembly.kickup.KickupSubsystem;
-import frc.robot.subsystems.launcherAssembly.shooter.ShooterSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.launcherAssembly.LauncherAssemblySubsystem;
 import frc.robot.utils.Types.PositionType;
@@ -37,6 +35,7 @@ import frc.robot.utils.Types.SysidMechanism;
 import frc.robot.vision.Limelight;
 import frc.robot.vision.Limelight.LEDMode;
 import frc.robot.vision.PiCamera;
+
 
 /*
  * This class is where the bulk of the robot should be declared.  Since Command-based is a
@@ -60,8 +59,6 @@ public class RobotContainer {
                                                                                           // m_limelight_side);
 
         private final IntakeSubsystem m_intake = new IntakeSubsystem();
-        private final KickupSubsystem m_kickup = new KickupSubsystem();
-        private final ShooterSubsystem m_shooter = new ShooterSubsystem();
         private final LauncherAssemblySubsystem m_Launcher = new LauncherAssemblySubsystem();
         private final PowerDistribution PDH = new PowerDistribution(1, ModuleType.kRev);
         private final SendableChooser<Command> autoChooser;
@@ -365,30 +362,16 @@ public class RobotContainer {
         
         
         
+                new JoystickButton(m_actionController, XboxController.Button.kLeftBumper.value)
+                                .whileTrue(RobotCommandsFactory.RunFloorIntakeWithArmPosition(m_intake, m_Launcher));
+
                 new JoystickButton(m_actionController, XboxController.Button.kRightBumper.value)
-                                .whileTrue(m_kickup.RunKickupForwardCommand());
-
-
+                                .whileTrue(m_Launcher.RunShooterAndKickupForwardCommand());
 
                 new JoystickButton(m_actionController, XboxController.Button.kA.value)
-                                .whileTrue(m_shooter.RunShooterForwardCommand(false));        
-        
-                                
-                new JoystickButton(m_actionController, XboxController.Button.kB.value)
-                                .whileTrue(m_shooter.RunShooterBackwardCommand(false));  
+                                .whileTrue(m_Launcher.RunArmToPositionCommand(-25).andThen(JoystickCommandsFactory
+                                .RumbleControllerTillCancel(m_actionController)));
 
-
-
-        /*
-        *
-        * new JoystickButton(m_driverController, XboxController.Button.kX.value).onTrue()
-        *       
-        * Commands.runOnce(() -> m_robotDrive.forceStop())
-        * 
-        * 
-        * 
-           */
-        
         }
 
         /**

@@ -4,27 +4,24 @@ import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.Constants.ArmConstants;
 import frc.robot.subsystems.launcherAssembly.arm.ArmSubsystem;
 import frc.robot.subsystems.launcherAssembly.kickup.KickupSubsystem;
 import frc.robot.subsystems.launcherAssembly.shooter.ShooterSubsystem;
 import frc.robot.utils.Types.PositionType;
-import frc.robot.subsystems.intake.IntakeSubsystem;
 
 public class LauncherAssemblySubsystem extends SubsystemBase {
 
     private final ArmSubsystem m_arm;
     private final ShooterSubsystem m_shooter;
     private final KickupSubsystem m_kickup;
-    private final IntakeSubsystem m_intake;
 
     public LauncherAssemblySubsystem() {
         m_arm = new ArmSubsystem();
         m_shooter = new ShooterSubsystem();
         m_kickup = new KickupSubsystem();
-        m_intake = new IntakeSubsystem();
     }
 
     @Override
@@ -48,21 +45,8 @@ public class LauncherAssemblySubsystem extends SubsystemBase {
     public Command RunKickupBackwardCommand() {
         return m_kickup.RunKickupBackwardCommand();
     }
-    public Command RunFloorInatakeForwardWithShooterIntakeCommand() {
-        /* if position is 0 (or another home position) is should run, else it should not
-
-        if(m_arm.getArmPosition() == 0){
-            return new ParallelCommandGroup(m_intake.RunIntakeForwardCommand(), m_shooter.RunShooterForwardCommand(false));}
-            else{}
-        */
-        
-            return new ParallelCommandGroup(m_intake.RunIntakeForwardCommand(), m_shooter.RunShooterBackwardCommand(false));
-    }
-/*
- * 
- * 
- * 
- * 
+   
+/* 
  * public Command SpinIntakeAndShooterReverseCommand() {
     return new ParallelCommandGroup(
         RunShooterBackwardCommand(),
@@ -128,6 +112,14 @@ public class LauncherAssemblySubsystem extends SubsystemBase {
 
     public Command RunArmToPositionCommand(double position){
         return m_arm.RunArmToPositionCommand(position);
+    }
+
+    public Command RunArmToIntakePositionCommand(){
+        return RunArmToPositionCommand(ArmConstants.intakeAngle);
+    }
+
+    public boolean ArmContainsNote(){
+        return m_arm.hasNote();
     }
 
 }

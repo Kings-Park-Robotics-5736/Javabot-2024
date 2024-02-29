@@ -139,6 +139,8 @@ public final class Constants {
 
     public static final byte kLeaderDeviceId = 9;
     public static final byte kFollowerDeviceId = 10;
+
+    public static final byte kNoteSensorDIO = 1;
     public static final String kCanName = "Canivore";
 
     public static final double kMaxVelocity = (double) 2 * Math.PI; //max velocity is 90 deg / sec
