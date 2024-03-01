@@ -264,5 +264,9 @@ public final class Constants {
     public static final PidConstants kPidValues = new PidConstants(.5, .1, 0.00);
 
   }
-
+  
+  public static final class LEDConstants {
+    public static final int CANdleID = 20;
+    public static final int[] redRGB = {255,0,0};
+  }
 }
