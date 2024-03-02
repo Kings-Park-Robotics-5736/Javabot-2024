@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.818575352641965,
-        "y": 6.921221413268626
+        "x": 3.1284908121417674,
+        "y": 7.0
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.022963850629329,
-        "y": 6.07375690941858
+        "x": 3.332879310129131,
+        "y": 6.152535496149954
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Drive Thru R1 End"
     },
     {
       "anchor": {
-        "x": 3.92,
-        "y": 5.899278923331807
+        "x": 2.1741479307395157,
+        "y": 6.144799573110416
       },
       "prevControl": {
-        "x": 3.9100298293664704,
-        "y": 6.4326830522256575
+        "x": 2.164177760105986,
+        "y": 6.678203702004266
       },
       "nextControl": null,
       "isLocked": false,
@@ -30,10 +30,34 @@
   ],
   "rotationTargets": [],
   "constraintZones": [],
-  "eventMarkers": [],
+  "eventMarkers": [
+    {
+      "name": "New Event Marker",
+      "waypointRelativePos": 0,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "ArmToAutoAngle"
+              }
+            },
+            {
+              "type": "named",
+              "data": {
+                "name": "StartShooter"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
   "globalConstraints": {
-    "maxVelocity": 3.0,
-    "maxAcceleration": 3.0,
+    "maxVelocity": 4.0,
+    "maxAcceleration": 4.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0
   },

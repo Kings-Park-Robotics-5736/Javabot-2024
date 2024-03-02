@@ -30,6 +30,8 @@ import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.ArmConstants;
+import frc.robot.subsystems.drive.DriveSubsystem;
+import frc.robot.utils.MathUtils;
 
 public class ArmSubsystem extends SubsystemBase {
 
@@ -58,6 +60,7 @@ public class ArmSubsystem extends SubsystemBase {
     private final MutableMeasure<Velocity<Angle>> m_velocity = mutable(RadiansPerSecond.of(0));
     private final SysIdRoutine m_sysIdRoutine;
     private double falconAngleOffset;
+    private double m_globalSetpoint;
 
     private DigitalInput m_noteSensor;
 
@@ -132,13 +135,18 @@ public class ArmSubsystem extends SubsystemBase {
         InitMotionProfile(getArmPosition());
     }
 
+    public void resetAfterDisable(){
+        System.out.println("Reset After Disable!!!");
+        manualControl = true;
+    }
+
     @Override
     public void periodic() {
         // leave blank
         SmartDashboard.putNumber("Falcon Angle Deg", Math.toDegrees((getFalconAngleRadians())));
         SmartDashboard.putNumber("Falcon Angular Velocity", getFalconAngularVelocityRadiansPerSec());
         SmartDashboard.putNumber("Arm Angle Deg", Math.toDegrees(getArmAngleRadians()));
-        SmartDashboard.putNumber("Falcon Angle Error Deg", Math.toDegrees(Math.abs(getFalconAngleRadians() - getArmAngleRadians())));
+        SmartDashboard.putNumber("Falcon Angle Error Deg", Math.toDegrees(getFalconAngleRadians() - getArmAngleRadians()));
 
         if (Math.abs(getFalconAngularVelocityRadiansPerSec()) < .001) {
             double falconError = Math.abs(getFalconAngleRadians() - getArmAngleRadians());
@@ -148,10 +156,12 @@ public class ArmSubsystem extends SubsystemBase {
                 falconErrorCounter = 0;
             }
             if (falconErrorCounter > ArmConstants.falconErrorCount) {
-                falconAngleOffset += falconError;
+                falconAngleOffset += (getArmAngleRadians() - getFalconAngleRadians());
                 falconErrorCounter = 0;
             }
 
+        }else{
+            falconErrorCounter = 0;
         }
         if(!manualControl){
             RunArmToPos();
@@ -197,18 +207,23 @@ public class ArmSubsystem extends SubsystemBase {
         m_controller.reset(getArmPosition());
         m_controller.setTolerance(ArmConstants.kPositionTolerance);
         m_controller.setGoal(new TrapezoidProfile.State(setpoint, 0));
+        m_globalSetpoint = setpoint;
     }
 
     public void RunArmToPos() {
 
-        double pid_output = m_controller.calculate(getArmPosition());
+        double pid_output = m_controller.calculate(getArmPosition(), m_globalSetpoint);
         double ff = m_feedforward.calculate(m_controller.getSetpoint().position, m_controller.getSetpoint().velocity);
+        SmartDashboard.putNumber("Arm Pid Output", pid_output);
+        SmartDashboard.putNumber("Arm FF Output", ff);
+        SmartDashboard.putNumber("Arm Position Eror", m_controller.getPositionError());
 
         m_leader.setVoltage(pid_output + ff);
         SmartDashboard.putNumber("SetpointVelocity", m_controller.getSetpoint().velocity);
+        SmartDashboard.putNumber("Global Setpoint ", Math.toDegrees(m_globalSetpoint));
         
         //if we are about to overextend, instantly stop and go back to intake position.
-        if (getArmAngleRadians() > ArmConstants.kLimits.high) {
+        if (getArmAngleRadians() < ArmConstants.kLimits.high) {
             StopArm();
             emergencyStop = true;
             InitMotionProfile(ArmConstants.intakeAngle);
@@ -251,17 +266,30 @@ public class ArmSubsystem extends SubsystemBase {
     }
 
     private Boolean isFinished() {
+        System.out.println("emergency stop " + emergencyStop + ", " + "arm target: " + armReachedTarget());
+
          var isFinished = emergencyStop || armReachedTarget();
         return isFinished;// isFinished;
     }
 
-    private Boolean isWithinLimits() {
+    private Boolean isWithinLimits(double direction) {
         /*
          * Below needs to be verified with setup
          * return (m_leader.get() < 0 && getArmPosition() > ArmConstants.kLimits.low)
          * || (m_leader.get() > 0 && getArmPosition() < ArmConstants.kLimits.high);
          */
-        return getArmAngleRadians() < ArmConstants.kLimits.high && getFalconAngularVelocityRadiansPerSec() > 0;
+        return getArmAngleRadians() > ArmConstants.kLimits.high || ( direction < 0);
+    }
+
+
+    private double sanitizePositionSetpoint(double setpoint){
+        if (setpoint > ArmConstants.kLimits.low){
+            setpoint = ArmConstants.kLimits.low;
+        }
+        if(setpoint < ArmConstants.kLimits.high){
+            setpoint = ArmConstants.kLimits.high;
+        }
+        return setpoint;
     }
 
     /**
@@ -275,8 +303,9 @@ public class ArmSubsystem extends SubsystemBase {
     public Command RunArmToPositionCommand(double setpoint) {
         return new FunctionalCommand(
                 () -> {
-                    System.out.println("-----------------Starting Arm to position " + setpoint + " --------------");
-                    InitMotionProfile(setpoint);
+                    double sanitizedSetpoint = sanitizePositionSetpoint(setpoint);
+                    System.out.println("-----------------Starting Arm to position " + sanitizedSetpoint + " --------------");
+                    InitMotionProfile(sanitizedSetpoint);
                     manualControl = false;
                 },
                 () -> {},
@@ -285,6 +314,41 @@ public class ArmSubsystem extends SubsystemBase {
                 },
                 () -> {
                     return isFinished();
+                }, this);
+    }
+
+
+    public void CalculateNewAutoAngle(DriveSubsystem robotDrive){
+        double new_setpoint = MathUtils.angleRadiansToScoringTarget(robotDrive.getPose());
+        double sanitizedSetpoint = sanitizePositionSetpoint(new_setpoint);
+        if(sanitizedSetpoint != m_globalSetpoint){
+            System.out.println("-----------------New Arm to Setpoint " + sanitizedSetpoint + " --------------");
+        }
+        m_globalSetpoint = sanitizedSetpoint;
+    }
+
+    public void UpdateAngleManually(double diff){
+        m_globalSetpoint += diff;
+    }
+
+
+    public Command RunArmToAutoPositionCommand(DriveSubsystem robotDrive, boolean stopOnFinish) {
+        return new FunctionalCommand(
+                () -> {
+                    double setpoint = MathUtils.angleRadiansToScoringTarget(robotDrive.getPose());
+                    double sanitizedSetpoint = sanitizePositionSetpoint(setpoint);
+                    System.out.println("-----------------Starting Arm to position " + setpoint + ", Sanitized = " + sanitizedSetpoint + " --------------");
+                    InitMotionProfile(sanitizedSetpoint);
+                    manualControl = false;
+                },
+                () -> {
+                    CalculateNewAutoAngle(robotDrive);
+                },
+                (interrupted) -> {
+                    emergencyStop = false;
+                },
+                () -> {
+                    return stopOnFinish && isFinished();
                 }, this);
     }
 
@@ -301,7 +365,7 @@ public class ArmSubsystem extends SubsystemBase {
                     StopArm();
                 },
                 () -> {
-                    return isWithinLimits();
+                    return !isWithinLimits(getSpeed.getAsDouble());
                 }, this);
     }
 
@@ -318,7 +382,7 @@ public class ArmSubsystem extends SubsystemBase {
                     StopArm();
                 },
                 () -> {
-                    return isWithinLimits();
+                    return !isWithinLimits(getSpeed.getAsDouble());
                 }, this);
     }
 

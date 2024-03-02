@@ -285,27 +285,32 @@ public class DriveSubsystem extends SubsystemBase {
       Pose2d limelightPose = ll.AsPose2d(pose);
 
       double[] cameraToAprilTagPose = m_limelight.getTargetPoseCameraSpace();
-      double distanceToAprilTagSquared = cameraToAprilTagPose[0] * cameraToAprilTagPose[0]
-          + cameraToAprilTagPose[2] * cameraToAprilTagPose[2];
-      double poseDelta = m_poseEstimator.getEstimatedPosition().getTranslation()
-          .getDistance(limelightPose.getTranslation());
 
-      if (distanceToAprilTagSquared < 9 && poseDelta < .5) {
-        transStd = 0.5;
-        rotStd = 10;
-      } else if (distanceToAprilTagSquared < 25) {
-        transStd = 1.0;
-        rotStd = 15;
-      } else {
-        transStd = 1.5;
-        rotStd = 20;
-      }
-      if (limelightPose.getX() > .5) {
-        // Apply vision measurements. pose[6] holds the latency/frame delay
-        m_poseEstimator.addVisionMeasurement(
-            limelightPose,
-            Timer.getFPGATimestamp() - (pose[6] / 1000.0),
-            VecBuilder.fill(transStd, transStd, Units.degreesToRadians(rotStd)));
+      if(cameraToAprilTagPose.length > 0){
+        double distanceToAprilTagSquared = cameraToAprilTagPose[0] * cameraToAprilTagPose[0]
+            + cameraToAprilTagPose[2] * cameraToAprilTagPose[2];
+        double poseDelta = m_poseEstimator.getEstimatedPosition().getTranslation()
+            .getDistance(limelightPose.getTranslation());
+
+        if (distanceToAprilTagSquared < 9 && poseDelta < .5) {
+          transStd = 0.5;
+          rotStd = 10;
+        } else if (distanceToAprilTagSquared < 25) {
+          transStd = 1.0;
+          rotStd = 15;
+        } else {
+          transStd = 1.5;
+          rotStd = 20;
+        }
+        if (limelightPose.getX() > .5) {
+          // Apply vision measurements. pose[6] holds the latency/frame delay
+          m_poseEstimator.addVisionMeasurement(
+              limelightPose,
+              Timer.getFPGATimestamp() - (pose[6] / 1000.0),
+              VecBuilder.fill(transStd, transStd, Units.degreesToRadians(rotStd)));
+        }
+      }else{
+        System.out.println("Unable to add limelight measurement");
       }
     }
   }

@@ -17,7 +17,7 @@ import frc.robot.field.ScoringPositions;
  *       will be locked out. As such, we will manually lock out the rotate
  *       joystick.
  */
-public class CenterToGoalCommand extends CenterToTargetCommand {
+public class  CenterToGoalCommand extends CenterToTargetCommand {
 
     private final double POSE_ERROR_THRESH = 2;
     private double m_goal_rotation = 0;

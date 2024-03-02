@@ -16,16 +16,16 @@
     },
     {
       "anchor": {
-        "x": 3.384872930083413,
+        "x": 3.1284908121417674,
         "y": 7.0
       },
       "prevControl": {
-        "x": 1.7896456287186233,
+        "x": 1.5332635107769776,
         "y": 7.000982778336865
       },
       "nextControl": null,
-      "isLocked": false,
-      "linkedName": null
+      "isLocked": true,
+      "linkedName": "Drive Thru R1 End"
     }
   ],
   "rotationTargets": [],

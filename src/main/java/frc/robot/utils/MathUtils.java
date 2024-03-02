@@ -6,14 +6,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.field.ScoringPositions;
 
 public class MathUtils {
-    public static double distanceBetweenPoses(Pose2d pose_a, Pose2d pose_b){
-        var xDelta = pose_a.getTranslation().getX() - pose_b.getTranslation().getX();
-        var yDelta = pose_a.getTranslation().getY() - pose_b.getTranslation().getY();
-        var angleToTarget = Math.atan(yDelta / xDelta);  // normally tan is x/y, but in frc coords, it
-                                                                         // is y / x
-                                                       
-        return angleToTarget;                                                                 
-    }
+
 
     public static double distanceToScoringTarget(Pose2d robotPose){
         var alliance = DriverStation.getAlliance();
@@ -26,6 +19,18 @@ public class MathUtils {
             return 0;
         }
 
-        return distanceBetweenPoses(robotPose, scoringPos);
+        return scoringPos.getTranslation().getDistance(robotPose.getTranslation());
+    }
+
+    public static double angleRadiansToScoringTarget(Pose2d robotPose){
+        //0.4064 is robot rotation height
+        double distance = distanceToScoringTarget(robotPose);
+        System.out.println("Distance to Scoring Target " + distance );
+        double newAngle = - Math.toRadians(3.41 * distance * distance -26.5* distance + 76);
+        double modelAngle =  - Math.atan((ScoringPositions.speakerOpeningFromFloorMeters - 0.438)/(distance));
+        System.out.println( " New angle "  + Math.toDegrees(newAngle) + ", Old Angle: " + Math.toDegrees(modelAngle));
+        return newAngle;
+
+        //return - Math.atan((ScoringPositions.speakerOpeningFromFloorMeters - 0.438)/(distance)) + Math.toRadians(-1.6* distance + 5.9);
     }
 }
