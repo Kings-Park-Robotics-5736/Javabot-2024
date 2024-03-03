@@ -2,19 +2,38 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.43,
-      "y": 5.59
+      "x": 1.18,
+      "y": 5.55
     },
-    "rotation": 180.0
+    "rotation": 0
   },
   "command": {
     "type": "sequential",
     "data": {
       "commands": [
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "Middle To R1"
+            "name": "MoveToScorpionAndShoot"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Middle To R1"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "ArmToIntakePose"
+                }
+              }
+            ]
           }
         },
         {
@@ -22,22 +41,9 @@
           "data": {
             "commands": [
               {
-                "type": "deadline",
+                "type": "named",
                 "data": {
-                  "commands": [
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "DriveToNote"
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "RunIntake"
-                      }
-                    }
-                  ]
+                  "name": "DriveToNoteWithIntake"
                 }
               },
               {
@@ -56,9 +62,47 @@
           }
         },
         {
-          "type": "path",
+          "type": "parallel",
           "data": {
-            "pathName": "Score To Start"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "ArmToAutoAngle"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "CenterToTarget"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "race",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "CenterToTargetInfinite"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "ShootWhenReady"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "ArmToAutoAngleInfinite"
+                }
+              }
+            ]
           }
         }
       ]

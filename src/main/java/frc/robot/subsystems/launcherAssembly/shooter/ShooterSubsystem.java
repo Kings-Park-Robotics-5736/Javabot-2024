@@ -26,10 +26,10 @@ public class ShooterSubsystem extends SubsystemBase {
                 Constants.RightShooterConstants.kFFValues, Constants.RightShooterConstants.kDeviceId, "Right", true,
                 Constants.ShooterConstants.kDesiredSpeed, Constants.ShooterConstants.kReverseSpeed);
 
-        leftForwardSpeed = Constants.ShooterConstants.kDesiredSpeed;
-        rightForwardSpeed = Constants.ShooterConstants.kDesiredSpeed;
-        leftReverseSpeed = Constants.ShooterConstants.kReverseSpeed;
-        rightReverseSpeed = Constants.ShooterConstants.kReverseSpeed;
+        leftForwardSpeed = 0;
+        rightForwardSpeed =0;
+        leftReverseSpeed = 0;
+        rightReverseSpeed = 0;
     }
 
     @Override
@@ -59,9 +59,28 @@ public class ShooterSubsystem extends SubsystemBase {
                 Commands.runOnce(() -> m_right_wheel.StopShooter()));
     }
 
+    public void StopShooter(){
+        m_left_wheel.StopShooter();
+        m_right_wheel.StopShooter();
+    }
+
+    public Command SpoolShooterCommand(){
+         return RunShooterForwardCommand(true);
+    }
+
     public Command RunShooterForwardCommand(boolean FinishWhenAtTargetSpeed) {
         return Commands.parallel(m_left_wheel.RunShooterForwardCommand(FinishWhenAtTargetSpeed),
                 m_right_wheel.RunShooterForwardCommand(FinishWhenAtTargetSpeed));
+    }
+
+    public Command RunShooterForwardForAmp(){
+        return Commands.parallel(m_left_wheel.RunShooterForwardForAmp(),
+                m_right_wheel.RunShooterForwardForAmp());
+    }
+
+    public Command RunShooterForwardForScorpion(boolean FinishWhenAtTargetSpeed){
+        return Commands.parallel(m_left_wheel.RunShooterForwardForScorpion(FinishWhenAtTargetSpeed),
+                m_right_wheel.RunShooterForwardForScorpion(FinishWhenAtTargetSpeed));
     }
 
     public Command RunShooterBackwardCommand(boolean FinishWhenAtTargetSpeed) {

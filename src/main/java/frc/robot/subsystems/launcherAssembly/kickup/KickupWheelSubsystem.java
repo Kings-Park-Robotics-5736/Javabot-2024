@@ -41,6 +41,8 @@ public class KickupWheelSubsystem extends SubsystemBase {
     private final MutableMeasure<Velocity<Angle>> m_velocity = mutable(RotationsPerSecond.of(0));
     private final SysIdRoutine m_sysIdRoutine;
 
+    private int counter;
+
     public KickupWheelSubsystem(PidConstants pidValues, FeedForwardConstants ffValues, byte deviceId, String _name,
             boolean isInverted) {
 
@@ -131,6 +133,7 @@ public class KickupWheelSubsystem extends SubsystemBase {
      */
     public void RunKickup(int setpoint) {
         m_motor.setControl(m_voltageVelocity.withVelocity(setpoint / 60));
+        counter ++;
     }
 
     /**
@@ -144,10 +147,11 @@ public class KickupWheelSubsystem extends SubsystemBase {
         return new FunctionalCommand(
                 () -> {
                     System.out.println("-----------------Starting Kickup Forward--------------");
+                    counter = 0;
                 },
                 () -> RunKickup(kickupConstants.kForwardSpeed),
                 (interrupted) -> StopKickup(),
-                () -> false, this);
+                () -> counter > 50  , this);
     }
 
     public Command RunKickupBackwardCommand() {

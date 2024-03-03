@@ -43,6 +43,7 @@ public class ShooterWheelSubsystem extends SubsystemBase {
     private SimpleMotorFeedforward m_feedforward;
     private TrapezoidProfile profile;
 
+    private boolean shooterStop;
 
     /********************************************************
      * SysId variables
@@ -51,6 +52,7 @@ public class ShooterWheelSubsystem extends SubsystemBase {
     private final MutableMeasure<Angle> m_distance = mutable(Rotations.of(0));
     private final MutableMeasure<Velocity<Angle>> m_velocity = mutable(RotationsPerSecond.of(0));
     private final SysIdRoutine m_sysIdRoutine;
+    private double desired_speed;
 
 
 
@@ -74,6 +76,7 @@ public class ShooterWheelSubsystem extends SubsystemBase {
         configs.Slot0.kA = 0.0;// 3.00;
         configs.Voltage.PeakForwardVoltage = 12;
         configs.Voltage.PeakReverseVoltage = -12;
+        shooterStop= false;
 
         m_feedforward = new SimpleMotorFeedforward(ffValues.ks, ffValues.kv, ffValues.ka);
 
@@ -118,6 +121,7 @@ public class ShooterWheelSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
+        SmartDashboard.putNumber("WHeel power -1 to 1 " + name, m_motor.get() );
     }
 
     public void setNewForwardSpeed(double speed) {
@@ -134,6 +138,7 @@ public class ShooterWheelSubsystem extends SubsystemBase {
      * @param speed
      */
     private void setSpeed(double speed) {
+        
         m_motor.set(speed);
     }
 
@@ -144,7 +149,7 @@ public class ShooterWheelSubsystem extends SubsystemBase {
 
     public boolean isAtDesiredSpeed() {
         return Math.abs(getSpeedRotationsPerMinute()
-                - Constants.ShooterConstants.kDesiredSpeed) < Constants.ShooterConstants.kTolerance;
+                - desired_speed) < Constants.ShooterConstants.kTolerance;
     }
 
     /**
@@ -165,7 +170,9 @@ public class ShooterWheelSubsystem extends SubsystemBase {
      * Stop the motor
      */
     public void StopShooter() {
+        System.out.println("-----------------Stopping shooter--------------");
         setSpeed(0);
+        shooterStop = true;
     }
 
     /**
@@ -173,7 +180,7 @@ public class ShooterWheelSubsystem extends SubsystemBase {
      * @param setpoint of the motor, in absolute rotations
      */
     private void InitMotionProfile(double setpoint) {
-        profile = new TrapezoidProfile(new TrapezoidProfile.Constraints(6000, 20000),
+        profile = new TrapezoidProfile(new TrapezoidProfile.Constraints(15000, 30000),
                 new TrapezoidProfile.State(setpoint, 0),
                 new TrapezoidProfile.State(getSpeedRotationsPerMinute(), 0));
 
@@ -197,6 +204,8 @@ public class ShooterWheelSubsystem extends SubsystemBase {
                 () -> {
                     System.out.println("-----------------Starting shooter forward--------------");
                     InitMotionProfile(m_forwardSpeed);
+                    shooterStop= false;
+                    desired_speed = m_forwardSpeed;
                 },
                 () -> {
                     RunShooterWithMotionProfile();
@@ -206,9 +215,61 @@ public class ShooterWheelSubsystem extends SubsystemBase {
                     if (!FinishWhenAtTargetSpeed) {
                         StopShooter();
                     }
+
+                    if (interrupted){
+                        StopShooter();
+                    }
                 },
                 () -> {
-                    return FinishWhenAtTargetSpeed && isAtDesiredSpeed();
+                    return (FinishWhenAtTargetSpeed && isAtDesiredSpeed()) || shooterStop;
+                }, this);
+
+    }
+
+      public Command RunShooterForwardForAmp() {
+        return new FunctionalCommand(
+                () -> {
+                    System.out.println("-----------------Starting shooter forward AMP--------------");
+                    InitMotionProfile(ShooterConstants.kAmpSpeed);
+                    desired_speed = ShooterConstants.kAmpSpeed;
+                    shooterStop=false;
+                },
+                () -> {
+                    RunShooterWithMotionProfile();
+                    SmartDashboard.putNumber(name + " Shooter Fwd vel", getSpeedRotationsPerMinute());
+                },
+                (interrupted) -> {
+                    StopShooter();
+                },
+                () -> {
+                    return false;
+                }, this);
+
+    }
+
+    public Command RunShooterForwardForScorpion(boolean FinishWhenAtTargetSpeed) {
+        return new FunctionalCommand(
+                () -> {
+                    System.out.println("-----------------Starting shooter forward SCORPION--------------");
+                    InitMotionProfile(ShooterConstants.scorpionSpeed);
+                    desired_speed = ShooterConstants.scorpionSpeed;
+                    shooterStop=false;
+                },
+                () -> {
+                    RunShooterWithMotionProfile();
+                    SmartDashboard.putNumber(name + " Shooter Fwd vel", getSpeedRotationsPerMinute());
+                },
+                (interrupted) -> {
+                    if (!FinishWhenAtTargetSpeed) {
+                        StopShooter();
+                    }
+
+                    if (interrupted){
+                        StopShooter();
+                    }
+                },
+                () -> {
+                    return (FinishWhenAtTargetSpeed && isAtDesiredSpeed()) || shooterStop;
                 }, this);
 
     }
@@ -218,6 +279,7 @@ public class ShooterWheelSubsystem extends SubsystemBase {
                 () -> {
                     System.out.println("-----------------Starting shooter Backward--------------");
                     InitMotionProfile(m_reverseSpeed);
+                    desired_speed = m_reverseSpeed;
                 },
                 () -> RunShooterWithMotionProfile(),
                 (interrupted) -> {

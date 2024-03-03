@@ -2,10 +2,13 @@ package frc.robot.subsystems.launcherAssembly;
 
 import java.util.function.DoubleSupplier;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.Constants.ArmConstants;
+import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.launcherAssembly.arm.ArmSubsystem;
 import frc.robot.subsystems.launcherAssembly.kickup.KickupSubsystem;
 import frc.robot.subsystems.launcherAssembly.shooter.ShooterSubsystem;
@@ -26,11 +29,27 @@ public class LauncherAssemblySubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         // leave blank
+
+        SmartDashboard.putBoolean("Arm Has Note", ArmContainsNote());
     }
 
     // Pass Thrus
     public Command RunShooterForwardCommand() {
         return m_shooter.RunShooterForwardCommand(false);
+    }
+
+    public Command RunShooterForAmp(){
+        return m_shooter.RunShooterForwardForAmp();
+    }
+
+    public Command RunShooterForwardForScorpion(){
+         return (m_shooter.RunShooterForwardForScorpion(true).handleInterrupt(()->m_shooter.StopShooter())).andThen(m_kickup.RunKickupForwardCommand().handleInterrupt(()->m_shooter.StopShooter()))
+                .andThen(m_shooter.StopShooterCommand());
+    }
+
+    public Command MoveToScorpionAndShootCommand(){
+        return (m_shooter.RunShooterForwardForScorpion(true).alongWith(runArmToScorpionPositionCommand())).andThen(m_kickup.RunKickupForwardCommand().handleInterrupt(()->m_shooter.StopShooter()))
+                .andThen(m_shooter.StopShooterCommand());
     }
 
     public Command RunShooterBackwardCommand() {
@@ -44,7 +63,25 @@ public class LauncherAssemblySubsystem extends SubsystemBase {
     public Command RunKickupBackwardCommand() {
         return m_kickup.RunKickupBackwardCommand();
     }
+   
+    public Command StopShooterCommand(){
+        return m_shooter.StopShooterCommand();
+    }
 
+    public Command SpoolShooterCommand(){
+        return m_shooter.SpoolShooterCommand();
+    }
+
+/* 
+ * public Command SpinIntakeAndShooterReverseCommand() {
+    return new ParallelCommandGroup(
+        RunShooterBackwardCommand(),
+        RunInatakeForwardCommandAthome()
+    );
+}
+ * 
+ * 
+ */
     // sysid
 
     public Command sysIdShooterQuasistatic(SysIdRoutine.Direction direction, PositionType whichMotor) {
@@ -61,6 +98,14 @@ public class LauncherAssemblySubsystem extends SubsystemBase {
 
     public Command sysIdKickupDynamic(SysIdRoutine.Direction direction) {
         return m_kickup.sysIdDynamic(direction);
+    }
+    
+    public Command sysIdArmQuasistatic(SysIdRoutine.Direction direction) {
+        return m_arm.sysIdQuasistatic(direction);
+    }
+
+    public Command sysIdArmDynamic(SysIdRoutine.Direction direction) {
+        return m_arm.sysIdDynamic(direction);
     }
 
     // Composed Commands:
@@ -80,8 +125,8 @@ public class LauncherAssemblySubsystem extends SubsystemBase {
      * 
      */
     public Command RunShooterAndKickupForwardCommand() {
-        return m_shooter.RunShooterForwardCommand(true).andThen(m_kickup.RunKickupForwardCommand()
-                .raceWith(Commands.waitSeconds(1)).andThen(m_shooter.StopShooterCommand()));
+        return (m_shooter.RunShooterForwardCommand(true).handleInterrupt(()->m_shooter.StopShooter())).andThen(m_kickup.RunKickupForwardCommand().handleInterrupt(()->m_shooter.StopShooter()))
+                .andThen(m_shooter.StopShooterCommand());
     }
 
     public Command RunArmUpManualSpeedCommand(DoubleSupplier getSpeed) {
@@ -89,6 +134,41 @@ public class LauncherAssemblySubsystem extends SubsystemBase {
     }
     public Command RunArmDownManualSpeedCommand(DoubleSupplier getSpeed) {
         return m_arm.RunArmDownManualSpeedCommand(getSpeed);
+    }
+
+    public Command RunArmToPositionCommand(double position){
+        return m_arm.RunArmToPositionCommand(position);
+    }
+
+    public Command RunArmToIntakePositionCommand(){
+        return RunArmToPositionCommand(ArmConstants.intakeAngle);
+    }
+    public Command runArmToAmpPositionCommand(){
+        return m_arm.RunArmToPositionCommand(ArmConstants.ampAngle);
+    }
+    public Command runArmToScorpionPositionCommand(){
+        return m_arm.RunArmToPositionCommand(ArmConstants.scorpionAngle);
+    }
+
+    public Command RunArmToAutoPositionCommand(DriveSubsystem robotDrive){
+        return m_arm.RunArmToAutoPositionCommand(robotDrive,true);
+    }
+
+    public Command RunArmToAutoPositionCommandContinuous(DriveSubsystem robotDrive){
+        return m_arm.RunArmToAutoPositionCommand(robotDrive,false);
+    }
+
+    public boolean ArmContainsNote(){
+        return m_arm.hasNote();
+    }
+
+    public Command UpdateArmAngleManually(double diff){
+        return Commands.runOnce( ()-> m_arm.UpdateAngleManually(diff));
+
+    }
+
+    public void resetArm(){
+        m_arm.resetAfterDisable();
     }
 
 }

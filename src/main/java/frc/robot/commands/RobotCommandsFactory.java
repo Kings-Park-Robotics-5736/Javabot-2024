@@ -3,11 +3,43 @@ package frc.robot.commands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import frc.robot.commands.drive.CenterToGoalCommand;
+import frc.robot.commands.drive.DriveToTargetCommand;
+import frc.robot.field.ScoringPositions;
 import frc.robot.subsystems.drive.DriveSubsystem;
+import frc.robot.subsystems.intake.IntakeSubsystem;
+import frc.robot.subsystems.launcherAssembly.LauncherAssemblySubsystem;
+import frc.robot.utils.MathUtils;
 import frc.robot.vision.Limelight;
 import frc.robot.vision.PiCamera;
 
 public class RobotCommandsFactory {
+
+
+
+    public static Command RunFloorInatakeForwardWithShooterIntakeCommand(IntakeSubsystem intake, LauncherAssemblySubsystem launcher) {        
+            return new ParallelCommandGroup(intake.RunIntakeForwardCommand(), launcher.RunShooterBackwardCommand()).until(()->launcher.ArmContainsNote());
+    }
+
+    public static Command  RunFloorIntakeWithArmPosition(IntakeSubsystem intake, LauncherAssemblySubsystem launcher){
+        return launcher.RunArmToIntakePositionCommand().andThen(RunFloorInatakeForwardWithShooterIntakeCommand(intake, launcher));
+    }
+
+    /**
+     * Automatically shoot once we get in the range of the target, with target centering active
+     * @param launcher
+     * @param drive
+     * @return
+     */
+    public static Command ShootWhenInRange(LauncherAssemblySubsystem launcher, DriveSubsystem drive){
+        return launcher.RunShooterForwardCommand().alongWith(new CenterToGoalCommand(drive, true)).until(()->MathUtils.distanceToScoringTarget(drive.getPose()) < ScoringPositions.maxDistanceToScoreMeters).andThen(launcher.RunShooterAndKickupForwardCommand());
+    }
+
+    public static Command DriveToTargetWithIntake(DriveSubsystem robot_drive, IntakeSubsystem intake, LauncherAssemblySubsystem launcher, PiCamera picam, double speed, double maxDistance)
+    {
+        return new DriveToTargetCommand(robot_drive, picam, speed, maxDistance).raceWith(RunFloorInatakeForwardWithShooterIntakeCommand(intake, launcher));
+    }
 
     /**
      * @brief Generate a command that will start where it is, drive to a target

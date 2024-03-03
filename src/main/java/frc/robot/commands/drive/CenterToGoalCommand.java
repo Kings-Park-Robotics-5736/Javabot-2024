@@ -17,9 +17,9 @@ import frc.robot.field.ScoringPositions;
  *       will be locked out. As such, we will manually lock out the rotate
  *       joystick.
  */
-public class CenterToGoalCommand extends CenterToTargetCommand {
+public class  CenterToGoalCommand extends CenterToTargetCommand {
 
-    private final double POSE_ERROR_THRESH = 2;
+    private final double POSE_ERROR_THRESH = Math.toRadians(2);
     private double m_goal_rotation = 0;
 
 
@@ -37,7 +37,17 @@ public class CenterToGoalCommand extends CenterToTargetCommand {
         m_controller_theta.reset(m_drive.getPose().getRotation().getRadians());
         m_controller_theta.setTolerance(0.01);
         m_controller_theta.enableContinuousInput(-Math.PI, Math.PI);
+        System.out.println("----------------Centering to target-----------------------");
 
+    }
+
+
+    @Override
+    public void end(boolean interrupted) {
+        m_drive.drive(0, 0, 0, true);
+        m_drive.setJoystickRotateLockout(false);
+        m_drive.setRotateLockoutValue(0);
+        stop();
     }
 
     @Override
@@ -74,6 +84,7 @@ public class CenterToGoalCommand extends CenterToTargetCommand {
         var angleToTarget = Math.atan(yDelta / xDelta) + rotationOffset; // normally tan is x/y, but in frc coords, it
                                                                          // is y / x
         m_goal_rotation = angleToTarget;
+        System.out.println("Angle to target is " + angleToTarget);
         centerOnTarget(angleToTarget, true);
 
     }

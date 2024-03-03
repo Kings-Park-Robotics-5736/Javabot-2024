@@ -10,6 +10,8 @@ import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -21,8 +23,9 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.IOConstants;
+import frc.robot.commands.JoystickCommandsFactory;
+import frc.robot.commands.RobotCommandsFactory;
 import frc.robot.commands.drive.CenterToGoalCommand;
-import frc.robot.commands.drive.CenterToTargetCommandPiCam;
 import frc.robot.commands.drive.DriveDistanceCommand;
 import frc.robot.commands.drive.DriveToTargetCommand;
 import frc.robot.subsystems.drive.DriveSubsystem;
@@ -33,6 +36,7 @@ import frc.robot.utils.Types.SysidMechanism;
 import frc.robot.vision.Limelight;
 import frc.robot.vision.Limelight.LEDMode;
 import frc.robot.vision.PiCamera;
+
 
 /*
  * This class is where the bulk of the robot should be declared.  Since Command-based is a
@@ -57,6 +61,7 @@ public class RobotContainer {
 
         private final IntakeSubsystem m_intake = new IntakeSubsystem();
         private final LauncherAssemblySubsystem m_Launcher = new LauncherAssemblySubsystem();
+        private final PowerDistribution PDH = new PowerDistribution(1, ModuleType.kRev);
         private final SendableChooser<Command> autoChooser;
 
         private final SlewRateLimiter m_xspeedLimiter = new SlewRateLimiter(3);
@@ -91,7 +96,7 @@ public class RobotContainer {
                 // mathematics). Xbox controllers return positive values when you pull to
                 // the right by default.
                 final var rot = -m_rotLimiter.calculate(MathUtil.applyDeadband(m_driverController.getRightX(), 0.02))
-                                * DriveConstants.kMaxSpeedMetersPerSecond;
+                                * DriveConstants.kMaxRotationSpeedMetersPerSecond;
 
                 m_robotDrive.drive(xSpeed, ySpeed, rot, fieldRelative, true);
         }
@@ -103,17 +108,29 @@ public class RobotContainer {
                 NamedCommands.registerCommand("ForceStop", Commands.runOnce(() -> m_robotDrive.forceStop()));
                 NamedCommands.registerCommand("RunIntake", m_intake.RunIntakeForwardCommand());
                 NamedCommands.registerCommand("DriveToNote", new DriveToTargetCommand(m_robotDrive, m_picam, 1, 1));
+                NamedCommands.registerCommand("DriveToNoteWithIntake",RobotCommandsFactory.DriveToTargetWithIntake(m_robotDrive, m_intake, m_Launcher, m_picam, 2.0, 3.0));
+                NamedCommands.registerCommand("StartShooter", m_Launcher.RunShooterForwardCommand());
+                NamedCommands.registerCommand("ShootWhenReady", m_Launcher.RunShooterAndKickupForwardCommand());
+                NamedCommands.registerCommand("ArmToAutoAngle", m_Launcher.RunArmToAutoPositionCommand(m_robotDrive));
+                NamedCommands.registerCommand("ArmToAutoAngleInfinite", m_Launcher.RunArmToAutoPositionCommandContinuous(m_robotDrive));
+
+                NamedCommands.registerCommand("CenterToTarget", new CenterToGoalCommand(m_robotDrive, false));
+                NamedCommands.registerCommand("CenterToTargetInfinite", new CenterToGoalCommand(m_robotDrive, true));
+
+                NamedCommands.registerCommand("ArmToIntakePose", m_Launcher.RunArmToIntakePositionCommand());
+
+                NamedCommands.registerCommand("ShootScorpion", m_Launcher.RunShooterForwardForScorpion());
+                NamedCommands.registerCommand("ArmToScorpionAngle", m_Launcher.runArmToScorpionPositionCommand());
+                NamedCommands.registerCommand("MoveToScorpionAndShoot", m_Launcher.MoveToScorpionAndShootCommand());
         }
 
         /**
          * The container for the robot. Contains subsystems, OI devices, and commands.
          */
         public RobotContainer() {
-                SmartDashboard.putNumber("Fwd Speed", 0);
-                SmartDashboard.putNumber("Rev Speed", 0);
+
                 SmartDashboard.putNumber("Left Setpoint", 0);
                 SmartDashboard.putNumber("Right Setpoint", 0);
-                SmartDashboard.putNumber("t2", 0);
 
                 InitializeNamedCommands(); // must do this first
 
@@ -136,10 +153,17 @@ public class RobotContainer {
                         case KICKUP_RIGHT:
                                 configButtonBindingsKickupRightSysID();
                                 break;
+                        case ARM:
+                                configButtonBindingsArmSysID();
+                                break;
                         case NONE:
                         default:
                                 configureButtonBindings();
                                 // Configure default commands
+                                PDH.setSwitchableChannel(true);
+                                // Enable LEDS
+                                // will this happen when we turn on/push code?
+                                // or on enable
                                 m_robotDrive.setDefaultCommand(
                                                 // The left stick controls translation of the robot.
                                                 // Turning is controlled by the X axis of the right stick.
@@ -158,6 +182,9 @@ public class RobotContainer {
 
         }
 
+        public void resetArm(){
+                m_Launcher.resetArm();
+        }
         private void configureButtonBindingsDriveSysID() {
                 new JoystickButton(m_driverController, XboxController.Button.kA.value)
                                 .whileTrue(m_robotDrive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
@@ -248,11 +275,39 @@ public class RobotContainer {
                 new JoystickButton(m_driverController, XboxController.Button.kY.value)
                                 .whileTrue(m_Launcher.sysIdKickupDynamic(SysIdRoutine.Direction.kReverse));
 
+
                 new JoystickButton(m_driverController, XboxController.Button.kLeftBumper.value)
                                 .toggleOnTrue(m_Launcher.RunKickupForwardCommand());
 
                 new JoystickButton(m_driverController, XboxController.Button.kRightBumper.value)
                                 .toggleOnTrue(m_Launcher.RunKickupBackwardCommand());
+        }
+
+        private void configButtonBindingsArmSysID() {
+                new JoystickButton(m_driverController, XboxController.Button.kA.value)
+                                .whileTrue(m_Launcher.sysIdArmQuasistatic(SysIdRoutine.Direction.kForward));
+                new JoystickButton(m_driverController, XboxController.Button.kB.value)
+                                .whileTrue(m_Launcher.sysIdArmQuasistatic(SysIdRoutine.Direction.kReverse));
+                new JoystickButton(m_driverController, XboxController.Button.kX.value)
+                                .whileTrue(m_Launcher.sysIdArmDynamic(SysIdRoutine.Direction.kForward));
+                new JoystickButton(m_driverController, XboxController.Button.kY.value)
+                                .whileTrue(m_Launcher.sysIdArmDynamic(SysIdRoutine.Direction.kReverse));
+
+                new JoystickButton(m_driverController, XboxController.Button.kLeftBumper.value)
+                                .whileTrue(m_Launcher.RunArmToPositionCommand(0));
+
+                new JoystickButton(m_driverController, XboxController.Button.kRightBumper.value)
+                                .whileTrue(m_Launcher.RunArmToPositionCommand(Math.toRadians(-25)));
+
+
+                 new Trigger(() -> {
+                        return m_driverController.getRightTriggerAxis() > 0;
+                }).whileTrue(m_Launcher.RunArmUpManualSpeedCommand(() -> m_driverController.getRightTriggerAxis()));
+
+
+                new Trigger(() -> {
+                        return m_driverController.getLeftTriggerAxis() > 0;
+                }).whileTrue(m_Launcher.RunArmDownManualSpeedCommand(() -> -m_driverController.getLeftTriggerAxis()));
         }
 
         /**
@@ -309,18 +364,82 @@ public class RobotContainer {
                  * .whileTrue(m_Launcher.RunKickupForwardCommand());
                  */
 
+
+
+                new JoystickButton(m_driverController, XboxController.Button.kLeftBumper.value).toggleOnTrue(m_intake.RunIntakeForwardCommand());
+                new JoystickButton(m_driverController, XboxController.Button.kRightBumper.value).toggleOnTrue(m_intake.RunIntakeBackwardCommand());
+
+                 new JoystickButton(m_driverController, XboxController.Button.kA.value)
+                 .whileTrue(new CenterToGoalCommand(m_robotDrive, true));
+
+                  new JoystickButton(m_driverController, XboxController.Button.kB.value)
+                 .whileTrue( RobotCommandsFactory.DriveToTargetWithIntake(m_robotDrive, m_intake, m_Launcher, m_picam, 2.0, 3.0));
+
+
                 new Trigger(() -> {
                         return m_actionController.getRightTriggerAxis() > 0;
-                }).whileTrue(m_Launcher.RunArmUpManualSpeedCommand(() -> m_actionController.getRightTriggerAxis()));
+                }).whileTrue(m_Launcher.RunShooterForwardCommand());
+
+
                 new Trigger(() -> {
                         return m_actionController.getLeftTriggerAxis() > 0;
-                }).whileTrue(m_Launcher.RunArmDownManualSpeedCommand(() -> -m_actionController.getLeftTriggerAxis()));
+                }).whileTrue(m_Launcher.MoveToScorpionAndShootCommand());
 
-                new JoystickButton(m_driverController, XboxController.Button.kA.value)
-                                .whileTrue(m_intake.RunIntakeForwardCommand());
 
-                new JoystickButton(m_driverController, XboxController.Button.kB.value)
-                                .whileTrue(m_intake.RunIntakeBackwardCommand());
+                new Trigger(() -> {
+                        return m_actionController.getRightY() > 0.15 || m_actionController.getRightY() < -0.15;
+                }).whileTrue(m_Launcher.RunArmUpManualSpeedCommand(() -> m_actionController.getRightY()/5));
+
+
+
+                new JoystickButton(m_actionController, XboxController.Button.kLeftBumper.value)
+                                .whileTrue(RobotCommandsFactory.RunFloorIntakeWithArmPosition(m_intake, m_Launcher));
+
+                new JoystickButton(m_actionController, XboxController.Button.kBack.value)
+                  .whileTrue((m_intake.RunIntakeBackwardCommand().alongWith(m_Launcher.RunShooterForwardCommand()).alongWith(m_Launcher.RunKickupForwardCommand())));
+
+                new JoystickButton(m_actionController, XboxController.Button.kRightBumper.value)
+                                .whileTrue(m_Launcher.RunShooterAndKickupForwardCommand().andThen(JoystickCommandsFactory
+                                .RumbleControllerTillCancel(m_actionController)));
+                
+
+                new JoystickButton(m_actionController, XboxController.Button.kX.value)
+                                .whileTrue(m_Launcher.runArmToAmpPositionCommand().andThen(JoystickCommandsFactory
+                                .RumbleControllerTillCancel(m_actionController)));
+
+                new JoystickButton(m_actionController, XboxController.Button.kB.value)
+                                .whileTrue(m_Launcher.RunArmToPositionCommand(Math.toRadians(-45)).andThen(JoystickCommandsFactory
+                                .RumbleControllerTillCancel(m_actionController)));
+
+                new JoystickButton(m_actionController, XboxController.Button.kA.value)
+                                .whileTrue(m_Launcher.RunArmToIntakePositionCommand().andThen(JoystickCommandsFactory
+                                .RumbleControllerTillCancel(m_actionController)));
+                
+                new JoystickButton(m_actionController, XboxController.Button.kY.value)
+                                .whileTrue(m_Launcher.RunArmToAutoPositionCommandContinuous(m_robotDrive).andThen(JoystickCommandsFactory
+                                .RumbleControllerTillCancel(m_actionController)));
+
+                // the POV hat works differently;
+                // it returns a value from 0-360, where 0 is up, 90 is right, 180 is down, and
+                // 270 is left.
+                // you can get values in between, so we need to define a range.
+                new Trigger(() -> {
+                        return m_actionController.getPOV() > 340 || (m_actionController.getPOV() < 20 && m_actionController.getPOV()>=0);
+                }).onTrue(m_Launcher.UpdateArmAngleManually(Math.toRadians(-1)));
+
+                new Trigger(() -> {
+                        return m_actionController.getPOV() < 200 && m_actionController.getPOV() < 160;
+                }).onTrue(m_Launcher.UpdateArmAngleManually(Math.toRadians(1)));
+
+                new Trigger(() -> {
+                        return m_actionController.getPOV() > 20 && m_actionController.getPOV() < 180;
+                }).whileTrue(Commands.parallel(m_Launcher.RunShooterForAmp(), m_Launcher.RunKickupForwardCommand()));
+
+                new Trigger(() -> {
+                        return m_actionController.getPOV() < 180 && m_actionController.getPOV() < 340;
+                }).onTrue(m_Launcher.RunKickupForwardCommand());
+                
+
         }
 
         /**
