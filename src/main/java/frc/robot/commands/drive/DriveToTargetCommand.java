@@ -100,12 +100,18 @@ public class DriveToTargetCommand extends Command {
                 (pose.getY() - m_startingPosition.getY()) * (pose.getY() - m_startingPosition.getY()));
     }
 
+
+    public static double AngleDifference( double angle1, double angle2 )
+    {
+        double diff = ( angle2 - angle1 + 180 ) % 360 - 180;
+        return diff < -180 ? diff + 360 : diff;
+    }
     /**
      * @brief  Calculate the total rotation from the starting position
      * @return total rotation
      */
     private double getTotalRotation() {
-        return Math.abs(m_drive.getPose().getRotation().getRadians() - m_startingPosition.getRotation().getRadians());
+        return Math.abs(AngleDifference(m_drive.getPose().getRotation().getRadians() ,m_startingPosition.getRotation().getRadians()));
     }
 
     /**
@@ -139,8 +145,8 @@ public class DriveToTargetCommand extends Command {
             System.out.println("---------------Lost Target-----------------");
         }
 
-        if ((maxDistance > 0 && getTotalDisplacement() > maxDistance)
-                || getTotalRotation() > DriveToTargetCommandConstants.kMaxRotation) {
+        if (maxDistance > 0 && getTotalDisplacement() > maxDistance)
+                /*|| getTotalRotation() > DriveToTargetCommandConstants.kMaxRotation)*/ {
                     System.out.println(m_drive.getPose().getX() + " ,  " + m_drive.getPose().getY() + ", " +m_drive.getPose().getRotation().getRadians());
             // this is an error check to ensure we can't just run-away if we are fully auto
             System.out.println("---------------Overran-----------------");

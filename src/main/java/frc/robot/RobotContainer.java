@@ -112,7 +112,11 @@ public class RobotContainer {
                 NamedCommands.registerCommand("StartShooter", m_Launcher.RunShooterForwardCommand());
                 NamedCommands.registerCommand("ShootWhenReady", m_Launcher.RunShooterAndKickupForwardCommand());
                 NamedCommands.registerCommand("ArmToAutoAngle", m_Launcher.RunArmToAutoPositionCommand(m_robotDrive));
+                NamedCommands.registerCommand("ArmToAutoAngleInfinite", m_Launcher.RunArmToAutoPositionCommandContinuous(m_robotDrive));
+
                 NamedCommands.registerCommand("CenterToTarget", new CenterToGoalCommand(m_robotDrive, false));
+                NamedCommands.registerCommand("CenterToTargetInfinite", new CenterToGoalCommand(m_robotDrive, true));
+
                 NamedCommands.registerCommand("ArmToIntakePose", m_Launcher.RunArmToIntakePositionCommand());
 
                 NamedCommands.registerCommand("ShootScorpion", m_Launcher.RunShooterForwardForScorpion());
@@ -379,7 +383,7 @@ public class RobotContainer {
 
                 new Trigger(() -> {
                         return m_actionController.getLeftTriggerAxis() > 0;
-                }).whileTrue(m_Launcher.RunArmDownManualSpeedCommand(() -> -m_actionController.getLeftTriggerAxis()/5));
+                }).whileTrue(m_Launcher.MoveToScorpionAndShootCommand());
 
 
                 new Trigger(() -> {
@@ -432,7 +436,7 @@ public class RobotContainer {
                 }).whileTrue(Commands.parallel(m_Launcher.RunShooterForAmp(), m_Launcher.RunKickupForwardCommand()));
 
                 new Trigger(() -> {
-                        return m_actionController.getPOV() < 180 && m_actionController.getPOV() < 360;
+                        return m_actionController.getPOV() < 180 && m_actionController.getPOV() < 340;
                 }).onTrue(m_Launcher.RunKickupForwardCommand());
                 
 

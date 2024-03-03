@@ -78,9 +78,9 @@ public class ShooterSubsystem extends SubsystemBase {
                 m_right_wheel.RunShooterForwardForAmp());
     }
 
-    public Command RunShooterForwardForScorpion(bool FinishWhenAtTargetSpeed){
-        return Commands.parallel(m_left_wheel.RunShooterForwardForScorpion(),
-                m_right_wheel.RunShooterForwardForScorpion());
+    public Command RunShooterForwardForScorpion(boolean FinishWhenAtTargetSpeed){
+        return Commands.parallel(m_left_wheel.RunShooterForwardForScorpion(FinishWhenAtTargetSpeed),
+                m_right_wheel.RunShooterForwardForScorpion(FinishWhenAtTargetSpeed));
     }
 
     public Command RunShooterBackwardCommand(boolean FinishWhenAtTargetSpeed) {

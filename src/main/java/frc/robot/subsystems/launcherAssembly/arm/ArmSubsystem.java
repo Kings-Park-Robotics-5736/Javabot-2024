@@ -138,6 +138,7 @@ public class ArmSubsystem extends SubsystemBase {
     public void resetAfterDisable(){
         System.out.println("Reset After Disable!!!");
         manualControl = true;
+        setSpeed(0);
     }
 
     @Override
@@ -147,8 +148,8 @@ public class ArmSubsystem extends SubsystemBase {
         SmartDashboard.putNumber("Falcon Angular Velocity", getFalconAngularVelocityRadiansPerSec());
         SmartDashboard.putNumber("Arm Angle Deg", Math.toDegrees(getArmAngleRadians()));
         SmartDashboard.putNumber("Falcon Angle Error Deg", Math.toDegrees(getFalconAngleRadians() - getArmAngleRadians()));
-
-        if (Math.abs(getFalconAngularVelocityRadiansPerSec()) < .001) {
+        SmartDashboard.putNumber("Falcon Voltage", m_leader.get());
+        if (Math.abs(getFalconAngularVelocityRadiansPerSec()) < .1) {
             double falconError = Math.abs(getFalconAngleRadians() - getArmAngleRadians());
             if (falconError > ArmConstants.falconErrorThresh) {
                 falconErrorCounter++;
@@ -218,8 +219,9 @@ public class ArmSubsystem extends SubsystemBase {
         SmartDashboard.putNumber("Arm FF Output", ff);
         SmartDashboard.putNumber("Arm Position Eror", m_controller.getPositionError());
 
-        m_leader.setVoltage(pid_output + ff);
+        m_leader.setVoltage(ff  + pid_output);
         SmartDashboard.putNumber("SetpointVelocity", m_controller.getSetpoint().velocity);
+         SmartDashboard.putNumber("Arm Set Voltage", ff + pid_output);
         SmartDashboard.putNumber("Global Setpoint ", Math.toDegrees(m_globalSetpoint));
         
         //if we are about to overextend, instantly stop and go back to intake position.
@@ -278,7 +280,7 @@ public class ArmSubsystem extends SubsystemBase {
          * return (m_leader.get() < 0 && getArmPosition() > ArmConstants.kLimits.low)
          * || (m_leader.get() > 0 && getArmPosition() < ArmConstants.kLimits.high);
          */
-        return getArmAngleRadians() > ArmConstants.kLimits.high || ( direction < 0);
+        return getArmAngleRadians() > ArmConstants.kLimits.high || ( direction > 0);
     }
 
 
@@ -323,6 +325,7 @@ public class ArmSubsystem extends SubsystemBase {
         double sanitizedSetpoint = sanitizePositionSetpoint(new_setpoint);
         if(sanitizedSetpoint != m_globalSetpoint){
             System.out.println("-----------------New Arm to Setpoint " + sanitizedSetpoint + " --------------");
+            System.out.println("Current ARm Angle: " + Math.toDegrees(getArmPosition()));
         }
         m_globalSetpoint = sanitizedSetpoint;
     }

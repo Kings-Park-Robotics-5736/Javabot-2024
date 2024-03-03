@@ -73,12 +73,14 @@ public abstract class CenterToTargetCommand extends Command {
 
     @Override
     public boolean isFinished() {
+        System.out.println("Is finished = " + checkTurningDone());
         return !m_infinite && checkTurningDone();
     }
 
     protected void stop() {
         m_drive.setRotateLockoutValue(0);
         m_drive.drive(0, 0, 0, false, false);
+        System.out.println("----------------Centering to target Done-----------------------");
     }
 
     // to be implemented by the inherited classes.

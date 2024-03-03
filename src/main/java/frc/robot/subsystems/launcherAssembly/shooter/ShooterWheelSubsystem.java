@@ -52,6 +52,7 @@ public class ShooterWheelSubsystem extends SubsystemBase {
     private final MutableMeasure<Angle> m_distance = mutable(Rotations.of(0));
     private final MutableMeasure<Velocity<Angle>> m_velocity = mutable(RotationsPerSecond.of(0));
     private final SysIdRoutine m_sysIdRoutine;
+    private double desired_speed;
 
 
 
@@ -148,7 +149,7 @@ public class ShooterWheelSubsystem extends SubsystemBase {
 
     public boolean isAtDesiredSpeed() {
         return Math.abs(getSpeedRotationsPerMinute()
-                - Constants.ShooterConstants.kDesiredSpeed) < Constants.ShooterConstants.kTolerance;
+                - desired_speed) < Constants.ShooterConstants.kTolerance;
     }
 
     /**
@@ -204,6 +205,7 @@ public class ShooterWheelSubsystem extends SubsystemBase {
                     System.out.println("-----------------Starting shooter forward--------------");
                     InitMotionProfile(m_forwardSpeed);
                     shooterStop= false;
+                    desired_speed = m_forwardSpeed;
                 },
                 () -> {
                     RunShooterWithMotionProfile();
@@ -229,6 +231,8 @@ public class ShooterWheelSubsystem extends SubsystemBase {
                 () -> {
                     System.out.println("-----------------Starting shooter forward AMP--------------");
                     InitMotionProfile(ShooterConstants.kAmpSpeed);
+                    desired_speed = ShooterConstants.kAmpSpeed;
+                    shooterStop=false;
                 },
                 () -> {
                     RunShooterWithMotionProfile();
@@ -248,6 +252,8 @@ public class ShooterWheelSubsystem extends SubsystemBase {
                 () -> {
                     System.out.println("-----------------Starting shooter forward SCORPION--------------");
                     InitMotionProfile(ShooterConstants.scorpionSpeed);
+                    desired_speed = ShooterConstants.scorpionSpeed;
+                    shooterStop=false;
                 },
                 () -> {
                     RunShooterWithMotionProfile();
@@ -273,6 +279,7 @@ public class ShooterWheelSubsystem extends SubsystemBase {
                 () -> {
                     System.out.println("-----------------Starting shooter Backward--------------");
                     InitMotionProfile(m_reverseSpeed);
+                    desired_speed = m_reverseSpeed;
                 },
                 () -> RunShooterWithMotionProfile(),
                 (interrupted) -> {

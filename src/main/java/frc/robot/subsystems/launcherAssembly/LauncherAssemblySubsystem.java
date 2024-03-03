@@ -48,7 +48,7 @@ public class LauncherAssemblySubsystem extends SubsystemBase {
     }
 
     public Command MoveToScorpionAndShootCommand(){
-        return m_shooter.RunShooterForwardForScorpion(true).alongWith(runArmToScorpionPositionCommand()).andThen(m_kickup.RunKickupForwardCommand().handleInterrupt(()->m_shooter.StopShooter()))
+        return (m_shooter.RunShooterForwardForScorpion(true).alongWith(runArmToScorpionPositionCommand())).andThen(m_kickup.RunKickupForwardCommand().handleInterrupt(()->m_shooter.StopShooter()))
                 .andThen(m_shooter.StopShooterCommand());
     }
 
