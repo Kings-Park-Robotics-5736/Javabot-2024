@@ -31,23 +31,28 @@ public class LEDSubsystem extends SubsystemBase {
     public LEDSubsystem() {
         candle = new CANdle(LEDConstants.CANdleID, "rio");
         config = new CANdleConfiguration();  
-        config.stripType = LEDStripType.RGB;
-        config.brightnessScalar = 1.0;
+        config.stripType = LEDStripType.GRB;
+        config.brightnessScalar = 1;
         config.statusLedOffWhenActive = false;
         config.disableWhenLOS = false;
-        config.vBatOutputMode = VBatOutputMode.Modulated;
+        config.vBatOutputMode = VBatOutputMode.On;
+        config.v5Enabled = false;
         candle.configAllSettings(config, 100);
     }
 
 
     public void setAllLEDColor(int[] rgb) {
+
         candle.setLEDs(rgb[0], rgb[1], rgb[2]);
-        candle.modulateVBatOutput(0.9);
+        
+        candle.modulateVBatOutput(1);
       }
     
     // Turn one LED to a specific color
     public void setOneLEDColor(int[] rgb, int ledNumber) {
-    candle.setLEDs(rgb[0], rgb[1], rgb[2], 0, ledNumber, 1);
+
+    candle.setLEDs(rgb[0], rgb[1], rgb[2], 0, ledNumber, 100);
+
     candle.modulateVBatOutput(0.9);
     }
     
@@ -91,16 +96,16 @@ public class LEDSubsystem extends SubsystemBase {
     public Command SetLEDOn() {
         return new FunctionalCommand(
             () -> System.out.println("LED on"), 
-            () -> setAllLEDColor(LEDConstants.redRGB),
+            () -> {setAllLEDColor(LEDConstants.redRGB);System.out.println(candle.get5VRailVoltage());},
             (interrupted) -> setLEDOff(),
-            () -> false, this);
+            () -> false, this); 
     }
 
     public Command LedAnimate(String toAnimate) {
         return new FunctionalCommand(
-            () -> System.out.println("Animate Start"), 
-            () -> animate(toAnimate),
+            () -> System.out.println("Animate Start"),  
+            () -> animate(toAnimate),    
             (interrupted) -> setLEDOff(),
             () -> false, this);
-    }
+    } 
 }

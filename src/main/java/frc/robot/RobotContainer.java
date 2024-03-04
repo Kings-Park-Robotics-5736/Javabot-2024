@@ -27,6 +27,7 @@ import frc.robot.commands.JoystickCommandsFactory;
 import frc.robot.commands.RobotCommandsFactory;
 import frc.robot.commands.drive.DriveDistanceCommand;
 import frc.robot.commands.drive.DriveToTargetCommand;
+import frc.robot.subsystems.LEDSubsystem;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.launcherAssembly.LauncherAssemblySubsystem;
@@ -35,7 +36,7 @@ import frc.robot.utils.Types.SysidMechanism;
 import frc.robot.vision.Limelight;
 import frc.robot.vision.Limelight.LEDMode;
 import frc.robot.vision.PiCamera;
-
+import frc.robot.subsystems.WPILEDSubsystem;
 
 /*
  * This class is where the bulk of the robot should be declared.  Since Command-based is a
@@ -47,7 +48,7 @@ public class RobotContainer {
 
         // The robot's subsystems
 
-        private final SysidMechanism enabledSysid = SysidMechanism.ARM;
+        private final SysidMechanism enabledSysid = SysidMechanism.NONE;
 
         private final PiCamera m_picam = new PiCamera();
         public Limelight m_limelight = new Limelight("limelight");
@@ -58,7 +59,10 @@ public class RobotContainer {
                                                                                           // have great measurements
                                                                                           // m_limelight_side);
 
+
         private final IntakeSubsystem m_intake = new IntakeSubsystem();
+        private final LEDSubsystem m_led = new LEDSubsystem();
+        private final WPILEDSubsystem m_WPIled = new WPILEDSubsystem();
         private final LauncherAssemblySubsystem m_Launcher = new LauncherAssemblySubsystem();
         private final PowerDistribution PDH = new PowerDistribution(1, ModuleType.kRev);
         private final SendableChooser<Command> autoChooser;
@@ -372,6 +376,7 @@ public class RobotContainer {
                                 .whileTrue(m_Launcher.RunArmToPositionCommand(-25).andThen(JoystickCommandsFactory
                                 .RumbleControllerTillCancel(m_actionController)));
 
+                new JoystickButton(m_actionController, XboxController.Button.kX.value).whileTrue(m_WPIled.SetLEDBOW());
         }
 
         /**
@@ -389,5 +394,6 @@ public class RobotContainer {
                 SmartDashboard.putString("Auto Chosen", autoChooser.getSelected().getName());
                 SmartDashboard.putNumber("Pi Theta", m_picam.getPiCamAngle());
         }
+
 
 }
