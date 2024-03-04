@@ -267,6 +267,8 @@ public final class Constants {
   
   public static final class LEDConstants {
     public static final int CANdleID = 20;
+    public static final int PWMLedId = 0;
+    public static final int LED_Count = 150;
     public static final int[] redRGB = {255,0,0};
   }
 }
