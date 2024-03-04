@@ -62,6 +62,13 @@ public class ArmSubsystem extends SubsystemBase {
     private double falconAngleOffset;
     private double m_globalSetpoint;
 
+
+    private double usedP;
+    private double usedI;
+    private double usedD;
+    private double usedV;
+    private double usedG;
+
     private DigitalInput m_noteSensor;
 
     public ArmSubsystem() {
@@ -133,6 +140,20 @@ public class ArmSubsystem extends SubsystemBase {
                         this));
 
         InitMotionProfile(getArmPosition());
+
+
+        SmartDashboard.putNumber("ARM p", ArmConstants.kPidValues.p);
+        SmartDashboard.putNumber("ARM I", ArmConstants.kPidValues.i);
+        SmartDashboard.putNumber("ARM D", ArmConstants.kPidValues.d);
+        SmartDashboard.putNumber("ARM V", ArmConstants.kFFValues.kv);
+        SmartDashboard.putNumber("ARM G", ArmConstants.kFFValues.kg);
+
+        usedP = ArmConstants.kPidValues.p;
+        usedI = ArmConstants.kPidValues.i;
+        usedD = ArmConstants.kPidValues.d;
+        usedV = ArmConstants.kFFValues.kv;
+        usedG = ArmConstants.kFFValues.kg;
+
     }
 
     public void resetAfterDisable(){
@@ -149,6 +170,49 @@ public class ArmSubsystem extends SubsystemBase {
         SmartDashboard.putNumber("Arm Angle Deg", Math.toDegrees(getArmAngleRadians()));
         SmartDashboard.putNumber("Falcon Angle Error Deg", Math.toDegrees(getFalconAngleRadians() - getArmAngleRadians()));
         SmartDashboard.putNumber("Falcon Voltage", m_leader.get());
+
+
+        var newP = SmartDashboard.getNumber("Right Setpoint", usedP);
+        var newI = SmartDashboard.getNumber("Right Setpoint", usedI);
+        var newD = SmartDashboard.getNumber("Right Setpoint", usedD);
+        var newV = SmartDashboard.getNumber("Right Setpoint", usedV);
+        var newG = SmartDashboard.getNumber("Right Setpoint", usedG);
+        /*
+        if (newP != usedP) {
+            usedP = newP;
+            m_controller.setP(usedP);
+            System.out.println("Using P of " + usedP);
+        }
+
+        if (newI != usedI) {
+            usedI = newI;
+            m_controller.setI(usedI);
+            System.out.println("Using I of " + usedI);
+
+        }
+
+        if (newD != usedD) {
+            usedD = newD;
+            m_controller.setD(usedD);
+            System.out.println("Using D of " + usedD);
+
+        }
+
+        if (newV != usedV) {
+            usedV = newV;
+            System.out.println("Using V of " + usedV);
+            m_feedforward = new ArmFeedforward(ArmConstants.kFFValues.ks, usedG, usedV, ArmConstants.kFFValues.ka);
+        }
+
+        if (newG != usedG) {
+            usedG = newG;
+            System.out.println("Using G of " + usedG);
+            m_feedforward = new ArmFeedforward(ArmConstants.kFFValues.ks, usedG, usedV, ArmConstants.kFFValues.ka);
+        }
+
+*/
+
+
         if (Math.abs(getFalconAngularVelocityRadiansPerSec()) < .1) {
             double falconError = Math.abs(getFalconAngleRadians() - getArmAngleRadians());
             if (falconError > ArmConstants.falconErrorThresh) {
@@ -221,6 +285,7 @@ public class ArmSubsystem extends SubsystemBase {
 
         m_leader.setVoltage(ff  + pid_output);
         SmartDashboard.putNumber("SetpointVelocity", m_controller.getSetpoint().velocity);
+        SmartDashboard.putNumber("SetpointPosition", m_controller.getSetpoint().position);
          SmartDashboard.putNumber("Arm Set Voltage", ff + pid_output);
         SmartDashboard.putNumber("Global Setpoint ", Math.toDegrees(m_globalSetpoint));
         

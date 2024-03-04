@@ -146,10 +146,10 @@ public final class Constants {
     public static final String kCanName = "Canivore";
 
     public static final double kMaxVelocity = (double) 2 *  Math.PI; //max velocity is 90 deg / sec
-    public static final double kMaxAcceleration = (double) 2 *  Math.PI; //max accel is 45 deg/sec^2
+    public static final double kMaxAcceleration = (double)   Math.PI; //max accel is 45 deg/sec^2
     public static final PidConstants kPidValues = new PidConstants(20/*5.3718*/, 80, .1);
 
-    public static final FeedForwardConstants kFFValues = new FeedForwardConstants(.061459, 3.2533, 0.57096, 0.39434);
+    public static final FeedForwardConstants kFFValues = new FeedForwardConstants(.20035, 3.2988, 0.52066, 0.48143);
    
     public static final double kPositionTolerance = Math.toRadians(1.0);
     public static final double kStaleTolerance = Math.toRadians(1);
