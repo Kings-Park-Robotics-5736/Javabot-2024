@@ -27,7 +27,8 @@ import frc.robot.commands.JoystickCommandsFactory;
 import frc.robot.commands.RobotCommandsFactory;
 import frc.robot.commands.drive.DriveDistanceCommand;
 import frc.robot.commands.drive.DriveToTargetCommand;
-import frc.robot.subsystems.LEDSubsystem;
+import frc.robot.subsystems.LEDs.LEDSubsystem;
+import frc.robot.subsystems.LEDs.WPILEDSubsystem;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.launcherAssembly.LauncherAssemblySubsystem;
@@ -36,7 +37,6 @@ import frc.robot.utils.Types.SysidMechanism;
 import frc.robot.vision.Limelight;
 import frc.robot.vision.Limelight.LEDMode;
 import frc.robot.vision.PiCamera;
-import frc.robot.subsystems.WPILEDSubsystem;
 
 /*
  * This class is where the bulk of the robot should be declared.  Since Command-based is a
