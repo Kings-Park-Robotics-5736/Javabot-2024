@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.3518688575838689,
-        "y": 5.539653386999083
+        "x": 3.8965631777417404,
+        "y": 6.985502432543328
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.3304057942231857,
-        "y": 6.031531018997106
+        "x": 3.115804693147848,
+        "y": 6.9999609229987705
       },
       "isLocked": false,
-      "linkedName": "Start Point"
+      "linkedName": "M1ScoreToR1End"
     },
     {
       "anchor": {
-        "x": 1.9342131029075582,
-        "y": 7.040863460870983
+        "x": 2.5446943201578716,
+        "y": 6.9999609229987705
       },
       "prevControl": {
-        "x": 2.018336848061597,
-        "y": 6.368778004459924
+        "x": 3.8459785422294903,
+        "y": 6.9999609229987705
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "DriveThruR1GoalEnd"
     }
   ],
   "rotationTargets": [],
@@ -38,15 +38,15 @@
     "maxAngularAcceleration": 720.0
   },
   "goalEndState": {
-    "velocity": 0.0,
-    "rotation": 0,
+    "velocity": 0,
+    "rotation": 180.0,
     "rotateFast": false
   },
   "reversed": false,
   "folder": null,
   "previewStartingState": {
-    "rotation": 0.0,
+    "rotation": 180.0,
     "velocity": 0
   },
-  "useDefaultConstraints": false
+  "useDefaultConstraints": true
 }

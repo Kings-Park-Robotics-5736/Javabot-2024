@@ -111,16 +111,21 @@ public class RobotContainer {
                 NamedCommands.registerCommand("Forward0.5", new DriveDistanceCommand(m_robotDrive, 0.5));
                 NamedCommands.registerCommand("GrabTarget", new DriveToTargetCommand(m_robotDrive, m_picam, 2.25, 1));
                 NamedCommands.registerCommand("ForceStop", Commands.runOnce(() -> m_robotDrive.forceStop()));
-                NamedCommands.registerCommand("RunIntake", m_intake.RunIntakeForwardCommand());
+                NamedCommands.registerCommand("RunIntake", RobotCommandsFactory.RunFloorIntakeForwardWithShooterIntakeCommand(m_intake, m_Launcher));
                 NamedCommands.registerCommand("DriveToNote", new DriveToTargetCommand(m_robotDrive, m_picam, 1, 1));
-                NamedCommands.registerCommand("DriveToNoteWithIntake",RobotCommandsFactory.DriveToTargetWithIntake(m_robotDrive, m_intake, m_Launcher, m_picam, 2.0, 3.0));
-                NamedCommands.registerCommand("StartShooter", m_Launcher.RunShooterForwardCommand());
+                NamedCommands.registerCommand("DriveToNoteWithIntake",RobotCommandsFactory.DriveToTargetWithIntake(m_robotDrive, m_intake, m_Launcher, m_picam, 2.0, 2.5));
+                NamedCommands.registerCommand("DriveToNoteWithIntakeSLOW",RobotCommandsFactory.DriveToTargetWithIntake(m_robotDrive, m_intake, m_Launcher, m_picam, 1.0, 1.5));
+
+                NamedCommands.registerCommand("StartShooter", m_Launcher.SpoolShooterCommand());
                 NamedCommands.registerCommand("ShootWhenReady", m_Launcher.RunShooterAndKickupForwardCommand());
                 NamedCommands.registerCommand("ArmToAutoAngle", m_Launcher.RunArmToAutoPositionCommand(m_robotDrive));
                 NamedCommands.registerCommand("ArmToAutoAngleInfinite", m_Launcher.RunArmToAutoPositionCommandContinuous(m_robotDrive));
 
                 NamedCommands.registerCommand("CenterToTarget", new CenterToGoalCommand(m_robotDrive, false));
+                NamedCommands.registerCommand("CenterToTargetInverse", new CenterToGoalCommand(m_robotDrive, false, true));
+
                 NamedCommands.registerCommand("CenterToTargetInfinite", new CenterToGoalCommand(m_robotDrive, true));
+                NamedCommands.registerCommand("ArmToNeutral", m_Launcher.RunArmToPositionCommand(0));
 
                 NamedCommands.registerCommand("ArmToIntakePose", m_Launcher.RunArmToIntakePositionCommand());
 

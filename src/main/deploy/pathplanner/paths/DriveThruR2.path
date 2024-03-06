@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.3518688575838689,
-        "y": 5.539653386999083
+        "x": 1.8868330044352397,
+        "y": 5.590258103593131
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.3304057942231857,
-        "y": 6.031531018997106
+        "x": 1.8796037592075188,
+        "y": 5.590258103593131
       },
       "isLocked": false,
-      "linkedName": "Start Point"
+      "linkedName": "Score R1 End"
     },
     {
       "anchor": {
-        "x": 1.9342131029075582,
-        "y": 7.040863460870983
+        "x": 3.390516011801255,
+        "y": 5.590258103593131
       },
       "prevControl": {
-        "x": 2.018336848061597,
-        "y": 6.368778004459924
+        "x": 3.368828276118091,
+        "y": 5.590258103593131
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "DriveThruR2End"
     }
   ],
   "rotationTargets": [],
@@ -38,8 +38,8 @@
     "maxAngularAcceleration": 720.0
   },
   "goalEndState": {
-    "velocity": 0.0,
-    "rotation": 0,
+    "velocity": 0,
+    "rotation": 0.0,
     "rotateFast": false
   },
   "reversed": false,
@@ -48,5 +48,5 @@
     "rotation": 0.0,
     "velocity": 0
   },
-  "useDefaultConstraints": false
+  "useDefaultConstraints": true
 }

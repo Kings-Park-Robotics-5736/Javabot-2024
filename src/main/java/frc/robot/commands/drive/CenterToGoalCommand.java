@@ -21,14 +21,19 @@ public class  CenterToGoalCommand extends CenterToTargetCommand {
 
     private final double POSE_ERROR_THRESH = Math.toRadians(2);
     private double m_goal_rotation = 0;
+    private boolean m_oppositeGoal;
 
 
-    public CenterToGoalCommand(DriveSubsystem robot_drive, boolean infinite) {
-
+    public CenterToGoalCommand(DriveSubsystem robot_drive, boolean infinite, boolean OppositeGoal) {
+       
         // call the parent constructor.
         super(robot_drive, infinite, new TrapezoidProfile.Constraints(
             CenterToFieldPositionConstants.kMaxSpeedMetersPerSecond, CenterToFieldPositionConstants.kMaxAccelerationMetersPerSecondSquared), CenterToFieldPositionConstants.kPidValues); 
+        m_oppositeGoal = OppositeGoal;
+    }
 
+     public CenterToGoalCommand(DriveSubsystem robot_drive, boolean infinite) {
+        this(robot_drive, infinite, false);
     }
 
     @Override
@@ -70,10 +75,10 @@ public class  CenterToGoalCommand extends CenterToTargetCommand {
 
         var alliance = DriverStation.getAlliance();
 
-        if (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Blue) {
+        if (alliance.isPresent() && (alliance.get() == DriverStation.Alliance.Blue || (m_oppositeGoal && alliance.get() ==DriverStation.Alliance.Red))) {
             scoringPos = ScoringPositions.kBlueScoringPosition;
             rotationOffset += Units.degreesToRadians(180); //when facing the blue side of the field, that is 180 deg.
-        } else if (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red) {
+        } else if (alliance.isPresent() && (alliance.get() == DriverStation.Alliance.Red|| (m_oppositeGoal && alliance.get() ==DriverStation.Alliance.Blue))) {
             scoringPos = ScoringPositions.kRedScoringPosition;
         } else {
             return;

@@ -3,49 +3,49 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.3518688575838689,
-        "y": 5.539653386999083
+        "x": 2.147085832633204,
+        "y": 4.16609679373205
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.3304057942231857,
-        "y": 6.031531018997106
+        "x": 2.551923565385592,
+        "y": 4.1516383032766075
       },
       "isLocked": false,
-      "linkedName": "Start Point"
+      "linkedName": "R3PreDriveThru"
     },
     {
       "anchor": {
-        "x": 1.9342131029075582,
-        "y": 7.040863460870983
+        "x": 2.7181962056231805,
+        "y": 4.16609679373205
       },
       "prevControl": {
-        "x": 2.018336848061597,
-        "y": 6.368778004459924
+        "x": 2.7109669603954596,
+        "y": 4.137179812821165
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "DriveThruR3End"
     }
   ],
   "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 3.0,
+    "maxVelocity": 0.75,
     "maxAcceleration": 3.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0
   },
   "goalEndState": {
-    "velocity": 0.0,
+    "velocity": 0,
     "rotation": 0,
     "rotateFast": false
   },
   "reversed": false,
   "folder": null,
   "previewStartingState": {
-    "rotation": 0.0,
+    "rotation": 0,
     "velocity": 0
   },
   "useDefaultConstraints": false

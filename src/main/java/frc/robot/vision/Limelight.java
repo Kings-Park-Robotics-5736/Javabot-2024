@@ -8,6 +8,8 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.TimestampedDoubleArray;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 
 /**
  * Limelight camera class
@@ -111,6 +113,10 @@ public class Limelight {
      */
     public void setLEDOn() {
         ledMode.setNumber(LEDMode.ON.value);
+    }
+
+    public Command TurnOnLEDsFor3Sec(){
+        return Commands.runOnce(()->setLEDOn()).andThen(Commands.waitSeconds(3).andThen(Commands.runOnce(()->setLEDOff())));
     }
 
     /**

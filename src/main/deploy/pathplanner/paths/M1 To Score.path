@@ -1,0 +1,68 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 8.277485785740804,
+        "y": 7.4481741271211
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 6.593071647681757,
+        "y": 7.5060080889392555
+      },
+      "isLocked": false,
+      "linkedName": "Drive Thru M1 End"
+    },
+    {
+      "anchor": {
+        "x": 4.662863171883805,
+        "y": 6.660186397292258
+      },
+      "prevControl": {
+        "x": 5.0599875043722236,
+        "y": 6.995687988532474
+      },
+      "nextControl": {
+        "x": 4.243566948675974,
+        "y": 6.305953381133919
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 3.65799808522694,
+        "y": 5.720384517692112
+      },
+      "prevControl": {
+        "x": 4.149586760715599,
+        "y": 5.814364705648874
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "M1 Score End"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 4.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 180.0,
+    "rotateFast": false
+  },
+  "reversed": false,
+  "folder": null,
+  "previewStartingState": {
+    "rotation": 0,
+    "velocity": 0
+  },
+  "useDefaultConstraints": false
+}

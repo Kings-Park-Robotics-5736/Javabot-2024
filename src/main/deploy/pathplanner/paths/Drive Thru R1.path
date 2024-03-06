@@ -12,7 +12,7 @@
         "y": 7.0
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "BeginDriveThruR1"
     },
     {
       "anchor": {
@@ -20,8 +20,8 @@
         "y": 7.0
       },
       "prevControl": {
-        "x": 1.5332635107769776,
-        "y": 7.000982778336865
+        "x": 2.689243785491615,
+        "y": 7.000270608747703
       },
       "nextControl": null,
       "isLocked": true,
