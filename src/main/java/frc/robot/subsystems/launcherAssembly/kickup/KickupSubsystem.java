@@ -1,6 +1,7 @@
 package frc.robot.subsystems.launcherAssembly.kickup;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
@@ -26,6 +27,13 @@ public class KickupSubsystem extends SubsystemBase {
 
     public Command RunKickupBackwardCommand() {
         return m_right_wheel.RunKickupBackwardCommand();
+    }
+
+    public Command RunKickupHoldCommand(){
+        return Commands.runOnce(()->m_right_wheel.RunKickupHold());
+    }
+    public void RunKickupHold(){
+        m_right_wheel.RunKickupHold();
     }
 
      public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {

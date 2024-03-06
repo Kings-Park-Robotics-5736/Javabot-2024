@@ -46,4 +46,21 @@ public class TrajectoryCommandsFactory {
         });
     }
 
+    public static Command getPathFollowCommandAmp() {
+        // Load the path you want to follow using its name in the GUI
+        PathPlannerPath path = PathPlannerPath.fromPathFile("Amp Path");
+
+        // Create a path following command using AutoBuilder. This will also trigger event markers.
+        return AutoBuilder.followPath(path);
+    }
+
+        public static Command getPathFollowCommandTrap() {
+        // Load the path you want to follow using its name in the GUI
+        PathPlannerPath path = PathPlannerPath.fromPathFile("Trap Path");
+
+        // Create a path following command using AutoBuilder. This will also trigger event markers.
+        return AutoBuilder.followPath(path);
+    }
+
+
 }

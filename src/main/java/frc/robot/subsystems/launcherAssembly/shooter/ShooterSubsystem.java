@@ -6,6 +6,8 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import frc.robot.Constants;
+import frc.robot.subsystems.drive.DriveSubsystem;
+import frc.robot.utils.MathUtils;
 import frc.robot.utils.Types.PositionType;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
@@ -13,12 +15,10 @@ public class ShooterSubsystem extends SubsystemBase {
     private ShooterWheelSubsystem m_left_wheel;
     private ShooterWheelSubsystem m_right_wheel;
 
-    private double leftForwardSpeed = 0;
-    private double rightForwardSpeed = 0;
-    private double leftReverseSpeed = 0;
-    private double rightReverseSpeed = 0;
+    private double forwardSpeed = 0;
+    private DriveSubsystem m_drive;
 
-    public ShooterSubsystem() {
+    public ShooterSubsystem(DriveSubsystem drive) {
         m_left_wheel = new ShooterWheelSubsystem(Constants.LeftShooterConstants.kPidValues,
                 Constants.LeftShooterConstants.kFFValues, Constants.LeftShooterConstants.kDeviceId, "Left", false,
                 Constants.ShooterConstants.kDesiredSpeed, Constants.ShooterConstants.kReverseSpeed);
@@ -26,28 +26,20 @@ public class ShooterSubsystem extends SubsystemBase {
                 Constants.RightShooterConstants.kFFValues, Constants.RightShooterConstants.kDeviceId, "Right", true,
                 Constants.ShooterConstants.kDesiredSpeed, Constants.ShooterConstants.kReverseSpeed);
 
-        leftForwardSpeed = 0;
-        rightForwardSpeed =0;
-        leftReverseSpeed = 0;
-        rightReverseSpeed = 0;
+        forwardSpeed = 0;
+        m_drive = drive;
     }
 
     @Override
     public void periodic() {
+      
+        var desiredShootingSpeed = MathUtils.distanceToShootingSpeed(m_drive.getPose());
 
-        var newLeftForward = SmartDashboard.getNumber("Left Setpoint", 0);
-        var newRightForward = SmartDashboard.getNumber("Right Setpoint", 0);
-
-        if (newLeftForward != leftForwardSpeed) {
-            leftForwardSpeed = newLeftForward;
-            m_left_wheel.setNewForwardSpeed(leftForwardSpeed);
+        if(desiredShootingSpeed != forwardSpeed){
+            m_left_wheel.setNewForwardSpeed(desiredShootingSpeed);
+            m_right_wheel.setNewForwardSpeed(desiredShootingSpeed);
+            forwardSpeed = desiredShootingSpeed;
         }
-
-        if (newRightForward != rightForwardSpeed) {
-            rightForwardSpeed = newRightForward;
-            m_right_wheel.setNewForwardSpeed(rightForwardSpeed);
-        }
-
     }
 
     /**
@@ -65,7 +57,8 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     public Command SpoolShooterCommand(){
-         return RunShooterForwardCommand(true);
+         return Commands.parallel(Commands.runOnce(() -> m_left_wheel.SpoolShooter()),
+                Commands.runOnce(() -> m_right_wheel.SpoolShooter()));
     }
 
     public Command RunShooterForwardCommand(boolean FinishWhenAtTargetSpeed) {
@@ -76,6 +69,11 @@ public class ShooterSubsystem extends SubsystemBase {
     public Command RunShooterForwardForAmp(){
         return Commands.parallel(m_left_wheel.RunShooterForwardForAmp(),
                 m_right_wheel.RunShooterForwardForAmp());
+    }
+
+    public Command RunShooterForwardIdle(){
+        return Commands.parallel(m_left_wheel.RunShooterForwardIdle(),
+                m_right_wheel.RunShooterForwardIdle());
     }
 
     public Command RunShooterForwardForScorpion(boolean FinishWhenAtTargetSpeed){

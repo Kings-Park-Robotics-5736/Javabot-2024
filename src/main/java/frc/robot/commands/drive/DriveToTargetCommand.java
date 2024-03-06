@@ -22,10 +22,13 @@ public class DriveToTargetCommand extends Command {
     private boolean m_gotTarget;
     private int m_gotTargetCounter;
     private Pose2d m_startingPosition;
+    private double m_startingV;
 
     private final PiCamera m_picam;
     private final double m_speed;
     private final double m_maxDistance;
+    private TrapezoidProfile speed_profile;
+    private int m_iterationCounter;
 
     private final TrapezoidProfile.Constraints m_constraints = new TrapezoidProfile.Constraints(
             DriveConstants.kMaxSpeedMetersPerSecond, DriveConstants.kMaxAccelerationMetersPerSecondSquared);
@@ -55,6 +58,7 @@ public class DriveToTargetCommand extends Command {
 
         m_gotTarget = false;
         m_gotTargetCounter = 0;
+        m_iterationCounter = 0;
 
         //acuire current pose to check total distance travelled
         m_startingPosition = m_drive.getPose();
@@ -63,6 +67,9 @@ public class DriveToTargetCommand extends Command {
         //configure motion controller
         m_controller_theta.reset(m_drive.getHeadingInRadians());
         m_controller_theta.setTolerance(0.01);
+        var startingSpeeds = m_drive.getRobotRelativeSpeeds();
+        m_startingV = Math.sqrt(startingSpeeds.vxMetersPerSecond *  startingSpeeds.vxMetersPerSecond + 
+        startingSpeeds.vyMetersPerSecond *  startingSpeeds.vyMetersPerSecond);
     }
 
     @Override
@@ -79,7 +86,16 @@ public class DriveToTargetCommand extends Command {
 
     @Override
     public void execute() {
-        driveToTarget(m_speed, m_maxDistance);
+
+        if(m_startingV < .25){
+            m_startingV = .25;
+        }
+      
+        m_iterationCounter++;
+        if(m_iterationCounter %2 ==0 && m_startingV < m_speed){
+            m_startingV += .1;
+        }
+        driveToTarget(m_startingV, m_maxDistance);
     }
 
     @Override
@@ -129,7 +145,7 @@ public class DriveToTargetCommand extends Command {
             if (rotationVel > -100) {
 
                 m_drive.setRotateLockoutValue(rotationVel);
-                m_drive.drive(m_speed, 0, rotationVel, false, false);
+                m_drive.drive(speed, 0, rotationVel, false, false);
                 m_gotTargetCounter = 0;
             } else {
                 m_gotTargetCounter++;

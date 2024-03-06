@@ -110,7 +110,7 @@ public class IntakeRollersSubsystem extends SubsystemBase {
         double ff = m_feedforward.calculate(setpoint / 60);  //important, calculate needs rps, not rpm. Hence, / 60
         m_pidController.setReference(setpoint, CANSparkMax.ControlType.kVelocity, 0, ff, ArbFFUnits.kVoltage);
 
-         SmartDashboard.putNumber("Intake Speed: " + name, m_encoder.getVelocity());
+         //SmartDashboard.putNumber("Intake Speed: " + name, m_encoder.getVelocity());
 
     }
 

@@ -136,6 +136,11 @@ public class KickupWheelSubsystem extends SubsystemBase {
         counter ++;
     }
 
+    public void RunKickupHold(){
+        System.out.println("Starting Kickup Hold");
+        setSpeed(.02);
+    }
+
     /**
      * Stop the motor
      */
@@ -151,7 +156,7 @@ public class KickupWheelSubsystem extends SubsystemBase {
                 },
                 () -> RunKickup(kickupConstants.kForwardSpeed),
                 (interrupted) -> StopKickup(),
-                () -> counter > 50  , this);
+                () -> false  , this);
     }
 
     public Command RunKickupBackwardCommand() {

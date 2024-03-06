@@ -18,15 +18,38 @@ public class RobotCommandsFactory {
 
 
 
-    public static Command RunFloorInatakeForwardWithShooterIntakeCommand(IntakeSubsystem intake, LauncherAssemblySubsystem launcher) {        
-            return new ParallelCommandGroup(intake.RunIntakeForwardCommand(), launcher.RunShooterBackwardCommand()).until(()->launcher.ArmContainsNote());
+    public static Command RunFloorIntakeForwardWithShooterIntakeCommand(IntakeSubsystem intake, LauncherAssemblySubsystem launcher) {        
+            return new ParallelCommandGroup(launcher.RunShooterBackwardCommand(),intake.RunIntakeForwardCommand(), launcher.RunKickupBackwardCommand() ).until(()->launcher.ArmContainsNote());
     }
 
     public static Command  RunFloorIntakeWithArmPosition(IntakeSubsystem intake, LauncherAssemblySubsystem launcher){
-        return launcher.RunArmToIntakePositionCommand().andThen(RunFloorInatakeForwardWithShooterIntakeCommand(intake, launcher));
+        return launcher.RunArmToIntakePositionCommand().andThen(RunFloorIntakeForwardWithShooterIntakeCommand(intake, launcher)).andThen(launcher.RunKickupHoldCommand()).andThen(launcher.RunShooterForwardIdle());
     }
 
-    /**
+   
+
+    public static Command DriveToTargetWithIntake(DriveSubsystem robot_drive, IntakeSubsystem intake, LauncherAssemblySubsystem launcher, PiCamera picam, double speed, double maxDistance)
+    {
+        return new DriveToTargetCommand(robot_drive, picam, speed, maxDistance).raceWith(RunFloorIntakeForwardWithShooterIntakeCommand(intake, launcher));
+    }
+
+
+    public static Command DriveToTargetWithIntakeThenIdle(DriveSubsystem robot_drive, IntakeSubsystem intake, LauncherAssemblySubsystem launcher, PiCamera picam, double speed, double maxDistance)
+    {
+        return  launcher.RunArmToIntakePositionCommand().andThen(new DriveToTargetCommand(robot_drive, picam, speed, maxDistance).raceWith(RunFloorIntakeForwardWithShooterIntakeCommand(intake, launcher).handleInterrupt(
+            ()->{
+                if(launcher.ArmContainsNote()){
+                    launcher.RunKickupHold();
+                    launcher.RunShooterForwardIdle();
+                }
+            }
+        )).andThen(launcher.RunKickupHoldCommand()).andThen(launcher.RunShooterForwardIdle()));
+
+        //return  launcher.RunArmToIntakePositionCommand().andThen(new DriveToTargetCommand(robot_drive, picam, speed, maxDistance).raceWith(RunFloorIntakeForwardWithShooterIntakeCommand(intake, launcher)).andThen(launcher.RunKickupHold()).andThen(launcher.RunShooterForwardIdle()));
+    }
+
+
+     /**
      * Automatically shoot once we get in the range of the target, with target centering active
      * @param launcher
      * @param drive
@@ -36,10 +59,7 @@ public class RobotCommandsFactory {
         return launcher.RunShooterForwardCommand().alongWith(new CenterToGoalCommand(drive, true)).until(()->MathUtils.distanceToScoringTarget(drive.getPose()) < ScoringPositions.maxDistanceToScoreMeters).andThen(launcher.RunShooterAndKickupForwardCommand());
     }
 
-    public static Command DriveToTargetWithIntake(DriveSubsystem robot_drive, IntakeSubsystem intake, LauncherAssemblySubsystem launcher, PiCamera picam, double speed, double maxDistance)
-    {
-        return new DriveToTargetCommand(robot_drive, picam, speed, maxDistance).raceWith(RunFloorInatakeForwardWithShooterIntakeCommand(intake, launcher));
-    }
+    
 
     /**
      * @brief Generate a command that will start where it is, drive to a target

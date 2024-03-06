@@ -96,6 +96,8 @@ public class DriveSubsystem extends SubsystemBase {
   private double m_transYLockoutValue;
   private long m_lastPoseUpdate;
 
+  private boolean visionEnabled;
+
   private Limelight m_limelight;
   private Limelight m_limelight_side;
 
@@ -170,6 +172,9 @@ public class DriveSubsystem extends SubsystemBase {
     m_joystickLockoutRotate = false;
     m_joystickLockoutRotateFieldOriented = false;
 
+    visionEnabled=true;
+    SmartDashboard.putBoolean("LimelightVisionEnabled", visionEnabled);
+
     m_transXLockoutValue = 0;
     m_transYLockoutValue = 0;
 
@@ -229,19 +234,21 @@ public class DriveSubsystem extends SubsystemBase {
             m_rearRight.getPosition()
         });
 
-    addLimelightVisionMeasurement(m_limelight);
-    if (m_limelight_side != null) {
-      addLimelightVisionMeasurement(m_limelight_side);
+    if(visionEnabled){
+      addLimelightVisionMeasurement(m_limelight, true);
+      if (m_limelight_side != null) {
+        addLimelightVisionMeasurement(m_limelight_side, false);
+      }
     }
 
     SmartDashboard.putNumber("Gyro Rotation", m_gyro.getRotation2d().getDegrees());
     SmartDashboard.putNumber("Pose Rotation", getPose().getRotation().getDegrees());
-    SmartDashboard.putNumber("X", getPose().getX());
-    SmartDashboard.putNumber("Y", getPose().getY());
+    SmartDashboard.putNumber("Robot Pose X", getPose().getX());
+    SmartDashboard.putNumber("Robot Pose Y", getPose().getY());
 
   }
 
-  private void addLimelightVisionMeasurement(Limelight ll) {
+  private void addLimelightVisionMeasurement(Limelight ll, boolean primary) {
 
     double[] pose;
     double transStd;
@@ -292,15 +299,29 @@ public class DriveSubsystem extends SubsystemBase {
         double poseDelta = m_poseEstimator.getEstimatedPosition().getTranslation()
             .getDistance(limelightPose.getTranslation());
 
-        if (distanceToAprilTagSquared < 9 && poseDelta < .5) {
-          transStd = 0.5;
-          rotStd = 10;
-        } else if (distanceToAprilTagSquared < 25) {
-          transStd = 1.0;
-          rotStd = 15;
-        } else {
-          transStd = 1.5;
-          rotStd = 20;
+
+        if(primary){
+          if (distanceToAprilTagSquared < 9 && poseDelta < .5) {
+            transStd = 0.5;
+            rotStd = 10;
+          } else if (distanceToAprilTagSquared < 25) {
+            transStd = 1.0;
+            rotStd = 15;
+          } else {
+            transStd = 1.5;
+            rotStd = 20;
+          }
+        }else{
+            if (distanceToAprilTagSquared < 9 && poseDelta < .5) {
+            transStd = 1.5;
+            rotStd = 20;
+          } else if (distanceToAprilTagSquared < 25) {
+            transStd = 2.0;
+            rotStd = 25;
+          } else {
+            transStd = 2.5;
+            rotStd = 30;
+          }
         }
         if (limelightPose.getX() > .5) {
           // Apply vision measurements. pose[6] holds the latency/frame delay
@@ -319,6 +340,7 @@ public class DriveSubsystem extends SubsystemBase {
   public void periodic() {
     // Update the odometry in the periodic block
     updateOdometry();
+    SmartDashboard.getBoolean("LimelightVisionEnabled", visionEnabled);
   }
 
   /**

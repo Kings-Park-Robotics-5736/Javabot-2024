@@ -25,6 +25,7 @@ import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.IOConstants;
 import frc.robot.commands.JoystickCommandsFactory;
 import frc.robot.commands.RobotCommandsFactory;
+import frc.robot.commands.TrajectoryCommandsFactory;
 import frc.robot.commands.drive.CenterToGoalCommand;
 import frc.robot.commands.drive.DriveDistanceCommand;
 import frc.robot.commands.drive.DriveToTargetCommand;
@@ -54,13 +55,13 @@ public class RobotContainer {
         public Limelight m_limelight = new Limelight("limelight");
         public Limelight m_limelight_side = new Limelight("limelight-side");
 
-        private final DriveSubsystem m_robotDrive = new DriveSubsystem(m_limelight, null);// use only 1 limelight for
+        private final DriveSubsystem m_robotDrive = new DriveSubsystem(m_limelight, m_limelight_side);// use only 1 limelight for
                                                                                           // driving now since we dont
                                                                                           // have great measurements
                                                                                           // m_limelight_side);
 
         private final IntakeSubsystem m_intake = new IntakeSubsystem();
-        private final LauncherAssemblySubsystem m_Launcher = new LauncherAssemblySubsystem();
+        private final LauncherAssemblySubsystem m_Launcher = new LauncherAssemblySubsystem(m_robotDrive);
         private final PowerDistribution PDH = new PowerDistribution(1, ModuleType.kRev);
         private final SendableChooser<Command> autoChooser;
 
@@ -98,6 +99,10 @@ public class RobotContainer {
                 final var rot = -m_rotLimiter.calculate(MathUtil.applyDeadband(m_driverController.getRightX(), 0.02))
                                 * DriveConstants.kMaxRotationSpeedMetersPerSecond;
 
+                if (rot != 0){
+                        SmartDashboard.putBoolean("Square to Target?", false);
+                }
+
                 m_robotDrive.drive(xSpeed, ySpeed, rot, fieldRelative, true);
         }
 
@@ -128,9 +133,6 @@ public class RobotContainer {
          * The container for the robot. Contains subsystems, OI devices, and commands.
          */
         public RobotContainer() {
-
-                SmartDashboard.putNumber("Left Setpoint", 0);
-                SmartDashboard.putNumber("Right Setpoint", 0);
 
                 InitializeNamedCommands(); // must do this first
 
@@ -320,124 +322,116 @@ public class RobotContainer {
          * {@link JoystickButton}.
          */
         private void configureButtonBindings() {
-                /*
-                 * // BACK BUTTON: zero out the heading. Note, with vision pose, this should not
-                 * be
-                 * // used anymore.
-                 * new JoystickButton(m_driverController, XboxController.Button.kBack.value)
-                 * .onTrue(Commands.runOnce(() -> m_robotDrive.zeroHeading(), m_robotDrive));
-                 * 
-                 * // X BUTTON: drive forward 1 meter
-                 * // new JoystickButton(m_driverController, XboxController.Button.kX.value)
-                 * // .whileTrue(new DriveDistanceCommand(m_robotDrive, 1));
-                 * 
-                 * // Y BUTTON: center on a game piece
-                 * new JoystickButton(m_driverController, XboxController.Button.kY.value)
-                 * .whileTrue(new CenterToTargetCommandPiCam(m_robotDrive, m_picam, true));
-                 * 
-                 * // new JoystickButton(m_driverController, XboxController.Button.kA.value)
-                 * // .whileTrue(new CenterToGoalCommand(m_robotDrive,m_limelight, true));
-                 * 
-                 * // B BUTTON: Drive to a target, and stop when you reach it.
-                 * new JoystickButton(m_driverController, XboxController.Button.kB.value)
-                 * .whileTrue(new DriveToTargetCommand(m_robotDrive, m_picam, 1, 4));
-                 * 
-                 * new JoystickButton(m_actionController, XboxController.Button.kB.value)
-                 * .toggleOnTrue(m_intake.RunIntakeForwardCommand());
-                 * 
-                 * new JoystickButton(m_actionController, XboxController.Button.kX.value)
-                 * .toggleOnTrue(m_intake.RunIntakeBackwardCommand());
-                 * 
-                 * new JoystickButton(m_actionController, XboxController.Button.kB.value)
-                 * .toggleOnTrue(m_intake.RunIntakeForwardCommand());
-                 * 
-                 * new JoystickButton(m_actionController, XboxController.Button.kX.value)
-                 * .toggleOnTrue(m_intake.RunIntakeBackwardCommand());
-                 * 
-                 */
 
-                /*
-                 * new JoystickButton(m_actionController, XboxController.Button.kX.value)
-                 * .whileTrue(m_Launcher.RunShooterBackwardCommand());
-                 * 
-                 * new JoystickButton(m_actionController, XboxController.Button.kA.value)
-                 * .whileTrue(m_Launcher.RunKickupForwardCommand());
-                 */
-
-
-
-                new JoystickButton(m_driverController, XboxController.Button.kLeftBumper.value).toggleOnTrue(m_intake.RunIntakeForwardCommand());
-                new JoystickButton(m_driverController, XboxController.Button.kRightBumper.value).toggleOnTrue(m_intake.RunIntakeBackwardCommand());
-
+                //Center to the goal
                  new JoystickButton(m_driverController, XboxController.Button.kA.value)
                  .whileTrue(new CenterToGoalCommand(m_robotDrive, true));
 
+                 //Auto intake
                   new JoystickButton(m_driverController, XboxController.Button.kB.value)
-                 .whileTrue( RobotCommandsFactory.DriveToTargetWithIntake(m_robotDrive, m_intake, m_Launcher, m_picam, 2.0, 3.0));
+                 .whileTrue( RobotCommandsFactory.DriveToTargetWithIntakeThenIdle(m_robotDrive, m_intake, m_Launcher, m_picam, 2.0, 3.0));
+
+                //Auto drive to amp
+                new JoystickButton(m_driverController, XboxController.Button.kY.value)
+                 .whileTrue( TrajectoryCommandsFactory.getPathFollowCommandAmp());
+
+                 //Auto drive to trap
+                  new JoystickButton(m_driverController, XboxController.Button.kX.value)
+                 .whileTrue( TrajectoryCommandsFactory.getPathFollowCommandTrap());
 
 
+
+                 
+                //Pre-spin the shooter
                 new Trigger(() -> {
                         return m_actionController.getRightTriggerAxis() > 0;
-                }).whileTrue(m_Launcher.RunShooterForwardCommand());
+                }).whileTrue(m_Launcher.SpoolShooterCommand());
 
 
+                //Move arm to the scorpion position, and shoot the note when ready
                 new Trigger(() -> {
                         return m_actionController.getLeftTriggerAxis() > 0;
                 }).whileTrue(m_Launcher.MoveToScorpionAndShootCommand());
 
 
+                //Manually drive the arm with the right joystick
                 new Trigger(() -> {
                         return m_actionController.getRightY() > 0.15 || m_actionController.getRightY() < -0.15;
                 }).whileTrue(m_Launcher.RunArmUpManualSpeedCommand(() -> m_actionController.getRightY()/5));
 
 
-
+                //Manually do the floor intake with Left bumper
                 new JoystickButton(m_actionController, XboxController.Button.kLeftBumper.value)
                                 .whileTrue(RobotCommandsFactory.RunFloorIntakeWithArmPosition(m_intake, m_Launcher));
 
+                //LEFT small button (back), spit out the note
                 new JoystickButton(m_actionController, XboxController.Button.kBack.value)
                   .whileTrue((m_intake.RunIntakeBackwardCommand().alongWith(m_Launcher.RunShooterForwardCommand()).alongWith(m_Launcher.RunKickupForwardCommand())));
 
+                //Shoot when ready
                 new JoystickButton(m_actionController, XboxController.Button.kRightBumper.value)
                                 .whileTrue(m_Launcher.RunShooterAndKickupForwardCommand().andThen(JoystickCommandsFactory
                                 .RumbleControllerTillCancel(m_actionController)));
                 
 
+
+                /*************************************************
+                 * Arm Commands
+                 *************************************************/
+
+                //Bring Arm to the amp angle. But before we can shoot in the amp, we need to stop the pre-spool up.
                 new JoystickButton(m_actionController, XboxController.Button.kX.value)
-                                .whileTrue(m_Launcher.runArmToAmpPositionCommand().andThen(JoystickCommandsFactory
+                                .whileTrue((m_Launcher.StopShooterCommand().alongWith(m_Launcher.runArmToAmpPositionCommand())).andThen(JoystickCommandsFactory
                                 .RumbleControllerTillCancel(m_actionController)));
 
+                //Bring Arm to trap angle.
+                new JoystickButton(m_actionController, XboxController.Button.kLeftStick.value)
+                                .whileTrue(m_Launcher.runArmToTrapCommand().andThen(JoystickCommandsFactory
+                                .RumbleControllerTillCancel(m_actionController)));
+
+                //Bring Arm to a fixed, bumper touching the speaker angle
                 new JoystickButton(m_actionController, XboxController.Button.kB.value)
-                                .whileTrue(m_Launcher.RunArmToPositionCommand(Math.toRadians(-45)).andThen(JoystickCommandsFactory
+                                .whileTrue(m_Launcher.runArmToFixedAngleCommand().andThen(JoystickCommandsFactory
                                 .RumbleControllerTillCancel(m_actionController)));
 
+                //Bring Arm to the intake position (home)
                 new JoystickButton(m_actionController, XboxController.Button.kA.value)
                                 .whileTrue(m_Launcher.RunArmToIntakePositionCommand().andThen(JoystickCommandsFactory
                                 .RumbleControllerTillCancel(m_actionController)));
                 
+                //Bring Arm to the auto angle, and set a new speed for the shooters for the actual speed.
                 new JoystickButton(m_actionController, XboxController.Button.kY.value)
-                                .whileTrue(m_Launcher.RunArmToAutoPositionCommandContinuous(m_robotDrive).andThen(JoystickCommandsFactory
+                                .whileTrue(m_Launcher.RunArmToAutoPositionCommandContinuous(m_robotDrive).alongWith(m_Launcher.SpoolShooterCommand()).andThen(JoystickCommandsFactory
                                 .RumbleControllerTillCancel(m_actionController)));
+
 
                 // the POV hat works differently;
                 // it returns a value from 0-360, where 0 is up, 90 is right, 180 is down, and
                 // 270 is left.
                 // you can get values in between, so we need to define a range.
+                
+                //UP - bring arm up 1 degree
                 new Trigger(() -> {
                         return m_actionController.getPOV() > 340 || (m_actionController.getPOV() < 20 && m_actionController.getPOV()>=0);
                 }).onTrue(m_Launcher.UpdateArmAngleManually(Math.toRadians(-1)));
 
+                //DOWN - bring arm down 1 degree
                 new Trigger(() -> {
-                        return m_actionController.getPOV() < 200 && m_actionController.getPOV() < 160;
+                        return m_actionController.getPOV() < 200 && m_actionController.getPOV() > 160;
                 }).onTrue(m_Launcher.UpdateArmAngleManually(Math.toRadians(1)));
 
+                //RIGHT - shoot into amp
                 new Trigger(() -> {
-                        return m_actionController.getPOV() > 20 && m_actionController.getPOV() < 180;
+                        return m_actionController.getPOV() > 20 && m_actionController.getPOV() < 160;
                 }).whileTrue(Commands.parallel(m_Launcher.RunShooterForAmp(), m_Launcher.RunKickupForwardCommand()));
 
+                //LEFT - manually run kickup
                 new Trigger(() -> {
-                        return m_actionController.getPOV() < 180 && m_actionController.getPOV() < 340;
+                        return m_actionController.getPOV() >220 && m_actionController.getPOV() < 340;
                 }).onTrue(m_Launcher.RunKickupForwardCommand());
+
+                SmartDashboard.putData("Reset Arm Encoder", Commands.runOnce(()->m_Launcher.ResetArmEncoder()));
+                SmartDashboard.putData("Reset Odometry", (Commands.runOnce(() -> m_robotDrive.zeroHeading(), m_robotDrive)));
                 
 
         }

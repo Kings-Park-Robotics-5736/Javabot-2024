@@ -146,27 +146,41 @@ public final class Constants {
     public static final String kCanName = "Canivore";
 
     public static final double kMaxVelocity = (double) 2 *  Math.PI; //max velocity is 90 deg / sec
-    public static final double kMaxAcceleration = (double)   Math.PI; //max accel is 45 deg/sec^2
-    public static final PidConstants kPidValues = new PidConstants(20/*5.3718*/, 80, .1);
+    public static final double kMaxAcceleration = (double) 1.25*  Math.PI; //max accel is 45 deg/sec^2
+    public static final PidConstants kPidValues = new PidConstants(2/*5.3718*/, 0, 0.0000000000);
+    //public static final PidConstants kPidValues = new PidConstants(30/*5.3718*/, 80, .1);
+    //public static final FeedForwardConstants kFFValues = new FeedForwardConstants(1.2, .52879, 1.0435, 3.991);
+    public static final FeedForwardConstants kFFValues = new FeedForwardConstants(0.42502, 2.8721, 0.92093, -1.5);
+    //public static final FeedForwardConstants kFFValues = new FeedForwardConstants(0.87319, 1.8992, 0.55601, -3.153);
 
-    public static final FeedForwardConstants kFFValues = new FeedForwardConstants(.20035, 3.2988, 0.52066, 0.48143);
+    //kg 1.56
+    //kv .62
+    //ka .08
+
+    //public static final FeedForwardConstants kFFValues = new FeedForwardConstants(0, .62, 0.08, 1.56);
+
+
+
+    //public static final FeedForwardConstants kFFValues = new FeedForwardConstants(.20035, 3.2988, 0.52066, 0.48143);
    
     public static final double kPositionTolerance = Math.toRadians(1.0);
-    public static final double kStaleTolerance = Math.toRadians(1);
+    public static final double kStaleTolerance = Math.toRadians(2);
     public static final double kDiffThreshold = Math.toRadians(.25);
     public static final int kStaleThreshold = 20;
 
     public static final double falconOffsetAngleDegrees = 35;
-    public static final double armEncoderOffsetAngleDegrees =-203;
+    public static final double armEncoderOffsetAngleDegrees = 35;//-203;
 
     public static final Limits kLimits = new Limits(Math.toRadians(38), Math.toRadians(-120));
 
     public static final double falconErrorThresh = Math.toRadians(.5);
     public static final double falconErrorCount = 5;
 
-    public static final double intakeAngle = Math.toRadians(34);
+    public static final double intakeAngle = Math.toRadians(35);
     public static final double ampAngle = Math.toRadians(-95);
     public static final double scorpionAngle = Math.toRadians(-111);
+    public static final double TrapAngle = Math.toRadians(-115);
+    public static final double FixedAngle = Math.toRadians(-60);
 
 
   }
@@ -176,7 +190,8 @@ public final class Constants {
     public static final int kDesiredSpeed = 4000; //RPM
     public static final int kAmpSpeed = 500;
     public static final int scorpionSpeed = 2000;
-    public static final int kReverseSpeed = -2500; //RPM
+    public static final int kReverseSpeed = -1500; //RPM
+    public static final int kIdleSpeed = 800; //RPM
     public static final int kTolerance = 100; //RPM
   }
 
@@ -196,8 +211,8 @@ public final class Constants {
 
   public static final class kickupConstants {
 
-    public static final int kForwardSpeed = -4000;
-    public static final int kReverseSpeed = 3000;
+    public static final int kForwardSpeed = -2000;
+    public static final int kReverseSpeed = 1000;
   }
 
   public static final class RightKickupConstants {
@@ -259,7 +274,7 @@ public final class Constants {
   public static final class DriveToTargetCommandConstants {
 
     // after 30 times of not seeing target after seeing it, declare it intaked
-    public static final int kGotTargetThreshold = 30;
+    public static final int kGotTargetThreshold = 50;
 
     public static final double kMaxRotation = Math.PI / 4; // 45 degrees
     public static final PidConstants kPidValues = new PidConstants(1, 0, 0.00);

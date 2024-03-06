@@ -2,6 +2,7 @@ package frc.robot.commands.drive;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
@@ -73,8 +74,10 @@ public abstract class CenterToTargetCommand extends Command {
 
     @Override
     public boolean isFinished() {
-        System.out.println("Is finished = " + checkTurningDone());
-        return !m_infinite && checkTurningDone();
+        var done = checkTurningDone();
+        System.out.println("Is finished = " + done);
+        SmartDashboard.putBoolean("Square to Target?", done);
+        return !m_infinite && done;
     }
 
     protected void stop() {

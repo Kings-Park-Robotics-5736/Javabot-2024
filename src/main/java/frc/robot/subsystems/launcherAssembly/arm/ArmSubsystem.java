@@ -172,45 +172,45 @@ public class ArmSubsystem extends SubsystemBase {
         SmartDashboard.putNumber("Falcon Voltage", m_leader.get());
 
 
-        var newP = SmartDashboard.getNumber("Right Setpoint", usedP);
-        var newI = SmartDashboard.getNumber("Right Setpoint", usedI);
-        var newD = SmartDashboard.getNumber("Right Setpoint", usedD);
-        var newV = SmartDashboard.getNumber("Right Setpoint", usedV);
-        var newG = SmartDashboard.getNumber("Right Setpoint", usedG);
-        /*
-        if (newP != usedP) {
+        var newP = SmartDashboard.getNumber("ARM p", usedP);
+        var newI = SmartDashboard.getNumber("ARM I", usedI);
+        var newD = SmartDashboard.getNumber("ARM D", usedD);
+        var newV = SmartDashboard.getNumber("ARM V", usedV);
+        var newG = SmartDashboard.getNumber("ARM G", usedG);
+        
+        if (newP != usedP && newP != 0) {
             usedP = newP;
             m_controller.setP(usedP);
             System.out.println("Using P of " + usedP);
         }
 
-        if (newI != usedI) {
+        if (newI != usedI && newI != 0) {
             usedI = newI;
             m_controller.setI(usedI);
             System.out.println("Using I of " + usedI);
 
         }
 
-        if (newD != usedD) {
+        if (newD != usedD && newD != 0) {
             usedD = newD;
             m_controller.setD(usedD);
             System.out.println("Using D of " + usedD);
 
         }
 
-        if (newV != usedV) {
+        if (newV != usedV && newV != 0) {
             usedV = newV;
             System.out.println("Using V of " + usedV);
             m_feedforward = new ArmFeedforward(ArmConstants.kFFValues.ks, usedG, usedV, ArmConstants.kFFValues.ka);
         }
 
-        if (newG != usedG) {
+        if (newG != usedG && newG != 0) {
             usedG = newG;
             System.out.println("Using G of " + usedG);
             m_feedforward = new ArmFeedforward(ArmConstants.kFFValues.ks, usedG, usedV, ArmConstants.kFFValues.ka);
         }
 
-*/
+
 
 
         if (Math.abs(getFalconAngularVelocityRadiansPerSec()) < .1) {
@@ -229,6 +229,7 @@ public class ArmSubsystem extends SubsystemBase {
             falconErrorCounter = 0;
         }
         if(!manualControl){
+
             RunArmToPos();
         }
     }
@@ -252,11 +253,11 @@ public class ArmSubsystem extends SubsystemBase {
     }
 
     public double getFalconAngleRadians() {
-        return (m_leader.getPosition().refresh().getValue() / 31.82) * 2 * Math.PI + falconAngleOffset;
+        return (m_leader.getPosition().refresh().getValue() / 31.8181818) * 2 * Math.PI + falconAngleOffset;
     }
 
     public double getFalconAngularVelocityRadiansPerSec() {
-        return (m_leader.getVelocity().refresh().getValue() / 31.82) * 2 * Math.PI;
+        return (m_leader.getVelocity().refresh().getValue() / 31.8181818) * 2 * Math.PI;
     }
 
     public double getArmAngleRadians() {
@@ -281,11 +282,11 @@ public class ArmSubsystem extends SubsystemBase {
         double ff = m_feedforward.calculate(m_controller.getSetpoint().position, m_controller.getSetpoint().velocity);
         SmartDashboard.putNumber("Arm Pid Output", pid_output);
         SmartDashboard.putNumber("Arm FF Output", ff);
-        SmartDashboard.putNumber("Arm Position Eror", m_controller.getPositionError());
+        SmartDashboard.putNumber("Arm Position Eror", Math.toDegrees(m_controller.getPositionError()));
 
         m_leader.setVoltage(ff  + pid_output);
         SmartDashboard.putNumber("SetpointVelocity", m_controller.getSetpoint().velocity);
-        SmartDashboard.putNumber("SetpointPosition", m_controller.getSetpoint().position);
+        SmartDashboard.putNumber("SetpointPosition", Math.toDegrees(m_controller.getSetpoint().position));
          SmartDashboard.putNumber("Arm Set Voltage", ff + pid_output);
         SmartDashboard.putNumber("Global Setpoint ", Math.toDegrees(m_globalSetpoint));
         
