@@ -35,7 +35,9 @@ import frc.robot.utils.Types.PidConstants;
 enum ShooterState{
     STOPPED,
     RUNNING,
-    IDLING
+    IDLING,
+    AMP,
+    SCORPION
 }
 public class ShooterWheelSubsystem extends SubsystemBase {
 
@@ -138,8 +140,10 @@ public class ShooterWheelSubsystem extends SubsystemBase {
         m_forwardSpeed = speed;
         if(m_shooterState == ShooterState.RUNNING){
             InitMotionProfile(m_forwardSpeed);
+            desired_speed = m_forwardSpeed;
         }else if (m_shooterState == ShooterState.IDLING && speed < 4000){
             InitMotionProfile(speed/2);
+            desired_speed = speed/2;
         }
     }
 
@@ -163,6 +167,8 @@ public class ShooterWheelSubsystem extends SubsystemBase {
     }
 
     public boolean isAtDesiredSpeed() {
+        SmartDashboard.putNumber("Shooter " + name + "Desired Speed Offset", Math.abs(getSpeedRotationsPerMinute()
+                - desired_speed));
         return Math.abs(getSpeedRotationsPerMinute()
                 - desired_speed) < Constants.ShooterConstants.kTolerance;
     }
@@ -173,9 +179,9 @@ public class ShooterWheelSubsystem extends SubsystemBase {
      *                 seconds)
      */
     public void RunShooterWithMotionProfile() {
-
         double currTime = Timer.getFPGATimestamp();
         var setpoint = profile.calculate(currTime - startTime);
+        //System.out.println("Running Shooter. Setpoint = " + setpoint.position);
         double ff = m_feedforward.calculate(setpoint.position / 60); // important, calculate
         // needs rps, not rpm. Hence, / 60
         m_motor.setControl(m_voltageVelocity.withFeedForward(ff).withVelocity(setpoint.position / 60));
@@ -200,6 +206,7 @@ public class ShooterWheelSubsystem extends SubsystemBase {
      * @param setpoint of the motor, in absolute rotations
      */
     private void InitMotionProfile(double setpoint, double maxV, double maxA) {
+        System.out.println("Shooter Motion Profile setpoint = " + setpoint + ", Current = " + getSpeedRotationsPerMinute());
         profile = new TrapezoidProfile(new TrapezoidProfile.Constraints(maxV, maxA),
                 new TrapezoidProfile.State(setpoint, 0),
                 new TrapezoidProfile.State(getSpeedRotationsPerMinute(), 0));
@@ -259,7 +266,7 @@ public class ShooterWheelSubsystem extends SubsystemBase {
                     System.out.println("-----------------Starting shooter forward AMP--------------");
                     InitMotionProfile(ShooterConstants.kAmpSpeed);
                     desired_speed = ShooterConstants.kAmpSpeed;
-                    m_shooterState = ShooterState.RUNNING;
+                    m_shooterState = ShooterState.AMP;
                 },
                 () -> {
                     SmartDashboard.putNumber(name + " Shooter Fwd vel", getSpeedRotationsPerMinute());
@@ -277,9 +284,9 @@ public class ShooterWheelSubsystem extends SubsystemBase {
         return new FunctionalCommand(
                 () -> {
                     System.out.println("-----------------Starting shooter forward SCORPION--------------");
-                    InitMotionProfile(ShooterConstants.scorpionSpeed);
+                    InitMotionProfile(ShooterConstants.scorpionSpeed,10000,10000);
                     desired_speed = ShooterConstants.scorpionSpeed;
-                    m_shooterState = ShooterState.RUNNING;
+                    m_shooterState = ShooterState.SCORPION;
                 },
                 () -> {
                     SmartDashboard.putNumber(name + " Shooter Fwd vel", getSpeedRotationsPerMinute());
@@ -303,7 +310,7 @@ public class ShooterWheelSubsystem extends SubsystemBase {
     public Command RunShooterForwardIdle() {
 
         return this.runOnce(()->{
-            System.out.println("-----------------Starting shooter forward Speed = " + ShooterConstants.kIdleSpeed + "--------------");
+            System.out.println("-----------------Starting shooter IDLE Speed = " + ShooterConstants.kIdleSpeed + "--------------");
                     InitMotionProfile(ShooterConstants.kIdleSpeed);
                     desired_speed = ShooterConstants.kIdleSpeed;
                     m_shooterState = ShooterState.IDLING;
@@ -332,12 +339,15 @@ public class ShooterWheelSubsystem extends SubsystemBase {
         return new FunctionalCommand(
                 () -> {
                     System.out.println("-----------------Starting shooter Backward--------------");
-                    InitMotionProfile(m_reverseSpeed, 10000, 10000);
-                    desired_speed = m_reverseSpeed;
-                    m_shooterState = ShooterState.RUNNING;
+                    //InitMotionProfile(m_reverseSpeed, 10000, 10000);
+                    //desired_speed = m_reverseSpeed;
+                    m_shooterState = ShooterState.STOPPED;
                 },
-                () -> {},
+                () -> {
+                    setSpeed(-.25);
+                },
                 (interrupted) -> {
+                    System.out.println("Shooter Backward is Stopped! Interrupted = "  + interrupted);
                     if (!FinishWhenAtTargetSpeed) {
                         StopShooter();
                     }

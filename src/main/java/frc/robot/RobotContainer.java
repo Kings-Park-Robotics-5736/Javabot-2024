@@ -389,6 +389,11 @@ public class RobotContainer {
                                 .whileTrue((m_Launcher.StopShooterCommand().alongWith(m_Launcher.runArmToAmpPositionCommand())).andThen(JoystickCommandsFactory
                                 .RumbleControllerTillCancel(m_actionController)));
 
+
+                new JoystickButton(m_actionController, XboxController.Button.kStart.value).onTrue(m_Launcher.StopShooterCommand());
+
+                                
+
                 //Bring Arm to trap angle.
                 new JoystickButton(m_actionController, XboxController.Button.kLeftStick.value)
                                 .whileTrue(m_Launcher.runArmToTrapCommand().andThen(JoystickCommandsFactory

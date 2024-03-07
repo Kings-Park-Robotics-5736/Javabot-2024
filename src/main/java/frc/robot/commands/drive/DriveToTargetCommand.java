@@ -87,13 +87,13 @@ public class DriveToTargetCommand extends Command {
     @Override
     public void execute() {
 
-        if(m_startingV < .25){
-            m_startingV = .25;
+        if(m_startingV < .20){
+            m_startingV = .20;
         }
       
         m_iterationCounter++;
         if(m_iterationCounter %2 ==0 && m_startingV < m_speed){
-            m_startingV += .1;
+            m_startingV += .075;
         }
         driveToTarget(m_startingV, m_maxDistance);
     }
@@ -160,7 +160,10 @@ public class DriveToTargetCommand extends Command {
             m_gotTarget = true;
             System.out.println("---------------Lost Target-----------------");
         }
-
+        
+        if( m_iterationCounter %5 == 0){
+            System.out.println(m_drive.getPose().getX() + " ,  " + m_drive.getPose().getY() + ", " +m_drive.getPose().getRotation().getRadians());
+        }
         if (maxDistance > 0 && getTotalDisplacement() > maxDistance)
                 /*|| getTotalRotation() > DriveToTargetCommandConstants.kMaxRotation)*/ {
                     System.out.println(m_drive.getPose().getX() + " ,  " + m_drive.getPose().getY() + ", " +m_drive.getPose().getRotation().getRadians());

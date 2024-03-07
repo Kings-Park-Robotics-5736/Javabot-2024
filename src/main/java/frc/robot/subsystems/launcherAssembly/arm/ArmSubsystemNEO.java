@@ -300,14 +300,8 @@ public class ArmSubsystemNEO extends SubsystemBase {
 
 
 
-
-    /**
-     * @brief Initializes the motion profile for the elevator
-     * @param setpoint of the motor, in absolute rotations
-     */
-    private void InitMotionProfile(double setpoint) {
-
-        profile = new TrapezoidProfile(new TrapezoidProfile.Constraints(ArmConstants.kMaxVelocity, ArmConstants.kMaxAcceleration),
+    private void InitMotionProfile(double setpoint, double maxAcceleration) {
+        profile = new TrapezoidProfile(new TrapezoidProfile.Constraints(ArmConstants.kMaxVelocity, maxAcceleration),
         new TrapezoidProfile.State(setpoint, 0),
         new TrapezoidProfile.State(getArmPosition(), 0));
 
@@ -315,6 +309,15 @@ public class ArmSubsystemNEO extends SubsystemBase {
 
         m_globalSetpoint = setpoint;
         m_setpoint = new TrapezoidProfile.State();
+    }
+
+    /**
+     * @brief Initializes the motion profile for the elevator
+     * @param setpoint of the motor, in absolute rotations
+     */
+    private void InitMotionProfile(double setpoint) {
+        InitMotionProfile(setpoint,ArmConstants.kMaxAcceleration );
+       
     }
 
 
@@ -349,7 +352,7 @@ public class ArmSubsystemNEO extends SubsystemBase {
     }
 
     public boolean armIsDown(){
-        return  Math.abs(getArmPosition() - ArmConstants.intakeAngle) < 1.5;
+        return  Math.abs(getArmPosition() - ArmConstants.intakeAngle) < Math.toRadians(1.5);
     }
 
     private Boolean isFinished() {
@@ -387,7 +390,12 @@ public class ArmSubsystemNEO extends SubsystemBase {
                 () -> {
                     double sanitizedSetpoint = sanitizePositionSetpoint(setpoint);
                     System.out.println("-----------------Starting Arm to position " + sanitizedSetpoint + " --------------");
-                    InitMotionProfile(sanitizedSetpoint);
+
+                    double maxAcceleration = ArmConstants.kMaxAcceleration;
+                    if(setpoint == ArmConstants.scorpionAngle){
+                        maxAcceleration = (double) 1.25*  Math.PI;
+                    }
+                    InitMotionProfile(sanitizedSetpoint,maxAcceleration);
                     manualControl = false;
                 },
                 () -> {},

@@ -30,7 +30,14 @@ public class RobotCommandsFactory {
 
     public static Command DriveToTargetWithIntake(DriveSubsystem robot_drive, IntakeSubsystem intake, LauncherAssemblySubsystem launcher, PiCamera picam, double speed, double maxDistance)
     {
-        return new DriveToTargetCommand(robot_drive, picam, speed, maxDistance).raceWith(RunFloorIntakeForwardWithShooterIntakeCommand(intake, launcher));
+        return new DriveToTargetCommand(robot_drive, picam, speed, maxDistance).raceWith(RunFloorIntakeForwardWithShooterIntakeCommand(intake, launcher).handleInterrupt(
+            ()->{
+                if(launcher.ArmContainsNote()){
+                    launcher.RunKickupHold();
+                    launcher.RunShooterForwardIdle();
+                }
+            }
+        ));
     }
 
 

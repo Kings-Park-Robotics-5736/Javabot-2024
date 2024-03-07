@@ -47,7 +47,7 @@
                 }
               },
               {
-                "type": "parallel",
+                "type": "race",
                 "data": {
                   "commands": [
                     {
@@ -82,6 +82,12 @@
                 "type": "path",
                 "data": {
                   "pathName": "R1 to Score"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "StartShooter"
                 }
               }
             ]
