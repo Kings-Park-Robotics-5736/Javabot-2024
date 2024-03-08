@@ -9,16 +9,16 @@ import frc.robot.utils.Types.PositionType;
 
 public class ClimbSubsystem extends SubsystemBase {
 
-    private ClimbMotorSubsystem right;
     private ClimbMotorSubsystem left;
+    private ClimbServoSubsystem servo;
 
     public ClimbSubsystem() {
 
         left = new ClimbMotorSubsystem(Constants.LeftClimbConstants.kPidValues,
                 Constants.LeftClimbConstants.kFFValues, Constants.LeftClimbConstants.kDeviceId, "Left",true);
 
-         right= new ClimbMotorSubsystem(Constants.RightClimbConstants.kPidValues,
-                Constants.RightClimbConstants.kFFValues, Constants.RightClimbConstants.kDeviceId, "Right",false);
+        
+        servo = new ClimbServoSubsystem();
 
     }
 
@@ -29,11 +29,11 @@ public class ClimbSubsystem extends SubsystemBase {
 
 
     public Command RunClimbForwardCommand() {
-        return Commands.parallel(right.RunClimbForwardCommand(), left.RunClimbForwardCommand());
+        return left.RunClimbForwardCommand();
     }
 
     public Command RunClimbBackwardCommand() {
-        return Commands.parallel(right.RunClimbBackwardCommand(), left.RunClimbBackwardCommand());
+        return left.RunClimbBackwardCommand();
     }
 
 // hutch wants an option to run the climb independly (possibly)
@@ -41,34 +41,30 @@ public class ClimbSubsystem extends SubsystemBase {
         return left.RunClimbForwardCommand();
     }
 
-    public Command RunRightClimbForwardCommand() {
-        return right.RunClimbForwardCommand();
-    }
+
     public Command RunLeftClimbBackwardCommand() {
         return left.RunClimbBackwardCommand();
     }
 
-    public Command RunRightClimbBackwardCommand() {
-        return right.RunClimbBackwardCommand();
+
+    public Command ReleaseClimb(){
+        return servo.ClimbServoOpenCommand();
+    }
+
+     public Command CloseClimb(){
+        return servo.ClimbServoCloseCommand();
     }
 
 
 
     public Command sysIdQuasistatic(SysIdRoutine.Direction direction, PositionType whichClimb) {
-        if (whichClimb == PositionType.LEFT) {
-            return right.sysIdQuasistatic(direction);
-        } else {
-            return left.sysIdQuasistatic(direction);
-        }
 
+            return left.sysIdQuasistatic(direction);
     }
 
     public Command sysIdDynamic(SysIdRoutine.Direction direction, PositionType whichClimb) {
-         if (whichClimb == PositionType.RIGHT) {
-            return right.sysIdDynamic(direction);
-        } else {
+       
             return left.sysIdDynamic(direction);
-        } 
     }
 
 }

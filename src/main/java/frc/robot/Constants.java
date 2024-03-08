@@ -107,7 +107,7 @@ public final class Constants {
 
   public static final class LeftClimbConstants {
 
-    public static final byte kDeviceId = 16;
+    public static final byte kDeviceId = 2;
     // TODO tune these values
     public static final PidConstants kPidValues = new PidConstants(0.00001, 0, 0);
     public static final FeedForwardConstants kFFValues = new FeedForwardConstants(0.06368, 0.12005, 0.0034381);

@@ -1,5 +1,7 @@
 package frc.robot.commands.drive;
 
+import java.util.function.DoubleSupplier;
+
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
@@ -25,7 +27,9 @@ public class DriveToTargetCommand extends Command {
     private double m_startingV;
 
     private final PiCamera m_picam;
-    private final double m_speed;
+    private  double m_speed;
+    private  DoubleSupplier m_speed_supplier;
+    private final boolean m_dynamic_speed;
     private final double m_maxDistance;
     private TrapezoidProfile speed_profile;
     private int m_iterationCounter;
@@ -44,6 +48,20 @@ public class DriveToTargetCommand extends Command {
         this.m_picam = picam;
         this.m_speed = speed;
         this.m_maxDistance = maxDistance;
+        this.m_dynamic_speed = false;
+
+
+        addRequirements(m_drive);
+
+    }
+
+    public DriveToTargetCommand(DriveSubsystem robot_drive, PiCamera picam, DoubleSupplier speed, double maxDistance) {
+
+        this.m_drive = robot_drive;
+        this.m_picam = picam;
+        this.m_speed_supplier = speed;
+        this.m_maxDistance = maxDistance;
+        this.m_dynamic_speed = true;
 
         addRequirements(m_drive);
 
@@ -87,15 +105,19 @@ public class DriveToTargetCommand extends Command {
     @Override
     public void execute() {
 
-        if(m_startingV < .20){
-            m_startingV = .20;
+        if(!this.m_dynamic_speed){
+            if(m_startingV < .20){
+                m_startingV = .20;
+            }
+        
+            m_iterationCounter++;
+            if(m_iterationCounter %2 ==0 && m_startingV < m_speed){
+                m_startingV += .075;
+            }
+            driveToTarget(m_startingV, m_maxDistance);
+        }else{
+            driveToTarget(m_speed_supplier.getAsDouble(), m_maxDistance);
         }
-      
-        m_iterationCounter++;
-        if(m_iterationCounter %2 ==0 && m_startingV < m_speed){
-            m_startingV += .075;
-        }
-        driveToTarget(m_startingV, m_maxDistance);
     }
 
     @Override

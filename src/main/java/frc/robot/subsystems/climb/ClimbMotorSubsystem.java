@@ -5,6 +5,7 @@ import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
+import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
@@ -46,6 +47,8 @@ public class ClimbMotorSubsystem extends SubsystemBase{
         m_motor = new CANSparkMax(deviceId, MotorType.kBrushless);
         m_motor.restoreFactoryDefaults();
         m_pidController = m_motor.getPIDController();
+                m_motor.setIdleMode(IdleMode.kBrake);
+
         m_encoder = m_motor.getEncoder();
         
         name = _name;
@@ -123,7 +126,7 @@ public class ClimbMotorSubsystem extends SubsystemBase{
                 () -> {
                     System.out.println("-----------------Starting Climb forward--------------");
                 },
-                () -> RunClimb(ClimbConstants.kForwardSpeed),
+                () -> setSpeed(1),
                 (interrupted) -> StopClimb(),
                 () -> false, this);
     }
@@ -133,7 +136,7 @@ public class ClimbMotorSubsystem extends SubsystemBase{
                 () -> {
                     System.out.println("-----------------Starting Climb Reverse--------------");
                 },
-                () -> RunClimb(ClimbConstants.kReverseSpeed),
+                () -> setSpeed(-1),
                 (interrupted) -> StopClimb(),
                 () -> false, this);
     }

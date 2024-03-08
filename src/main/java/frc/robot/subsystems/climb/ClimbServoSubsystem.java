@@ -8,8 +8,12 @@ import edu.wpi.first.wpilibj.PWM;
 import edu.wpi.first.wpilibj.Servo;
 public class ClimbServoSubsystem extends SubsystemBase {
     Servo climbServo = new Servo(0);
+    Servo climbServoSmall = new Servo(1);
 
-    public ClimbServoSubsystem(){}
+    public ClimbServoSubsystem(){
+        climbServo.setAngle(70);
+        climbServoSmall.setAngle(50);
+    }
 
 
     
@@ -19,6 +23,7 @@ public class ClimbServoSubsystem extends SubsystemBase {
                     System.out.println("-----------------Starting Climb Servo to Position 90 --------------");
                 },
                 () -> {climbServo.setAngle(160);
+                    climbServoSmall.setAngle(260);
                     System.out.println(climbServo.getAngle());
                     },
                 (interrupted) -> {},
@@ -30,7 +35,8 @@ public class ClimbServoSubsystem extends SubsystemBase {
                 () -> {
                     System.out.println("-----------------Starting Climb Servo to position 0--------------");
                 },
-                () -> {climbServo.setAngle(70);},
+                () -> {climbServo.setAngle(70);
+                climbServoSmall.setAngle(50);},
                 (interrupted) -> {},
                 () -> false, this);
     

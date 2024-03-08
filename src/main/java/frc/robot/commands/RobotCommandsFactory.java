@@ -1,7 +1,10 @@
 package frc.robot.commands;
 
+import java.util.function.DoubleSupplier;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import frc.robot.commands.drive.CenterToGoalCommand;
@@ -42,6 +45,20 @@ public class RobotCommandsFactory {
 
 
     public static Command DriveToTargetWithIntakeThenIdle(DriveSubsystem robot_drive, IntakeSubsystem intake, LauncherAssemblySubsystem launcher, PiCamera picam, double speed, double maxDistance)
+    {
+        return  launcher.RunArmToIntakePositionCommand().andThen(new DriveToTargetCommand(robot_drive, picam, speed, maxDistance).raceWith(RunFloorIntakeForwardWithShooterIntakeCommand(intake, launcher).handleInterrupt(
+            ()->{
+                if(launcher.ArmContainsNote()){
+                    launcher.RunKickupHold();
+                    launcher.RunShooterForwardIdle();
+                }
+            }
+        )).andThen(launcher.RunKickupHoldCommand()).andThen(launcher.RunShooterForwardIdle()));
+
+        //return  launcher.RunArmToIntakePositionCommand().andThen(new DriveToTargetCommand(robot_drive, picam, speed, maxDistance).raceWith(RunFloorIntakeForwardWithShooterIntakeCommand(intake, launcher)).andThen(launcher.RunKickupHold()).andThen(launcher.RunShooterForwardIdle()));
+    }
+
+        public static Command DriveToTargetWithIntakeThenIdle(DriveSubsystem robot_drive, IntakeSubsystem intake, LauncherAssemblySubsystem launcher, PiCamera picam, DoubleSupplier speed, double maxDistance)
     {
         return  launcher.RunArmToIntakePositionCommand().andThen(new DriveToTargetCommand(robot_drive, picam, speed, maxDistance).raceWith(RunFloorIntakeForwardWithShooterIntakeCommand(intake, launcher).handleInterrupt(
             ()->{

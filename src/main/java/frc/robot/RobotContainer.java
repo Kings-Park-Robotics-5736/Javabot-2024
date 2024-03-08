@@ -29,6 +29,7 @@ import frc.robot.commands.TrajectoryCommandsFactory;
 import frc.robot.commands.drive.CenterToGoalCommand;
 import frc.robot.commands.drive.DriveDistanceCommand;
 import frc.robot.commands.drive.DriveToTargetCommand;
+import frc.robot.subsystems.climb.ClimbSubsystem;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.launcherAssembly.LauncherAssemblySubsystem;
@@ -62,6 +63,7 @@ public class RobotContainer {
 
         private final IntakeSubsystem m_intake = new IntakeSubsystem();
         private final LauncherAssemblySubsystem m_Launcher = new LauncherAssemblySubsystem(m_robotDrive);
+        private final ClimbSubsystem m_climb = new ClimbSubsystem();
         private final PowerDistribution PDH = new PowerDistribution(1, ModuleType.kRev);
         private final SendableChooser<Command> autoChooser;
 
@@ -343,6 +345,27 @@ public class RobotContainer {
                  //Auto drive to trap
                   new JoystickButton(m_driverController, XboxController.Button.kX.value)
                  .whileTrue( TrajectoryCommandsFactory.getPathFollowCommandTrap());
+
+
+                 new JoystickButton(m_driverController, XboxController.Button.kLeftBumper.value)
+                 .whileTrue( m_climb.ReleaseClimb());
+
+                 new JoystickButton(m_driverController, XboxController.Button.kBack.value)
+                 .whileTrue( m_climb.CloseClimb());
+
+                 new JoystickButton(m_driverController, XboxController.Button.kRightBumper.value)
+                 .whileTrue( m_climb.RunClimbForwardCommand());
+
+               
+
+                  new Trigger(() -> {
+                        return m_driverController.getRightTriggerAxis() > 0;
+                }).whileTrue( m_climb.RunClimbBackwardCommand());
+
+
+                new Trigger(() -> {
+                        return m_driverController.getLeftTriggerAxis() > 0;
+                }).whileTrue(RobotCommandsFactory.DriveToTargetWithIntakeThenIdle(m_robotDrive, m_intake, m_Launcher, m_picam, () -> m_driverController.getRightTriggerAxis()*2, 3.5));
 
 
 

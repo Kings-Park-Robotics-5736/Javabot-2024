@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 0.82,
-      "y": 6.66
+      "x": 1.4,
+      "y": 5.5
     },
-    "rotation": 60.0
+    "rotation": 0.0
   },
   "command": {
     "type": "sequential",
@@ -24,7 +24,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "StartToM1"
+                  "pathName": "MiddleToR2"
                 }
               },
               {
@@ -53,7 +53,7 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "DriveThruM1"
+                        "pathName": "DriveThruR2"
                       }
                     },
                     {
@@ -81,7 +81,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "M1 To Score"
+                  "pathName": "R2 To Score"
                 }
               }
             ]
@@ -117,15 +117,15 @@
           "data": {
             "commands": [
               {
-                "type": "path",
-                "data": {
-                  "pathName": "M1ScoreToR1"
-                }
-              },
-              {
                 "type": "named",
                 "data": {
                   "name": "ArmToIntakePose"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "R2ScoreToR3"
                 }
               }
             ]
@@ -138,7 +138,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "DriveToNoteWithIntake"
+                  "name": "DriveToNoteWithIntakeSLOW"
                 }
               },
               {
@@ -148,7 +148,7 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "DriveThruR1ToGoal"
+                        "pathName": "DriveThruR3"
                       }
                     },
                     {
@@ -176,7 +176,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "R1NoteFacingGoalToScore"
+                  "pathName": "R3ToScore"
                 }
               }
             ]
@@ -195,16 +195,22 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "ShootWhenReady"
+                  "name": "ArmToAutoAngle"
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "ArmToAutoAngleInfinite"
+                  "name": "ShootWhenReady"
                 }
               }
             ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "ArmToIntakePose"
           }
         }
       ]

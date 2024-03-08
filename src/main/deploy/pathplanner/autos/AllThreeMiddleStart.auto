@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 0.82,
-      "y": 6.66
+      "x": 1.4,
+      "y": 5.5
     },
-    "rotation": 60.0
+    "rotation": 0.0
   },
   "command": {
     "type": "sequential",
@@ -24,7 +24,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "StartToM1"
+                  "pathName": "MiddleToR1"
                 }
               },
               {
@@ -51,15 +51,15 @@
                 "data": {
                   "commands": [
                     {
-                      "type": "path",
-                      "data": {
-                        "pathName": "DriveThruM1"
-                      }
-                    },
-                    {
                       "type": "named",
                       "data": {
                         "name": "RunIntake"
+                      }
+                    },
+                    {
+                      "type": "path",
+                      "data": {
+                        "pathName": "Drive Thru R1"
                       }
                     }
                   ]
@@ -81,7 +81,13 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "M1 To Score"
+                  "pathName": "R1 to Score"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "StartShooter"
                 }
               }
             ]
@@ -117,15 +123,15 @@
           "data": {
             "commands": [
               {
-                "type": "path",
+                "type": "named",
                 "data": {
-                  "pathName": "M1ScoreToR1"
+                  "name": "ArmToIntakePose"
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "ArmToIntakePose"
+                  "name": "CenterToTargetInverse"
                 }
               }
             ]
@@ -148,7 +154,7 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "DriveThruR1ToGoal"
+                        "pathName": "DriveThruR2"
                       }
                     },
                     {
@@ -176,7 +182,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "R1NoteFacingGoalToScore"
+                  "pathName": "R2 To Score"
                 }
               }
             ]
@@ -202,6 +208,101 @@
                 "type": "named",
                 "data": {
                   "name": "ArmToAutoAngleInfinite"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "ArmToIntakePose"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "R2ScoreToR3"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "sequential",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "DriveToNoteWithIntakeSLOW"
+                }
+              },
+              {
+                "type": "race",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "path",
+                      "data": {
+                        "pathName": "DriveThruR3"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "RunIntake"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "ArmToNeutral"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "R3ToScore"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "race",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "CenterToTargetInfinite"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "ArmToAutoAngle"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "ShootWhenReady"
                 }
               }
             ]

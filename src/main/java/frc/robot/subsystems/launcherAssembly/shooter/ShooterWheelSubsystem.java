@@ -197,8 +197,9 @@ public class ShooterWheelSubsystem extends SubsystemBase {
     }
 
 
+    
     private void InitMotionProfile(double setpoint) {
-        InitMotionProfile(setpoint, 4000, 2000);
+        InitMotionProfile(setpoint, 8000, 4000);
     }
 
     /**

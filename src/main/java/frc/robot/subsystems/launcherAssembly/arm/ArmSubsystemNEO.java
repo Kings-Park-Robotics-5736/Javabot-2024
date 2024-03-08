@@ -244,7 +244,7 @@ public class ArmSubsystemNEO extends SubsystemBase {
     }
 
     public void resetArmHomePosition(){
-        encoderOffset = getArmAngleRadians() +  Math.toRadians(ArmConstants.armEncoderOffsetAngleDegrees);
+        encoderOffset = Math.toRadians(ArmConstants.armEncoderOffsetAngleDegrees) - (m_alternateEncoder.getPosition());
     }
 
 
