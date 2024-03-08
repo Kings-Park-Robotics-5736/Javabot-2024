@@ -127,7 +127,7 @@ public class RobotContainer {
                 NamedCommands.registerCommand("CenterToTargetInverse", new CenterToGoalCommand(m_robotDrive, false, true));
 
                 NamedCommands.registerCommand("CenterToTargetInfinite", new CenterToGoalCommand(m_robotDrive, true));
-                NamedCommands.registerCommand("ArmToNeutral", m_Launcher.RunArmToPositionCommand(0));
+                NamedCommands.registerCommand("ArmToNeutral", m_Launcher.RunArmToPositionCommand(-30));
 
                 NamedCommands.registerCommand("ArmToIntakePose", m_Launcher.RunArmToIntakePositionCommand());
 

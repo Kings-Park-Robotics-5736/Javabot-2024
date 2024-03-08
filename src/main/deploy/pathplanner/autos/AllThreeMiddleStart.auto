@@ -296,7 +296,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "ArmToAutoAngle"
+                  "name": "ArmToAutoAngleInfinite"
                 }
               },
               {
