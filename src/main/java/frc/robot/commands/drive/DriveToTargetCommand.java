@@ -116,6 +116,7 @@ public class DriveToTargetCommand extends Command {
             }
             driveToTarget(m_startingV, m_maxDistance);
         }else{
+            System.out.println(m_speed_supplier.getAsDouble());
             driveToTarget(m_speed_supplier.getAsDouble(), m_maxDistance);
         }
     }

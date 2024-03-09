@@ -235,6 +235,7 @@ public class ArmSubsystemNEO extends SubsystemBase {
         SmartDashboard.putNumber("Arm SetpointVelocity",m_setpoint.velocity);
         SmartDashboard.putNumber("Arm SetpointPosition", Math.toDegrees(m_setpoint.position));
         SmartDashboard.putNumber("Arm Global Setpoint ", Math.toDegrees(m_globalSetpoint));
+        System.out.println("Current Arm Angle: " + Math.toDegrees(getArmPosition()));
         
         //if we are about to overextend, instantly stop and go back to intake position.
         if (getArmAngleRadians() < ArmConstants.kLimits.high) {
@@ -413,7 +414,7 @@ public class ArmSubsystemNEO extends SubsystemBase {
         double sanitizedSetpoint = sanitizePositionSetpoint(new_setpoint);
         if(sanitizedSetpoint != m_globalSetpoint){
             System.out.println("-----------------New Arm to Setpoint " + Math.toDegrees(sanitizedSetpoint) + " --------------");
-            System.out.println("Current Arm Angle: " + Math.toDegrees(getArmPosition()));
+            
         }
         m_globalSetpoint = sanitizedSetpoint;
     }

@@ -127,7 +127,7 @@ public class RobotContainer {
                 NamedCommands.registerCommand("CenterToTargetInverse", new CenterToGoalCommand(m_robotDrive, false, true));
 
                 NamedCommands.registerCommand("CenterToTargetInfinite", new CenterToGoalCommand(m_robotDrive, true));
-                NamedCommands.registerCommand("ArmToNeutral", m_Launcher.RunArmToPositionCommand(-30));
+                NamedCommands.registerCommand("ArmToNeutral", m_Launcher.RunArmToPositionCommand(0));
 
                 NamedCommands.registerCommand("ArmToIntakePose", m_Launcher.RunArmToIntakePositionCommand());
 
@@ -365,7 +365,7 @@ public class RobotContainer {
 
                 new Trigger(() -> {
                         return m_driverController.getLeftTriggerAxis() > 0;
-                }).whileTrue(RobotCommandsFactory.DriveToTargetWithIntakeThenIdle(m_robotDrive, m_intake, m_Launcher, m_picam, () -> m_driverController.getRightTriggerAxis()*2, 3.5));
+                }).whileTrue(RobotCommandsFactory.DriveToTargetWithIntakeThenIdle(m_robotDrive, m_intake, m_Launcher, m_picam, () -> m_driverController.getLeftTriggerAxis()*2, 3.5));
 
 
 

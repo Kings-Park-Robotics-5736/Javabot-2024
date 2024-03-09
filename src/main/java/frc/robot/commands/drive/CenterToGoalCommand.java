@@ -43,6 +43,8 @@ public class  CenterToGoalCommand extends CenterToTargetCommand {
         m_controller_theta.setTolerance(0.01);
         m_controller_theta.enableContinuousInput(-Math.PI, Math.PI);
         System.out.println("----------------Centering to target-----------------------");
+        calculateRotation();
+        System.out.println("----------------Desired Goal is  " + m_goal_rotation + " -----------------------");
 
     }
 
@@ -65,11 +67,8 @@ public class  CenterToGoalCommand extends CenterToTargetCommand {
         m_drive.drive(0, 0, rotationVel, true, false);
     }
 
-    @Override
-    public void execute() {
-
-        // calculate the angle of our current pose to the target
-        Pose2d robotPose = m_drive.getPose();
+    public double calculateRotation(){
+         Pose2d robotPose = m_drive.getPose();
         Pose2d scoringPos;
         double rotationOffset = 0;
 
@@ -81,7 +80,7 @@ public class  CenterToGoalCommand extends CenterToTargetCommand {
         } else if (alliance.isPresent() && (alliance.get() == DriverStation.Alliance.Red|| (m_oppositeGoal && alliance.get() ==DriverStation.Alliance.Blue))) {
             scoringPos = ScoringPositions.kRedScoringPosition;
         } else {
-            return;
+            return 0;
         }
 
         var xDelta = robotPose.getTranslation().getX() - scoringPos.getTranslation().getX();
@@ -89,6 +88,14 @@ public class  CenterToGoalCommand extends CenterToTargetCommand {
         var angleToTarget = Math.atan(yDelta / xDelta) + rotationOffset; // normally tan is x/y, but in frc coords, it
                                                                          // is y / x
         m_goal_rotation = angleToTarget;
+        return angleToTarget;
+    }
+
+    @Override
+    public void execute() {
+
+        // calculate the angle of our current pose to the target
+        var angleToTarget = calculateRotation();
         System.out.println("Angle to target is " + angleToTarget);
         centerOnTarget(angleToTarget, true);
 
