@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -336,7 +337,7 @@ public class RobotContainer {
 
                  //Auto intake
                   new JoystickButton(m_driverController, XboxController.Button.kB.value)
-                 .whileTrue( RobotCommandsFactory.DriveToTargetWithIntakeThenIdle(m_robotDrive, m_intake, m_Launcher, m_picam, 2.0, 3.0));
+                 .whileTrue( RobotCommandsFactory.DriveToTargetWithIntakeThenIdle(m_robotDrive, m_intake, m_Launcher, m_picam, 1.5, 3.0));
 
                 //Auto drive to amp
                 new JoystickButton(m_driverController, XboxController.Button.kY.value)
@@ -348,7 +349,7 @@ public class RobotContainer {
 
 
                  new JoystickButton(m_driverController, XboxController.Button.kLeftBumper.value)
-                 .whileTrue( m_climb.ReleaseClimb());
+                 .whileTrue( (new WaitCommand(1)).andThen(m_climb.ReleaseClimb()));
 
                  new JoystickButton(m_driverController, XboxController.Button.kBack.value)
                  .whileTrue( m_climb.CloseClimb());
@@ -365,7 +366,7 @@ public class RobotContainer {
 
                 new Trigger(() -> {
                         return m_driverController.getLeftTriggerAxis() > 0;
-                }).whileTrue(RobotCommandsFactory.DriveToTargetWithIntakeThenIdle(m_robotDrive, m_intake, m_Launcher, m_picam, () -> m_driverController.getLeftTriggerAxis()*2, 3.5));
+                }).whileTrue(RobotCommandsFactory.DriveToTargetWithIntakeThenIdle(m_robotDrive, m_intake, m_Launcher, m_picam, () -> m_driverController.getLeftTriggerAxis()*1.5, 3.5));
 
 
 
