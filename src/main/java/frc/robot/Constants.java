@@ -88,7 +88,7 @@ public final class Constants {
     public static final double kPDrive = 1.4120225;
 
     public static final double kMaxSpeedMetersPerSecond = 4;
-    public static final double kMaxRotationSpeedMetersPerSecond = 8;
+    public static final double kMaxRotationSpeedMetersPerSecond = 6;
 
     public static final double kMaxAccelerationMetersPerSecondSquared = 4;
   }
@@ -146,12 +146,13 @@ public final class Constants {
     public static final String kCanName = "Canivore";
 
     public static final double kMaxVelocity = (double) 2 *  Math.PI; //max velocity is 90 deg / sec
-    public static final double kMaxAcceleration = (double) 1.25*  Math.PI; //max accel is 45 deg/sec^2
-    public static final PidConstants kPidValues = new PidConstants(1.25/*5.3718*/, 0, 1.0000000000);
+    public static final double kMaxAcceleration = (double) 2.5*  Math.PI; //max accel is 45 deg/sec^2
+    public static final PidConstants kPidValues = new PidConstants(2.00/*5.3718*/, 0, 1.0000000000);
     //public static final PidConstants kPidValues = new PidConstants(30/*5.3718*/, 80, .1);
     //public static final FeedForwardConstants kFFValues = new FeedForwardConstants(1.2, .52879, 1.0435, 3.991);
-    public static final FeedForwardConstants kFFValues = new FeedForwardConstants(0.42502, 2.8721, 0.92093, -1.5);
+    //public static final FeedForwardConstants kFFValues = new FeedForwardConstants(0.42502, 2.8721, 0.92093, -1.5);
     //public static final FeedForwardConstants kFFValues = new FeedForwardConstants(0.87319, 1.8992, 0.55601, -3.153);
+    public static final FeedForwardConstants kFFValues = new FeedForwardConstants(0.65082, 2.0415, 1.0095, -1.5);
 
     //kg 1.56
     //kv .62
@@ -177,10 +178,10 @@ public final class Constants {
     public static final double falconErrorCount = 5;
 
     public static final double intakeAngle = Math.toRadians(35);
-    public static final double ampAngle = Math.toRadians(-95);
+    public static final double ampAngle = Math.toRadians(-104);
     public static final double scorpionAngle = Math.toRadians(-111);
     public static final double TrapAngle = Math.toRadians(-115);
-    public static final double FixedAngle = Math.toRadians(-60);
+    public static final double FixedAngle = Math.toRadians(0);
 
 
   }
@@ -191,8 +192,8 @@ public final class Constants {
     public static final int kAmpSpeed = 500;
     public static final int scorpionSpeed = 2000;
     public static final int kReverseSpeed = -1500; //RPM
-    public static final int kIdleSpeed = 800; //RPM
-    public static final int kTolerance = 100; //RPM
+    public static final int kIdleSpeed = 2000; //RPM
+    public static final int kTolerance = 150; //RPM
   }
 
   public static final class LeftShooterConstants {

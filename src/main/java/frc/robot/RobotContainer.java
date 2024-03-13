@@ -99,7 +99,7 @@ public class RobotContainer {
                 // positive value when we pull to the left (remember, CCW is positive in
                 // mathematics). Xbox controllers return positive values when you pull to
                 // the right by default.
-                final var rot = -m_rotLimiter.calculate(MathUtil.applyDeadband(m_driverController.getRightX(), 0.02))
+                final var rot = -m_rotLimiter.calculate(MathUtil.applyDeadband(m_driverController.getRightX(), 0.1))
                                 * DriveConstants.kMaxRotationSpeedMetersPerSecond;
 
                 if (rot != 0){
@@ -128,6 +128,8 @@ public class RobotContainer {
                 NamedCommands.registerCommand("CenterToTargetInverse", new CenterToGoalCommand(m_robotDrive, false, true));
 
                 NamedCommands.registerCommand("CenterToTargetInfinite", new CenterToGoalCommand(m_robotDrive, true));
+                NamedCommands.registerCommand("CenterToTargetInfiniteInverse", new CenterToGoalCommand(m_robotDrive, true, true));
+
                 NamedCommands.registerCommand("ArmToNeutral", m_Launcher.RunArmToPositionCommand(0));
 
                 NamedCommands.registerCommand("ArmToIntakePose", m_Launcher.RunArmToIntakePositionCommand());
@@ -462,7 +464,7 @@ public class RobotContainer {
                 //LEFT - manually run kickup
                 new Trigger(() -> {
                         return m_actionController.getPOV() >220 && m_actionController.getPOV() < 340;
-                }).onTrue(m_Launcher.RunKickupForwardCommand());
+                }).onTrue(RobotCommandsFactory.ShootWhenInRange(m_Launcher, m_robotDrive));
 
                 SmartDashboard.putData("Reset Arm Encoder", Commands.runOnce(()->m_Launcher.ResetArmEncoder()));
                 SmartDashboard.putData("Reset Odometry", (Commands.runOnce(() -> m_robotDrive.zeroHeading(), m_robotDrive)));

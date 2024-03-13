@@ -6,6 +6,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import frc.robot.Constants;
+import frc.robot.field.ScoringPositions;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.utils.MathUtils;
 import frc.robot.utils.Types.PositionType;
@@ -34,7 +35,8 @@ public class ShooterSubsystem extends SubsystemBase {
     public void periodic() {
       
         var desiredShootingSpeed = MathUtils.distanceToShootingSpeed(m_drive.getPose());
-
+        SmartDashboard.putBoolean("In Range",  MathUtils.distanceToScoringTarget(m_drive.getPose()) < ScoringPositions.maxDistanceToScoreMeters);
+        SmartDashboard.putBoolean("Shooter At Speed",  shooterAtSpeedOrFaster());
         if(desiredShootingSpeed != forwardSpeed){
             m_left_wheel.setNewForwardSpeed(desiredShootingSpeed);
             m_right_wheel.setNewForwardSpeed(desiredShootingSpeed);
@@ -84,6 +86,15 @@ public class ShooterSubsystem extends SubsystemBase {
     public Command RunShooterBackwardCommand(boolean FinishWhenAtTargetSpeed) {
         return Commands.parallel(m_left_wheel.RunShooterBackwardCommand(FinishWhenAtTargetSpeed),
                 m_right_wheel.RunShooterBackwardCommand(FinishWhenAtTargetSpeed));
+    }
+
+    public boolean shooterAtSpeed(){
+        return m_right_wheel.shooterAtSpeed() && m_left_wheel.shooterAtSpeed() ;
+    }
+
+     public boolean shooterAtSpeedOrFaster(){
+        return (m_right_wheel.shooterAtSpeed() && m_left_wheel.shooterAtSpeed()) ||  
+        (m_right_wheel.isShooterRunningFaster() && m_left_wheel.isShooterRunningFaster()) ;
     }
 
     public Command sysIdQuasistatic(SysIdRoutine.Direction direction, PositionType whichSide) {

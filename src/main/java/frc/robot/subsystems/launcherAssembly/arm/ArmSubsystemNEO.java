@@ -76,7 +76,7 @@ public class ArmSubsystemNEO extends SubsystemBase {
     private double usedD;
     private double usedV;
     private double usedG;
-    private TrapezoidProfile.State m_setpoint;
+    private TrapezoidProfile.State m_prior_iteration_setpoint;
 
     private DigitalInput m_noteSensor;
     private RelativeEncoder m_alternateEncoder;
@@ -175,6 +175,7 @@ public class ArmSubsystemNEO extends SubsystemBase {
     public void periodic() {
        
         SmartDashboard.putNumber("Arm Angle Deg", Math.toDegrees(getArmAngleRadians()));
+        SmartDashboard.putBoolean("Arm At Position",  armReachedTarget());
 
         var newP = SmartDashboard.getNumber("ARM P", usedP);
         var newI = SmartDashboard.getNumber("ARM I", usedI);
@@ -222,18 +223,18 @@ public class ArmSubsystemNEO extends SubsystemBase {
      public void RunArmToPos() {
 
         double currTime = Timer.getFPGATimestamp();
-         m_setpoint = profile.calculate(currTime - startTime);//, m_setpoint,new TrapezoidProfile.State(m_globalSetpoint, 0));
-        double ff =  m_feedforward.calculate(m_setpoint.position, m_setpoint.velocity);
+        m_prior_iteration_setpoint = profile.calculate(0.02, m_prior_iteration_setpoint,new TrapezoidProfile.State(m_globalSetpoint, 0));//, m_setpoint,new TrapezoidProfile.State(m_globalSetpoint, 0));
+        double ff =  m_feedforward.calculate(m_prior_iteration_setpoint.position, m_prior_iteration_setpoint.velocity);
 
-        m_pidController.setReference(m_setpoint.position - encoderOffset, CANSparkMax.ControlType.kPosition, 0, ff,
+        m_pidController.setReference(m_prior_iteration_setpoint.position - encoderOffset, CANSparkMax.ControlType.kPosition, 0, ff,
                 ArbFFUnits.kVoltage);
 
 
         SmartDashboard.putNumber("Arm FF Output", ff);
-        SmartDashboard.putNumber("Arm Position Eror", Math.toDegrees(m_setpoint.position - getArmAngleRadians()));
+        SmartDashboard.putNumber("Arm Position Eror", Math.toDegrees(m_prior_iteration_setpoint.position - getArmAngleRadians()));
 
-        SmartDashboard.putNumber("Arm SetpointVelocity",m_setpoint.velocity);
-        SmartDashboard.putNumber("Arm SetpointPosition", Math.toDegrees(m_setpoint.position));
+        SmartDashboard.putNumber("Arm SetpointVelocity",m_prior_iteration_setpoint.velocity);
+        SmartDashboard.putNumber("Arm SetpointPosition", Math.toDegrees(m_prior_iteration_setpoint.position));
         SmartDashboard.putNumber("Arm Global Setpoint ", Math.toDegrees(m_globalSetpoint));
         System.out.println("Current Arm Angle: " + Math.toDegrees(getArmPosition()));
         
@@ -302,14 +303,20 @@ public class ArmSubsystemNEO extends SubsystemBase {
 
 
     private void InitMotionProfile(double setpoint, double maxAcceleration) {
+      
+        /*
         profile = new TrapezoidProfile(new TrapezoidProfile.Constraints(ArmConstants.kMaxVelocity, maxAcceleration),
         new TrapezoidProfile.State(setpoint, 0),
         new TrapezoidProfile.State(getArmPosition(), 0));
 
+        */
+
+        profile = new TrapezoidProfile(new TrapezoidProfile.Constraints(ArmConstants.kMaxVelocity, maxAcceleration));
+
         startTime = Timer.getFPGATimestamp();
 
         m_globalSetpoint = setpoint;
-        m_setpoint = new TrapezoidProfile.State();
+        m_prior_iteration_setpoint = new TrapezoidProfile.State(getArmPosition(), 0);
     }
 
     /**
@@ -328,7 +335,7 @@ public class ArmSubsystemNEO extends SubsystemBase {
      * @brief Checks if the arm has reached its target
      * @return true if the arm has reached its target, false otherwise
      */
-    private Boolean armReachedTarget() {
+    public Boolean armReachedTarget() {
 
         // check if the arm has stalled and is no longer moving
         // if it hasn't moved (defined by encoder change less than kDiffThreshold),
@@ -343,7 +350,7 @@ public class ArmSubsystemNEO extends SubsystemBase {
 
         // calculate the difference between the current position and the motion profile
         // final position
-        double delta = Math.abs(getArmPosition() - profile.calculate(profile.totalTime()).position);
+        double delta = Math.abs(getArmPosition() - m_globalSetpoint);
 
         // we say that the elevator has reached its target if it is within
         // kDiffThreshold of the target,

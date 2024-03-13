@@ -19,8 +19,8 @@ import frc.robot.field.ScoringPositions;
  */
 public class  CenterToGoalCommand extends CenterToTargetCommand {
 
-    private final double POSE_ERROR_THRESH = Math.toRadians(2);
-    private double m_goal_rotation = 0;
+    private static final double POSE_ERROR_THRESH = Math.toRadians(2);
+    private static double m_goal_rotation = 0;
     private boolean m_oppositeGoal;
 
 
@@ -103,6 +103,10 @@ public class  CenterToGoalCommand extends CenterToTargetCommand {
 
     protected boolean checkTurningDone() {
         return Math.abs(m_goal_rotation - m_drive.getPose().getRotation().getRadians() ) < POSE_ERROR_THRESH;
+    }
+
+    public static boolean checkTurningDoneStatic(DriveSubsystem drive){
+        return Math.abs(m_goal_rotation - drive.getPose().getRotation().getRadians() ) < POSE_ERROR_THRESH;
     }
 
 }

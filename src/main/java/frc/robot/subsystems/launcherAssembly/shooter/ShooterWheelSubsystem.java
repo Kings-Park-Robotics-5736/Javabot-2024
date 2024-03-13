@@ -27,6 +27,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.ShooterConstants;
+import frc.robot.field.ScoringPositions;
+import frc.robot.utils.MathUtils;
 import frc.robot.utils.Types.FeedForwardConstants;
 import frc.robot.utils.Types.PidConstants;
 
@@ -85,6 +87,7 @@ public class ShooterWheelSubsystem extends SubsystemBase {
         configs.Slot0.kA = 0.0;// 3.00;
         configs.Voltage.PeakForwardVoltage = 12;
         configs.Voltage.PeakReverseVoltage = -12;
+        configs.CurrentLimits.StatorCurrentLimit = 65;
         m_shooterState= ShooterState.STOPPED;
 
         m_feedforward = new SimpleMotorFeedforward(ffValues.ks, ffValues.kv, ffValues.ka);
@@ -134,6 +137,8 @@ public class ShooterWheelSubsystem extends SubsystemBase {
         if(m_shooterState != ShooterState.STOPPED){
             RunShooterWithMotionProfile();
         }
+
+        
     }
 
     public void setNewForwardSpeed(double speed) {
@@ -169,8 +174,14 @@ public class ShooterWheelSubsystem extends SubsystemBase {
     public boolean isAtDesiredSpeed() {
         SmartDashboard.putNumber("Shooter " + name + "Desired Speed Offset", Math.abs(getSpeedRotationsPerMinute()
                 - desired_speed));
+
+        SmartDashboard.putNumber("Shooter " + name + "Running Speed ", getSpeedRotationsPerMinute());
         return Math.abs(getSpeedRotationsPerMinute()
                 - desired_speed) < Constants.ShooterConstants.kTolerance;
+    }
+
+    public boolean isShooterRunningFaster(){
+        return getSpeedRotationsPerMinute() > desired_speed;
     }
 
     /**
@@ -199,7 +210,7 @@ public class ShooterWheelSubsystem extends SubsystemBase {
 
     
     private void InitMotionProfile(double setpoint) {
-        InitMotionProfile(setpoint, 8000, 4000);
+        InitMotionProfile(setpoint, 8000, 8000);
     }
 
     /**
@@ -218,8 +229,13 @@ public class ShooterWheelSubsystem extends SubsystemBase {
 
 
     public void SpoolShooter(){
+        desired_speed = m_forwardSpeed;
         InitMotionProfile(m_forwardSpeed);
         m_shooterState = ShooterState.RUNNING;
+    }
+
+    public boolean shooterAtSpeed(){
+        return isAtDesiredSpeed();
     }
 
     /**

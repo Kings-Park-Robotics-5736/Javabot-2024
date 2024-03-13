@@ -5,6 +5,7 @@ import java.util.function.DoubleSupplier;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.DoubleSubscriber;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import frc.robot.commands.drive.CenterToGoalCommand;
@@ -51,9 +52,10 @@ public class RobotCommandsFactory {
                 if(launcher.ArmContainsNote()){
                     launcher.RunKickupHold();
                     launcher.RunShooterForwardIdle();
+                    launcher.runArmToFixedAngleCommand().schedule();
                 }
             }
-        )).andThen(launcher.RunKickupHoldCommand()).andThen(launcher.RunShooterForwardIdle()));
+        )).andThen(launcher.RunKickupHoldCommand()).andThen(launcher.RunShooterForwardIdle()).andThen(launcher.runArmToFixedAngleCommand().unless(()->!launcher.ArmContainsNote())));
 
         //return  launcher.RunArmToIntakePositionCommand().andThen(new DriveToTargetCommand(robot_drive, picam, speed, maxDistance).raceWith(RunFloorIntakeForwardWithShooterIntakeCommand(intake, launcher)).andThen(launcher.RunKickupHold()).andThen(launcher.RunShooterForwardIdle()));
     }
@@ -65,12 +67,15 @@ public class RobotCommandsFactory {
                 if(launcher.ArmContainsNote()){
                     launcher.RunKickupHold();
                     launcher.RunShooterForwardIdle();
+                    launcher.runArmToFixedAngleCommand().schedule();
                 }
             }
-        )).andThen(launcher.RunKickupHoldCommand()).andThen(launcher.RunShooterForwardIdle()));
+        )).andThen(launcher.RunKickupHoldCommand()).andThen(launcher.RunShooterForwardIdle())).andThen(launcher.runArmToFixedAngleCommand().unless(()->!launcher.ArmContainsNote()));
 
         //return  launcher.RunArmToIntakePositionCommand().andThen(new DriveToTargetCommand(robot_drive, picam, speed, maxDistance).raceWith(RunFloorIntakeForwardWithShooterIntakeCommand(intake, launcher)).andThen(launcher.RunKickupHold()).andThen(launcher.RunShooterForwardIdle()));
     }
+
+
 
 
      /**
@@ -79,8 +84,21 @@ public class RobotCommandsFactory {
      * @param drive
      * @return
      */
+    //public static Command ShootWhenInRange(LauncherAssemblySubsystem launcher, DriveSubsystem drive){
+    //    return (launcher.SpoolShooterCommand().alongWith(new CenterToGoalCommand(drive, true)).until(()->MathUtils.distanceToScoringTarget(drive.getPose()) < ScoringPositions.maxDistanceToScoreMeters)).andThen(launcher.RunShooterAndKickupForwardCommand());
+    //}
+
+
     public static Command ShootWhenInRange(LauncherAssemblySubsystem launcher, DriveSubsystem drive){
-        return launcher.RunShooterForwardCommand().alongWith(new CenterToGoalCommand(drive, true)).until(()->MathUtils.distanceToScoringTarget(drive.getPose()) < ScoringPositions.maxDistanceToScoreMeters).andThen(launcher.RunShooterAndKickupForwardCommand());
+        return (launcher.SpoolShooterCommand().alongWith(new CenterToGoalCommand(drive, true)).alongWith(launcher.RunArmToAutoPositionCommandContinuous(drive)).until(
+            ()->{
+                var distanceToTarget = MathUtils.distanceToScoringTarget(drive.getPose());
+                SmartDashboard.putNumber("DistanceToTarget", distanceToTarget);
+                
+                
+                
+                return distanceToTarget < ScoringPositions.maxDistanceToScoreMeters && CenterToGoalCommand.checkTurningDoneStatic(drive) && launcher.armIsAtPosition() && launcher.shooterAtSpeedOrFaster();
+            })).andThen(launcher.ShootCuzIToldYouYouAreReady());
     }
 
     

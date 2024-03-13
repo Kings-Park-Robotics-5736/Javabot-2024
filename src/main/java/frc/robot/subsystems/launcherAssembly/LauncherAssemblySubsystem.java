@@ -30,6 +30,7 @@ public class LauncherAssemblySubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         SmartDashboard.putBoolean("Arm Has Note", ArmContainsNote());
+        
     }
 
     // Pass Thrus
@@ -71,6 +72,14 @@ public class LauncherAssemblySubsystem extends SubsystemBase {
 
     public Command SpoolShooterCommand() {
         return m_shooter.SpoolShooterCommand();
+    }
+
+    public boolean shooterAtSpeed(){
+        return m_shooter.shooterAtSpeed();
+    }
+
+    public boolean shooterAtSpeedOrFaster(){
+        return m_shooter.shooterAtSpeedOrFaster();
     }
 
     /*****************************
@@ -148,6 +157,10 @@ public class LauncherAssemblySubsystem extends SubsystemBase {
                 .andThen(m_shooter.StopShooterCommand());
     }
 
+    public Command ShootCuzIToldYouYouAreReady(){
+        return (RunKickupForwardCommandWithTimer().handleInterrupt(() -> m_shooter.StopShooter())).andThen(m_shooter.StopShooterCommand());
+    }
+
 
 
     /*******************************
@@ -199,6 +212,9 @@ public class LauncherAssemblySubsystem extends SubsystemBase {
 
     public boolean armIsDown() {
         return m_arm.armIsDown();
+    }
+    public boolean armIsAtPosition(){
+        return m_arm.armReachedTarget();
     }
 
     public Command UpdateArmAngleManually(double diff) {

@@ -6,6 +6,7 @@ package frc.robot.subsystems.drive;
 
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
@@ -70,6 +71,45 @@ public class SwerveModule {
     m_driveMotor = new TalonFX(driveMotorChannel, canName);
     m_turningMotor = new TalonFX(turningMotorChannel, canName);
 
+
+    TalonFXConfiguration motor_config = new TalonFXConfiguration();
+    motor_config.CurrentLimits.StatorCurrentLimit = 65;
+    StatusCode status = StatusCode.StatusCodeNotInitialized;
+    for (int i = 0; i < 5; ++i) {
+      status = m_driveMotor.getConfigurator().apply(motor_config);
+      if (status.isOK())
+          break;
+      else {
+          System.out.println("Motor Initialization Failed");
+      }
+
+    }
+
+    
+    if (!status.isOK()) {
+        System.out.println("!!!!!ERROR!!!! Could not initialize the Swerve Drive Motor. Restart robot!");
+    }
+
+    status = StatusCode.StatusCodeNotInitialized;
+
+    motor_config.CurrentLimits.StatorCurrentLimit = 45;
+
+     for (int i = 0; i < 5; ++i) {
+      status = m_turningMotor.getConfigurator().apply(motor_config);
+      if (status.isOK())
+          break;
+      else {
+          System.out.println("Motor Initialization Failed");
+      }
+
+    }
+
+    if (!status.isOK()) {
+        System.out.println("!!!!!ERROR!!!! Could not initialize the Swerve Turning Motor. Restart robot!");
+    }
+
+
+
     m_turningMotor.setInverted(invertTurning);
     m_driveMotor.setInverted(invertDrive);
 
@@ -80,7 +120,7 @@ public class SwerveModule {
     var turning_config = new CANcoderConfiguration();
     turning_config.MagnetSensor.MagnetOffset = turningEncoderOffset;
     turning_config.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Unsigned_0To1;
-    StatusCode status = StatusCode.StatusCodeNotInitialized;
+    status = StatusCode.StatusCodeNotInitialized;
     for(int i = 0; i < 5; i++){
       status = m_turningEncoder.getConfigurator().apply(turning_config);
       if ( status.isOK()){
@@ -91,6 +131,11 @@ public class SwerveModule {
     if(!status.isOK()) {
       System.out.println(" SWERVE Could not apply configs, error code: " + status.toString());
     }
+
+      
+
+
+
     // Limit the PID Controller's input range between -pi and pi and set the input
     // to be continuous.
     m_turnPIDController.enableContinuousInput(-Math.PI, Math.PI);
