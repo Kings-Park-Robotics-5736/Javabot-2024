@@ -87,7 +87,7 @@ public class ShooterWheelSubsystem extends SubsystemBase {
         configs.Slot0.kA = 0.0;// 3.00;
         configs.Voltage.PeakForwardVoltage = 12;
         configs.Voltage.PeakReverseVoltage = -12;
-        configs.CurrentLimits.StatorCurrentLimit = 65;
+        configs.CurrentLimits.StatorCurrentLimit = 50;
         m_shooterState= ShooterState.STOPPED;
 
         m_feedforward = new SimpleMotorFeedforward(ffValues.ks, ffValues.kv, ffValues.ka);
@@ -181,7 +181,7 @@ public class ShooterWheelSubsystem extends SubsystemBase {
     }
 
     public boolean isShooterRunningFaster(){
-        return getSpeedRotationsPerMinute() > desired_speed;
+        return getSpeedRotationsPerMinute() - desired_speed > 0 && getSpeedRotationsPerMinute() - desired_speed < 500;
     }
 
     /**
@@ -361,7 +361,7 @@ public class ShooterWheelSubsystem extends SubsystemBase {
                     m_shooterState = ShooterState.STOPPED;
                 },
                 () -> {
-                    setSpeed(-.25);
+                    setSpeed(-.20);
                 },
                 (interrupted) -> {
                     System.out.println("Shooter Backward is Stopped! Interrupted = "  + interrupted);

@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.7447798608677385,
-        "y": 5.610143974959439
+        "x": 2.417766378631009,
+        "y": 6.24324981018859
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.7375506156400176,
-        "y": 5.610143974959439
+        "x": 2.657050473835728,
+        "y": 6.572265441095078
       },
       "isLocked": false,
-      "linkedName": "Score R1 End"
+      "linkedName": "ToR1DiagnolEnd"
     },
     {
       "anchor": {
-        "x": 3.390516011801255,
-        "y": 5.590258103593131
+        "x": 2.9063047396739763,
+        "y": 7.020923119603924
       },
       "prevControl": {
-        "x": 3.368828276118091,
-        "y": 5.590258103593131
+        "x": 2.622154876618373,
+        "y": 6.691907488697436
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "DriveThruR2End"
+      "linkedName": "DriveThruR1DiagnolEnd"
     }
   ],
   "rotationTargets": [],
@@ -39,13 +39,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0.0,
+    "rotation": 60.0,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": null,
+  "folder": "FastShot",
   "previewStartingState": {
-    "rotation": 0.0,
+    "rotation": 60.0,
     "velocity": 0
   },
   "useDefaultConstraints": true

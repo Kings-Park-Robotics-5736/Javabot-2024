@@ -45,6 +45,13 @@ public final class Types {
     }
   }
 
+
+  public enum LEDState{
+    IN_RANGE,
+    HAVE_NOTE,
+    NO_NOTE,
+    NONE
+}
   public enum DirectionType{
     UP,
     DOWN
@@ -67,5 +74,10 @@ public final class Types {
     KICKUP_RIGHT,
     ARM
   }
+
+  public enum GoalType{
+    SPEAKER,
+    AMP
+}
 
 }

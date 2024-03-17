@@ -190,7 +190,7 @@ public final class Constants {
 
     public static final int kDesiredSpeed = 4000; //RPM
     public static final int kAmpSpeed = 500;
-    public static final int scorpionSpeed = 2000;
+    public static final int scorpionSpeed = 1500;
     public static final int kReverseSpeed = -1500; //RPM
     public static final int kIdleSpeed = 2000; //RPM
     public static final int kTolerance = 150; //RPM
@@ -269,7 +269,7 @@ public final class Constants {
   public static final class CenterToFieldPositionConstants {
     public static final double kMaxSpeedMetersPerSecond = 9;
     public static final double kMaxAccelerationMetersPerSecondSquared = 9;
-    public static final PidConstants kPidValues = new PidConstants(.5, 0, 0.00);
+    public static final PidConstants kPidValues = new PidConstants(.75, 0, 0.00);
   }
 
   public static final class DriveToTargetCommandConstants {
@@ -287,4 +287,12 @@ public final class Constants {
 
   }
 
+  public static final class LEDConstants {
+    public static final int CANdleID = 20;
+    public static final int PWMLedId = 0;
+    public static final int LED_Count = 150;
+    public static final int[] redRGB = {255,0,0};
+    public static final int[] GreenRGB = {0,255,0};
+     public static final int[] BlueRGB = {0,0,255};
+  }
 }

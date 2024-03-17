@@ -6,31 +6,69 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.ArmConstants;
+import frc.robot.field.ScoringPositions;
+import frc.robot.subsystems.LEDSubsystem;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.launcherAssembly.arm.ArmSubsystemNEO;
 import frc.robot.subsystems.launcherAssembly.kickup.KickupSubsystem;
 import frc.robot.subsystems.launcherAssembly.shooter.ShooterSubsystem;
+import frc.robot.utils.MathUtils;
+import frc.robot.utils.Types.LEDState;
 import frc.robot.utils.Types.PositionType;
+
+
 
 public class LauncherAssemblySubsystem extends SubsystemBase {
 
     private final ArmSubsystemNEO m_arm;
     private final ShooterSubsystem m_shooter;
     private final KickupSubsystem m_kickup;
+    private final LEDSubsystem m_led;
+    private DriveSubsystem m_drive;
+    private LEDState laststate;
 
     public LauncherAssemblySubsystem(DriveSubsystem drive) {
         m_arm = new ArmSubsystemNEO();
         m_shooter = new ShooterSubsystem(drive);
         m_kickup = new KickupSubsystem();
+        m_led = new LEDSubsystem();
+        m_drive = drive;
+        laststate = LEDState.NONE;
+
     }
 
     @Override
     public void periodic() {
+        var distance = MathUtils.distanceToScoringTarget(m_drive.getPose());
         SmartDashboard.putBoolean("Arm Has Note", ArmContainsNote());
-        
+        SmartDashboard.putBoolean("In Range",  distance < ScoringPositions.maxDistanceToScoreMeters);
+
+        if(m_arm.hasNote() &&  distance < ScoringPositions.maxDistanceToScoreMeters){
+            if(laststate!= LEDState.IN_RANGE){
+                m_led.SetLEDState(LEDState.IN_RANGE);
+                laststate = LEDState.IN_RANGE;
+                
+            }
+        }else if (m_arm.hasNote()){
+            if( laststate != LEDState.HAVE_NOTE){   
+                m_led.SetLEDState(LEDState.HAVE_NOTE);
+                laststate = LEDState.HAVE_NOTE;
+            }
+        }else{
+            if(laststate != LEDState.NO_NOTE){  
+                m_led.SetLEDState(LEDState.NO_NOTE);
+                laststate = LEDState.NO_NOTE;
+            }
+        }
+        /*
+        if(m_arm.hasNote()){
+            m_led.SetLEDOnInstantCommand().schedule();
+        }else{
+            m_led.SetLEDOffInstantCommand().schedule();
+        }
+        */
     }
 
     // Pass Thrus

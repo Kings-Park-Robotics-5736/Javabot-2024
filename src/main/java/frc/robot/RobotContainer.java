@@ -78,15 +78,31 @@ public class RobotContainer {
         private void driveWithJoystick(Boolean fieldRelative) {
                 // Get the x speed. We are inverting this because Xbox controllers return
                 // negative values when we push forward.
+
+                var leftY = m_driverController.getLeftY();
+                var leftX = m_driverController.getLeftX();
+                var rightX = m_driverController.getRightX();
+                //System.out.println("LeftY Pre = " + leftY);
+
+                if(m_driverController.getLeftStickButton()){
+                       leftY /=2; 
+                       leftX /=2;
+                       System.out.println("Speed Limiting");
+                }
+
+                if(m_driverController.getRightStickButton()){
+                        rightX /=2;
+                }
+                //System.out.println("LeftY After = " + leftY);
                 var xSpeed = -m_xspeedLimiter
-                                .calculate(MathUtil.applyDeadband(m_driverController.getLeftY(), 0.02))
+                                .calculate(MathUtil.applyDeadband(leftY, 0.08))
                                 * DriveConstants.kMaxSpeedMetersPerSecond;
 
                 // Get the y speed or sideways/strafe speed. We are inverting this because
                 // we want a positive value when we pull to the left. Xbox controllers
                 // return positive values when you pull to the right by default.
                 var ySpeed = -m_yspeedLimiter
-                                .calculate(MathUtil.applyDeadband(m_driverController.getLeftX(), 0.02))
+                                .calculate(MathUtil.applyDeadband(leftX, 0.08))
                                 * DriveConstants.kMaxSpeedMetersPerSecond;
 
                 var alliance = DriverStation.getAlliance();
@@ -99,7 +115,7 @@ public class RobotContainer {
                 // positive value when we pull to the left (remember, CCW is positive in
                 // mathematics). Xbox controllers return positive values when you pull to
                 // the right by default.
-                final var rot = -m_rotLimiter.calculate(MathUtil.applyDeadband(m_driverController.getRightX(), 0.1))
+                final var rot = -m_rotLimiter.calculate(MathUtil.applyDeadband(rightX, 0.1))
                                 * DriveConstants.kMaxRotationSpeedMetersPerSecond;
 
                 if (rot != 0){
@@ -117,7 +133,7 @@ public class RobotContainer {
                 NamedCommands.registerCommand("RunIntake", RobotCommandsFactory.RunFloorIntakeForwardWithShooterIntakeCommand(m_intake, m_Launcher));
                 NamedCommands.registerCommand("DriveToNote", new DriveToTargetCommand(m_robotDrive, m_picam, 1, 1));
                 NamedCommands.registerCommand("DriveToNoteWithIntake",RobotCommandsFactory.DriveToTargetWithIntake(m_robotDrive, m_intake, m_Launcher, m_picam, 2.0, 2.5));
-                NamedCommands.registerCommand("DriveToNoteWithIntakeSLOW",RobotCommandsFactory.DriveToTargetWithIntake(m_robotDrive, m_intake, m_Launcher, m_picam, 1.0, 1.5));
+                NamedCommands.registerCommand("DriveToNoteWithIntakeSLOW",RobotCommandsFactory.DriveToTargetWithIntake(m_robotDrive, m_intake, m_Launcher, m_picam, 1.5, 1.5));
 
                 NamedCommands.registerCommand("StartShooter", m_Launcher.SpoolShooterCommand());
                 NamedCommands.registerCommand("ShootWhenReady", m_Launcher.RunShooterAndKickupForwardCommand());
@@ -131,6 +147,7 @@ public class RobotContainer {
                 NamedCommands.registerCommand("CenterToTargetInfiniteInverse", new CenterToGoalCommand(m_robotDrive, true, true));
 
                 NamedCommands.registerCommand("ArmToNeutral", m_Launcher.RunArmToPositionCommand(0));
+                NamedCommands.registerCommand("ArmToPreScorpion", m_Launcher.RunArmToPositionCommand(Math.toRadians(-90)));
 
                 NamedCommands.registerCommand("ArmToIntakePose", m_Launcher.RunArmToIntakePositionCommand());
 
@@ -335,6 +352,7 @@ public class RobotContainer {
 
                 //Center to the goal
                  new JoystickButton(m_driverController, XboxController.Button.kA.value)
+                 
                  .whileTrue(new CenterToGoalCommand(m_robotDrive, true));
 
                  //Auto intake
@@ -343,11 +361,11 @@ public class RobotContainer {
 
                 //Auto drive to amp
                 new JoystickButton(m_driverController, XboxController.Button.kY.value)
-                 .whileTrue( TrajectoryCommandsFactory.getPathFollowCommandAmp());
+                 .whileTrue(m_Launcher.RunArmToIntakePositionCommand().alongWith(m_Launcher.StopShooterCommand()).alongWith(TrajectoryCommandsFactory.DriveToAmp(m_robotDrive)));
 
                  //Auto drive to trap
                   new JoystickButton(m_driverController, XboxController.Button.kX.value)
-                 .whileTrue( TrajectoryCommandsFactory.getPathFollowCommandTrap());
+                 .whileTrue( TrajectoryCommandsFactory.DriveToAmp(m_robotDrive));
 
 
                  new JoystickButton(m_driverController, XboxController.Button.kLeftBumper.value)
@@ -362,7 +380,7 @@ public class RobotContainer {
                
 
                   new Trigger(() -> {
-                        return m_driverController.getRightTriggerAxis() > 0;
+                        return m_driverController.getRightTriggerAxis() > .1;
                 }).whileTrue( m_climb.RunClimbBackwardCommand());
 
 
@@ -401,8 +419,10 @@ public class RobotContainer {
 
                 //Shoot when ready
                 new JoystickButton(m_actionController, XboxController.Button.kRightBumper.value)
-                                .whileTrue(m_Launcher.RunShooterAndKickupForwardCommand().andThen(JoystickCommandsFactory
-                                .RumbleControllerTillCancel(m_actionController)));
+                                .whileTrue(RobotCommandsFactory.ShootWhenInRange(m_Launcher, m_robotDrive));
+                                        
+                                
+                               
                 
 
 
@@ -464,7 +484,8 @@ public class RobotContainer {
                 //LEFT - manually run kickup
                 new Trigger(() -> {
                         return m_actionController.getPOV() >220 && m_actionController.getPOV() < 340;
-                }).onTrue(RobotCommandsFactory.ShootWhenInRange(m_Launcher, m_robotDrive));
+                }).whileTrue( m_Launcher.RunShooterAndKickupForwardCommand().andThen(JoystickCommandsFactory
+                                .RumbleControllerTillCancel(m_actionController)));
 
                 SmartDashboard.putData("Reset Arm Encoder", Commands.runOnce(()->m_Launcher.ResetArmEncoder()));
                 SmartDashboard.putData("Reset Odometry", (Commands.runOnce(() -> m_robotDrive.zeroHeading(), m_robotDrive)));

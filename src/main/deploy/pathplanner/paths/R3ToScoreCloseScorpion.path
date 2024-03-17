@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.7447798608677385,
-        "y": 5.610143974959439
+        "x": 2.7181962056231805,
+        "y": 4.16609679373205
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.7375506156400176,
-        "y": 5.610143974959439
+        "x": 2.018959553289812,
+        "y": 4.239245512849072
       },
       "isLocked": false,
-      "linkedName": "Score R1 End"
+      "linkedName": "DriveThruR3End"
     },
     {
       "anchor": {
-        "x": 3.390516011801255,
-        "y": 5.590258103593131
+        "x": 1.390838803377426,
+        "y": 5.54
       },
       "prevControl": {
-        "x": 3.368828276118091,
-        "y": 5.590258103593131
+        "x": 2.283169075078355,
+        "y": 5.490501927357079
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "DriveThruR2End"
+      "linkedName": "MiddleScoreScorpion"
     }
   ],
   "rotationTargets": [],
@@ -43,9 +43,9 @@
     "rotateFast": false
   },
   "reversed": false,
-  "folder": null,
+  "folder": "FastShot",
   "previewStartingState": {
-    "rotation": 0.0,
+    "rotation": 0,
     "velocity": 0
   },
   "useDefaultConstraints": true

@@ -14,7 +14,9 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Constants;
+import frc.robot.commands.drive.CenterToGoalCommand;
 import frc.robot.subsystems.drive.DriveSubsystem;
+import frc.robot.utils.Types.GoalType;
 
 public class TrajectoryCommandsFactory {
 
@@ -52,6 +54,11 @@ public class TrajectoryCommandsFactory {
 
         // Create a path following command using AutoBuilder. This will also trigger event markers.
         return AutoBuilder.followPath(path);
+    }
+
+
+    public static Command DriveToAmp(DriveSubsystem robotDrive){
+        return getPathFollowCommandAmp().andThen(getPathFollowCommandAmp()).andThen(new CenterToGoalCommand(robotDrive, false, false, GoalType.AMP));
     }
 
         public static Command getPathFollowCommandTrap() {

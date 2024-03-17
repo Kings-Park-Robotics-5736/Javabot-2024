@@ -35,7 +35,6 @@ public class ShooterSubsystem extends SubsystemBase {
     public void periodic() {
       
         var desiredShootingSpeed = MathUtils.distanceToShootingSpeed(m_drive.getPose());
-        SmartDashboard.putBoolean("In Range",  MathUtils.distanceToScoringTarget(m_drive.getPose()) < ScoringPositions.maxDistanceToScoreMeters);
         SmartDashboard.putBoolean("Shooter At Speed",  shooterAtSpeedOrFaster());
         if(desiredShootingSpeed != forwardSpeed){
             m_left_wheel.setNewForwardSpeed(desiredShootingSpeed);

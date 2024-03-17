@@ -1,12 +1,17 @@
 package frc.robot.commands.drive;
 
+import com.pathplanner.lib.path.GoalEndState;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.subsystems.drive.DriveSubsystem;
+import frc.robot.utils.Types.GoalType;
 import frc.robot.Constants.CenterToFieldPositionConstants;
 import frc.robot.field.ScoringPositions;
+
+
 
 /**
  * @brief This command centers the robot to a specific point on the field. It
@@ -19,21 +24,30 @@ import frc.robot.field.ScoringPositions;
  */
 public class  CenterToGoalCommand extends CenterToTargetCommand {
 
-    private static final double POSE_ERROR_THRESH = Math.toRadians(2);
+    private static final double POSE_ERROR_THRESH = Math.toRadians(4);
     private static double m_goal_rotation = 0;
     private boolean m_oppositeGoal;
+    private GoalType m_goalType;
+    private int m_stale_counter;
+    private double stale_value;
 
 
-    public CenterToGoalCommand(DriveSubsystem robot_drive, boolean infinite, boolean OppositeGoal) {
+    public CenterToGoalCommand(DriveSubsystem robot_drive, boolean infinite, boolean OppositeGoal, GoalType goal) {
        
         // call the parent constructor.
         super(robot_drive, infinite, new TrapezoidProfile.Constraints(
             CenterToFieldPositionConstants.kMaxSpeedMetersPerSecond, CenterToFieldPositionConstants.kMaxAccelerationMetersPerSecondSquared), CenterToFieldPositionConstants.kPidValues); 
         m_oppositeGoal = OppositeGoal;
+        m_goalType = goal;
+       
     }
 
-     public CenterToGoalCommand(DriveSubsystem robot_drive, boolean infinite) {
-        this(robot_drive, infinite, false);
+    public CenterToGoalCommand(DriveSubsystem robot_drive, boolean infinite) {
+        this(robot_drive, infinite, false, GoalType.SPEAKER);
+    }
+
+    public CenterToGoalCommand(DriveSubsystem robot_drive, boolean infinite,boolean OppositeGoal) {
+        this(robot_drive, infinite, OppositeGoal, GoalType.SPEAKER);
     }
 
     @Override
@@ -45,6 +59,8 @@ public class  CenterToGoalCommand extends CenterToTargetCommand {
         System.out.println("----------------Centering to target-----------------------");
         calculateRotation();
         System.out.println("----------------Desired Goal is  " + m_goal_rotation + " -----------------------");
+        m_stale_counter = 0;
+        stale_value = 0;
 
     }
 
@@ -68,27 +84,37 @@ public class  CenterToGoalCommand extends CenterToTargetCommand {
     }
 
     public double calculateRotation(){
-         Pose2d robotPose = m_drive.getPose();
+        Pose2d robotPose = m_drive.getPose();
         Pose2d scoringPos;
         double rotationOffset = 0;
 
         var alliance = DriverStation.getAlliance();
+        if(m_goalType == GoalType.SPEAKER){
+            if (alliance.isPresent() && (alliance.get() == DriverStation.Alliance.Blue || (m_oppositeGoal && alliance.get() ==DriverStation.Alliance.Red))) {
+                scoringPos = ScoringPositions.kBlueScoringPosition;
+                rotationOffset += Units.degreesToRadians(180); //when facing the blue side of the field, that is 180 deg.
+            } else if (alliance.isPresent() && (alliance.get() == DriverStation.Alliance.Red|| (m_oppositeGoal && alliance.get() ==DriverStation.Alliance.Blue))) {
+                scoringPos = ScoringPositions.kRedScoringPosition;
+            } else {
+                return 0;
+            }
 
-        if (alliance.isPresent() && (alliance.get() == DriverStation.Alliance.Blue || (m_oppositeGoal && alliance.get() ==DriverStation.Alliance.Red))) {
-            scoringPos = ScoringPositions.kBlueScoringPosition;
-            rotationOffset += Units.degreesToRadians(180); //when facing the blue side of the field, that is 180 deg.
-        } else if (alliance.isPresent() && (alliance.get() == DriverStation.Alliance.Red|| (m_oppositeGoal && alliance.get() ==DriverStation.Alliance.Blue))) {
-            scoringPos = ScoringPositions.kRedScoringPosition;
-        } else {
-            return 0;
+            var xDelta = robotPose.getTranslation().getX() - scoringPos.getTranslation().getX();
+            var yDelta = robotPose.getTranslation().getY() - scoringPos.getTranslation().getY();
+            var angleToTarget = Math.atan(yDelta / xDelta) + rotationOffset; // normally tan is x/y, but in frc coords, it
+                                                                            // is y / x
+            m_goal_rotation = angleToTarget;
+        }else{
+            if (alliance.isPresent() && (alliance.get() == DriverStation.Alliance.Blue || (m_oppositeGoal && alliance.get() ==DriverStation.Alliance.Red))) {
+                m_goal_rotation = Math.toRadians(90);
+            } else if (alliance.isPresent() && (alliance.get() == DriverStation.Alliance.Red|| (m_oppositeGoal && alliance.get() ==DriverStation.Alliance.Blue))) {
+                m_goal_rotation = Math.toRadians(-90);
+            } else {
+                return 0;
+            }
         }
-
-        var xDelta = robotPose.getTranslation().getX() - scoringPos.getTranslation().getX();
-        var yDelta = robotPose.getTranslation().getY() - scoringPos.getTranslation().getY();
-        var angleToTarget = Math.atan(yDelta / xDelta) + rotationOffset; // normally tan is x/y, but in frc coords, it
-                                                                         // is y / x
-        m_goal_rotation = angleToTarget;
-        return angleToTarget;
+        
+        return m_goal_rotation;
     }
 
     @Override
@@ -102,6 +128,13 @@ public class  CenterToGoalCommand extends CenterToTargetCommand {
     }
 
     protected boolean checkTurningDone() {
+        
+        if(Math.abs(stale_value - m_drive.getPose().getRotation().getRadians() ) < Math.toRadians(2)){
+            m_stale_counter++;
+        }else{
+            stale_value = m_drive.getPose().getRotation().getRadians();
+            m_stale_counter = 0;
+        }
         return Math.abs(m_goal_rotation - m_drive.getPose().getRotation().getRadians() ) < POSE_ERROR_THRESH;
     }
 

@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.0,
-        "y": 4.17
+        "x": 1.7946307140353883,
+        "y": 4.1445288918305385
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.404837732752388,
-        "y": 4.155541509544557
+        "x": 1.8945669994701433,
+        "y": 4.140959738779297
       },
       "isLocked": false,
       "linkedName": "R3PreDriveThru"

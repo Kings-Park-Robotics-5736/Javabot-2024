@@ -73,7 +73,7 @@ public class SwerveModule {
 
 
     TalonFXConfiguration motor_config = new TalonFXConfiguration();
-    motor_config.CurrentLimits.StatorCurrentLimit = 65;
+    motor_config.CurrentLimits.StatorCurrentLimit = 45;
     StatusCode status = StatusCode.StatusCodeNotInitialized;
     for (int i = 0; i < 5; ++i) {
       status = m_driveMotor.getConfigurator().apply(motor_config);
@@ -92,7 +92,7 @@ public class SwerveModule {
 
     status = StatusCode.StatusCodeNotInitialized;
 
-    motor_config.CurrentLimits.StatorCurrentLimit = 45;
+    motor_config.CurrentLimits.StatorCurrentLimit = 35;
 
      for (int i = 0; i < 5; ++i) {
       status = m_turningMotor.getConfigurator().apply(motor_config);
