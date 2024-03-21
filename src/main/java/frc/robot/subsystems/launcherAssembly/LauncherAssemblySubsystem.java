@@ -80,6 +80,10 @@ public class LauncherAssemblySubsystem extends SubsystemBase {
         return m_shooter.RunShooterForwardCommand(false);
     }
 
+    public Command EjectShooterCommand(){
+        return m_shooter.EjectCommand();
+    }
+
     public Command RunShooterForAmp() {
         return m_shooter.RunShooterForwardForAmp();
     }
@@ -234,6 +238,9 @@ public class LauncherAssemblySubsystem extends SubsystemBase {
 
     public Command runArmToFixedAngleCommand(){
         return m_arm.RunArmToPositionCommand(ArmConstants.FixedAngle);
+    }
+    public void runArmToFixedAngle(){
+        m_arm.RunArmToPosition(ArmConstants.FixedAngle);
     }
 
     public Command RunArmToAutoPositionCommand(DriveSubsystem robotDrive) {

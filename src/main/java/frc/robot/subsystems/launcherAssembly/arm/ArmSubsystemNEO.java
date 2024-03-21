@@ -385,6 +385,18 @@ public class ArmSubsystemNEO extends SubsystemBase {
         return setpoint;
     }
 
+
+    public void RunArmToPosition(double setpoint){
+        double sanitizedSetpoint = sanitizePositionSetpoint(setpoint);
+        System.out.println("-----------------Starting Arm to position NO COMMMAND" + sanitizedSetpoint + " --------------");
+
+        double maxAcceleration = ArmConstants.kMaxAcceleration;
+        if(setpoint == ArmConstants.scorpionAngle){
+            maxAcceleration = (double) 1.25*  Math.PI;
+        }
+        InitMotionProfile(sanitizedSetpoint,maxAcceleration);
+        manualControl = false;
+    }
     /**
      * 
      * @param setpoint the desired arm position IN RADIANS

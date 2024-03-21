@@ -67,6 +67,11 @@ public class ShooterSubsystem extends SubsystemBase {
                 m_right_wheel.RunShooterForwardCommand(FinishWhenAtTargetSpeed));
     }
 
+    public Command EjectCommand(){
+        return Commands.parallel(m_left_wheel.EjectCommand(),
+                m_right_wheel.EjectCommand());
+    }
+
     public Command RunShooterForwardForAmp(){
         return Commands.parallel(m_left_wheel.RunShooterForwardForAmp(),
                 m_right_wheel.RunShooterForwardForAmp());

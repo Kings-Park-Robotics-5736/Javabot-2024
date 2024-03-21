@@ -34,6 +34,7 @@ import frc.robot.subsystems.climb.ClimbSubsystem;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.launcherAssembly.LauncherAssemblySubsystem;
+import frc.robot.utils.Types.GoalType;
 import frc.robot.utils.Types.PositionType;
 import frc.robot.utils.Types.SysidMechanism;
 import frc.robot.vision.Limelight;
@@ -121,7 +122,11 @@ public class RobotContainer {
                 if (rot != 0){
                         SmartDashboard.putBoolean("Square to Target?", false);
                 }
-
+                if(m_driverController.getLeftBumper()){
+                        fieldRelative = false;
+                          xSpeed = -xSpeed;
+                        ySpeed = -ySpeed;
+                }
                 m_robotDrive.drive(xSpeed, ySpeed, rot, fieldRelative, true);
         }
 
@@ -131,6 +136,8 @@ public class RobotContainer {
                 NamedCommands.registerCommand("GrabTarget", new DriveToTargetCommand(m_robotDrive, m_picam, 2.25, 1));
                 NamedCommands.registerCommand("ForceStop", Commands.runOnce(() -> m_robotDrive.forceStop()));
                 NamedCommands.registerCommand("RunIntake", RobotCommandsFactory.RunFloorIntakeForwardWithShooterIntakeCommand(m_intake, m_Launcher));
+                NamedCommands.registerCommand("RunIntakeBackwards", (m_intake.RunIntakeBackwardCommand().alongWith(m_Launcher.RunShooterForwardCommand().alongWith(m_Launcher.RunKickupForwardCommand())).raceWith(new WaitCommand(1))));
+
                 NamedCommands.registerCommand("DriveToNote", new DriveToTargetCommand(m_robotDrive, m_picam, 1, 1));
                 NamedCommands.registerCommand("DriveToNoteWithIntake",RobotCommandsFactory.DriveToTargetWithIntake(m_robotDrive, m_intake, m_Launcher, m_picam, 2.0, 2.5));
                 NamedCommands.registerCommand("DriveToNoteWithIntakeSLOW",RobotCommandsFactory.DriveToTargetWithIntake(m_robotDrive, m_intake, m_Launcher, m_picam, 1.5, 1.5));
@@ -144,7 +151,7 @@ public class RobotContainer {
                 NamedCommands.registerCommand("CenterToTargetInverse", new CenterToGoalCommand(m_robotDrive, false, true));
 
                 NamedCommands.registerCommand("CenterToTargetInfinite", new CenterToGoalCommand(m_robotDrive, true));
-                NamedCommands.registerCommand("CenterToTargetInfiniteInverse", new CenterToGoalCommand(m_robotDrive, true, true));
+                NamedCommands.registerCommand("CenterToTargetInfiniteInverse", new CenterToGoalCommand(m_robotDrive, true, true, GoalType.SPEAKER, Math.toRadians(10)));
 
                 NamedCommands.registerCommand("ArmToNeutral", m_Launcher.RunArmToPositionCommand(0));
                 NamedCommands.registerCommand("ArmToPreScorpion", m_Launcher.RunArmToPositionCommand(Math.toRadians(-90)));
@@ -352,7 +359,7 @@ public class RobotContainer {
 
                 //Center to the goal
                  new JoystickButton(m_driverController, XboxController.Button.kA.value)
-                 
+                 //.whileTrue(new CenterToGoalCommand(m_robotDrive, false, true));
                  .whileTrue(new CenterToGoalCommand(m_robotDrive, true));
 
                  //Auto intake
@@ -368,11 +375,13 @@ public class RobotContainer {
                  .whileTrue( TrajectoryCommandsFactory.DriveToAmp(m_robotDrive));
 
 
-                 new JoystickButton(m_driverController, XboxController.Button.kLeftBumper.value)
-                 .whileTrue( (new WaitCommand(1)).andThen(m_climb.ReleaseClimb()));
+                
 
                  new JoystickButton(m_driverController, XboxController.Button.kBack.value)
                  .whileTrue( m_climb.CloseClimb());
+
+                 new JoystickButton(m_driverController, XboxController.Button.kStart.value)
+                 .whileTrue( m_climb.ReleaseClimb());
 
                  new JoystickButton(m_driverController, XboxController.Button.kRightBumper.value)
                  .whileTrue( m_climb.RunClimbForwardCommand());

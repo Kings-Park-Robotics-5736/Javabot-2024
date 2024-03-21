@@ -58,7 +58,7 @@ public class TrajectoryCommandsFactory {
 
 
     public static Command DriveToAmp(DriveSubsystem robotDrive){
-        return getPathFollowCommandAmp().andThen(getPathFollowCommandAmp()).andThen(new CenterToGoalCommand(robotDrive, false, false, GoalType.AMP));
+        return getPathFollowCommandAmp().andThen(getPathFollowCommandAmp()).andThen(new CenterToGoalCommand(robotDrive, false, false, GoalType.AMP, Math.toRadians(4)));
     }
 
         public static Command getPathFollowCommandTrap() {

@@ -3,50 +3,50 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 0.831,
-        "y": 6.76
+        "x": 8.295181967096907,
+        "y": 2.4296595428633894
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.1821377268908384,
-        "y": 6.969834508899788
+        "x": 7.767088277539386,
+        "y": 2.42589591373873
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "DriveThruM4FromEdgeEnd"
     },
     {
       "anchor": {
-        "x": 1.8494666525198027,
-        "y": 7.015938034287159
+        "x": 7.090098250992962,
+        "y": 2.4296595428633894
       },
       "prevControl": {
-        "x": 1.369917674133118,
-        "y": 6.857398082487546
+        "x": 7.748791249794889,
+        "y": 2.4350444276109795
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "BeginDriveThruR1"
+      "linkedName": "M4ScrewEnd"
     }
   ],
   "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 3.0,
-    "maxAcceleration": 3.0,
+    "maxVelocity": 4.5,
+    "maxAcceleration": 4.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0
   },
   "goalEndState": {
-    "velocity": 1.5,
-    "rotation": 0,
+    "velocity": 0,
+    "rotation": 90.0,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": null,
+  "folder": "M4Screw",
   "previewStartingState": {
-    "rotation": 60.0,
+    "rotation": 0.0,
     "velocity": 0
   },
-  "useDefaultConstraints": true
+  "useDefaultConstraints": false
 }

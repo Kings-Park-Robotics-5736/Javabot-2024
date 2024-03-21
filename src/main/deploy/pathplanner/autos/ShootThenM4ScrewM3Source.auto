@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 0.82,
-      "y": 6.66
+      "x": 0.67,
+      "y": 4.33
     },
-    "rotation": 60.0
+    "rotation": -60.0
   },
   "command": {
     "type": "sequential",
@@ -24,7 +24,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "EdgeToR1"
+                  "pathName": "EdgeToM4"
                 }
               },
               {
@@ -51,15 +51,15 @@
                 "data": {
                   "commands": [
                     {
-                      "type": "named",
+                      "type": "path",
                       "data": {
-                        "name": "RunIntake"
+                        "pathName": "DriveThruM4FromEdge"
                       }
                     },
                     {
-                      "type": "path",
+                      "type": "named",
                       "data": {
-                        "pathName": "Drive Thru R1"
+                        "name": "RunIntake"
                       }
                     }
                   ]
@@ -73,73 +73,67 @@
           "data": {
             "commands": [
               {
+                "type": "path",
+                "data": {
+                  "pathName": "M4ToScrew"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "RunIntakeBackwards"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "M4ScrewToM3"
+          }
+        },
+        {
+          "type": "sequential",
+          "data": {
+            "commands": [
+              {
                 "type": "named",
                 "data": {
-                  "name": "ArmToNeutral"
+                  "name": "DriveToNoteWithIntake"
                 }
               },
               {
-                "type": "path",
+                "type": "race",
                 "data": {
-                  "pathName": "R1 to Score Scorpion"
+                  "commands": [
+                    {
+                      "type": "path",
+                      "data": {
+                        "pathName": "DriveThruM3"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "RunIntake"
+                      }
+                    }
+                  ]
                 }
-              },
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
               {
                 "type": "named",
                 "data": {
                   "name": "StartShooter"
                 }
-              }
-            ]
-          }
-        },
-        {
-          "type": "race",
-          "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "CenterToTargetInfiniteInverse"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "MoveToScorpionAndShoot"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "ArmToIntakePose"
-                }
-              },
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "MiddleScorpionToR2"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "sequential",
-          "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "DriveToNoteWithIntake"
-                }
               },
               {
                 "type": "race",
@@ -148,13 +142,13 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "DriveThruR2"
+                        "pathName": "M3ToScoreSource"
                       }
                     },
                     {
                       "type": "named",
                       "data": {
-                        "name": "RunIntake"
+                        "name": "ArmToAutoAngleInfinite"
                       }
                     }
                   ]
@@ -164,127 +158,25 @@
           }
         },
         {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "ArmToNeutral"
-                }
-              },
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "R2ToMiddleScorpion"
-                }
-              }
-            ]
-          }
-        },
-        {
           "type": "race",
           "data": {
             "commands": [
               {
                 "type": "named",
                 "data": {
-                  "name": "CenterToTargetInfiniteInverse"
+                  "name": "CenterToTargetInfinite"
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "MoveToScorpionAndShoot"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "ArmToIntakePose"
-                }
-              },
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "MiddleScorpionToR3"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "sequential",
-          "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "DriveToNoteWithIntakeSLOW"
-                }
-              },
-              {
-                "type": "race",
-                "data": {
-                  "commands": [
-                    {
-                      "type": "path",
-                      "data": {
-                        "pathName": "DriveThruR3"
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "RunIntake"
-                      }
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "ArmToNeutral"
-                }
-              },
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "R3ToScorpionScore"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "race",
-          "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "CenterToTargetInfiniteInverse"
+                  "name": "ShootWhenReady"
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "MoveToScorpionAndShoot"
+                  "name": "ArmToAutoAngleInfinite"
                 }
               }
             ]

@@ -29,34 +29,36 @@ public class  CenterToGoalCommand extends CenterToTargetCommand {
     private boolean m_oppositeGoal;
     private GoalType m_goalType;
     private int m_stale_counter;
+    private double m_threshold;
     private double stale_value;
 
 
-    public CenterToGoalCommand(DriveSubsystem robot_drive, boolean infinite, boolean OppositeGoal, GoalType goal) {
+    public CenterToGoalCommand(DriveSubsystem robot_drive, boolean infinite, boolean OppositeGoal, GoalType goal, double threshold) {
        
         // call the parent constructor.
         super(robot_drive, infinite, new TrapezoidProfile.Constraints(
             CenterToFieldPositionConstants.kMaxSpeedMetersPerSecond, CenterToFieldPositionConstants.kMaxAccelerationMetersPerSecondSquared), CenterToFieldPositionConstants.kPidValues); 
         m_oppositeGoal = OppositeGoal;
         m_goalType = goal;
+        m_threshold = threshold;
        
     }
 
     public CenterToGoalCommand(DriveSubsystem robot_drive, boolean infinite) {
-        this(robot_drive, infinite, false, GoalType.SPEAKER);
+        this(robot_drive, infinite, false, GoalType.SPEAKER,POSE_ERROR_THRESH);
     }
 
     public CenterToGoalCommand(DriveSubsystem robot_drive, boolean infinite,boolean OppositeGoal) {
-        this(robot_drive, infinite, OppositeGoal, GoalType.SPEAKER);
+        this(robot_drive, infinite, OppositeGoal, GoalType.SPEAKER,POSE_ERROR_THRESH);
     }
 
     @Override
     public void initialize() {
         m_drive.setJoystickRotateLockout(true, true);
         m_controller_theta.reset(m_drive.getPose().getRotation().getRadians());
-        m_controller_theta.setTolerance(0.01);
+        m_controller_theta.setTolerance(0.06);
         m_controller_theta.enableContinuousInput(-Math.PI, Math.PI);
-        System.out.println("----------------Centering to target-----------------------");
+        System.out.println("----------------Centering to target inverse = " + m_oppositeGoal + " -----------------------");
         calculateRotation();
         System.out.println("----------------Desired Goal is  " + m_goal_rotation + " -----------------------");
         m_stale_counter = 0;
@@ -129,13 +131,14 @@ public class  CenterToGoalCommand extends CenterToTargetCommand {
 
     protected boolean checkTurningDone() {
         
-        if(Math.abs(stale_value - m_drive.getPose().getRotation().getRadians() ) < Math.toRadians(2)){
+        if(Math.abs(stale_value - m_drive.getPose().getRotation().getRadians() ) < Math.toRadians(.25)){
             m_stale_counter++;
         }else{
             stale_value = m_drive.getPose().getRotation().getRadians();
             m_stale_counter = 0;
         }
-        return Math.abs(m_goal_rotation - m_drive.getPose().getRotation().getRadians() ) < POSE_ERROR_THRESH;
+        System.out.println("Stale Counter = " + m_stale_counter + ", angle offset = " + Math.abs(m_goal_rotation - m_drive.getPose().getRotation().getRadians() ));
+        return Math.abs(m_goal_rotation - m_drive.getPose().getRotation().getRadians() ) < m_threshold || m_stale_counter > 20;
     }
 
     public static boolean checkTurningDoneStatic(DriveSubsystem drive){

@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 0.831,
-        "y": 6.76
+        "x": 7.37370218103268,
+        "y": 4.100073952360295
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.1821377268908384,
-        "y": 6.969834508899788
+        "x": 8.37370218103268,
+        "y": 4.100073952360295
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "M3PreDriveThru"
     },
     {
       "anchor": {
-        "x": 1.8494666525198027,
-        "y": 7.015938034287159
+        "x": 8.288553568256205,
+        "y": 4.100073952360295
       },
       "prevControl": {
-        "x": 1.369917674133118,
-        "y": 6.857398082487546
+        "x": 7.288553568256205,
+        "y": 4.100073952360295
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "BeginDriveThruR1"
+      "linkedName": "DriveThruM3End"
     }
   ],
   "rotationTargets": [],
@@ -38,14 +38,14 @@
     "maxAngularAcceleration": 720.0
   },
   "goalEndState": {
-    "velocity": 1.5,
+    "velocity": 0,
     "rotation": 0,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": null,
+  "folder": "M4Screw",
   "previewStartingState": {
-    "rotation": 60.0,
+    "rotation": 0,
     "velocity": 0
   },
   "useDefaultConstraints": true

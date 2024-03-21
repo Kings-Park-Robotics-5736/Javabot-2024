@@ -250,7 +250,23 @@ public class ShooterWheelSubsystem extends SubsystemBase {
      */
 
 
-    
+    public Command EjectCommand(){
+        return new FunctionalCommand(() -> {
+                    System.out.println("-----------------Starting shooter EJECT--------------");
+                    //InitMotionProfile(m_reverseSpeed, 10000, 10000);
+                    //desired_speed = m_reverseSpeed;
+                    m_shooterState = ShooterState.STOPPED;
+                },
+                () -> {
+                    setSpeed(.35);
+                },
+                (interrupted) -> {                   
+                        StopShooter();
+                },
+                () -> {
+                    return false;
+                }, this);
+    }
     public Command RunShooterForwardCommand(boolean FinishWhenAtTargetSpeed) {
         return new FunctionalCommand(
                 () -> {
@@ -301,7 +317,7 @@ public class ShooterWheelSubsystem extends SubsystemBase {
         return new FunctionalCommand(
                 () -> {
                     System.out.println("-----------------Starting shooter forward SCORPION--------------");
-                    InitMotionProfile(ShooterConstants.scorpionSpeed,10000,10000);
+                    InitMotionProfile(ShooterConstants.scorpionSpeed,100000,100000);
                     desired_speed = ShooterConstants.scorpionSpeed;
                     m_shooterState = ShooterState.SCORPION;
                 },
@@ -361,7 +377,7 @@ public class ShooterWheelSubsystem extends SubsystemBase {
                     m_shooterState = ShooterState.STOPPED;
                 },
                 () -> {
-                    setSpeed(-.20);
+                    setSpeed(-.10);
                 },
                 (interrupted) -> {
                     System.out.println("Shooter Backward is Stopped! Interrupted = "  + interrupted);

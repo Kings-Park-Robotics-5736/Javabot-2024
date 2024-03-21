@@ -27,7 +27,7 @@ public class RobotCommandsFactory {
     }
 
     public static Command  RunFloorIntakeWithArmPosition(IntakeSubsystem intake, LauncherAssemblySubsystem launcher){
-        return launcher.RunArmToIntakePositionCommand().andThen(RunFloorIntakeForwardWithShooterIntakeCommand(intake, launcher)).andThen(launcher.RunKickupHoldCommand()).andThen(launcher.RunShooterForwardIdle());
+        return launcher.RunArmToIntakePositionCommand().andThen(RunFloorIntakeForwardWithShooterIntakeCommand(intake, launcher)).andThen(launcher.RunKickupHoldCommand()).andThen(launcher.RunShooterForwardIdle()).andThen(launcher.runArmToFixedAngleCommand().unless(()->!launcher.ArmContainsNote()));
     }
 
    
@@ -52,7 +52,7 @@ public class RobotCommandsFactory {
                 if(launcher.ArmContainsNote()){
                     launcher.RunKickupHold();
                     launcher.RunShooterForwardIdle();
-                    launcher.runArmToFixedAngleCommand().schedule();
+                    launcher.runArmToFixedAngle();
                 }
             }
         )).andThen(launcher.RunKickupHoldCommand()).andThen(launcher.RunShooterForwardIdle()).andThen(launcher.runArmToFixedAngleCommand().unless(()->!launcher.ArmContainsNote())));

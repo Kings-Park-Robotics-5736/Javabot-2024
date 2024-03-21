@@ -75,13 +75,26 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "ArmToNeutral"
+                  "name": "StartShooter"
                 }
               },
               {
-                "type": "path",
+                "type": "race",
                 "data": {
-                  "pathName": "M5ToScore"
+                  "commands": [
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "ArmToAutoAngleInfinite"
+                      }
+                    },
+                    {
+                      "type": "path",
+                      "data": {
+                        "pathName": "M5ToScore"
+                      }
+                    }
+                  ]
                 }
               }
             ]
