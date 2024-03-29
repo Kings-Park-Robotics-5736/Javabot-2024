@@ -75,13 +75,26 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "ArmToNeutral"
+                  "name": "StartShooter"
                 }
               },
               {
-                "type": "path",
+                "type": "race",
                 "data": {
-                  "pathName": "M1 To Score"
+                  "commands": [
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "ArmToAutoAngleInfinite"
+                      }
+                    },
+                    {
+                      "type": "path",
+                      "data": {
+                        "pathName": "M1 To Score"
+                      }
+                    }
+                  ]
                 }
               }
             ]
@@ -170,13 +183,26 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "ArmToNeutral"
+                  "name": "StartShooter"
                 }
               },
               {
-                "type": "path",
+                "type": "race",
                 "data": {
-                  "pathName": "R1NoteFacingGoalToScore"
+                  "commands": [
+                    {
+                      "type": "path",
+                      "data": {
+                        "pathName": "R1NoteFacingGoalToScore"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "ArmToAutoAngleInfinite"
+                      }
+                    }
+                  ]
                 }
               }
             ]

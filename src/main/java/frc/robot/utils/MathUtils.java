@@ -32,7 +32,7 @@ public class MathUtils {
             double newAngle = - Math.toRadians(3.41 * distance * distance -26.5* distance + 76);
             double modelAngle =  - Math.atan((ScoringPositions.speakerOpeningFromFloorMeters - 0.438)/(distance));
             System.out.println( " New angle "  + Math.toDegrees(newAngle) + ", Old Angle: " + Math.toDegrees(modelAngle));
-            return newAngle - Math.toRadians(2);
+            return newAngle - Math.toRadians(4);
         }else{
             return 0;
         }

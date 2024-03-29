@@ -162,6 +162,7 @@ public class ArmSubsystemNEO extends SubsystemBase {
         usedD = ArmConstants.kPidValues.d;
         usedV = ArmConstants.kFFValues.kv;
         usedG = ArmConstants.kFFValues.kg;
+        armManualOffset = 0;
 
     }
 
@@ -232,11 +233,12 @@ public class ArmSubsystemNEO extends SubsystemBase {
 
         SmartDashboard.putNumber("Arm FF Output", ff);
         SmartDashboard.putNumber("Arm Position Eror", Math.toDegrees(m_prior_iteration_setpoint.position - getArmAngleRadians()));
+        SmartDashboard.putNumber("Arm Offset Manual", Math.toDegrees(armManualOffset));
 
         SmartDashboard.putNumber("Arm SetpointVelocity",m_prior_iteration_setpoint.velocity);
         SmartDashboard.putNumber("Arm SetpointPosition", Math.toDegrees(m_prior_iteration_setpoint.position));
         SmartDashboard.putNumber("Arm Global Setpoint ", Math.toDegrees(m_globalSetpoint));
-        System.out.println("Current Arm Angle: " + Math.toDegrees(getArmPosition()));
+        //System.out.println("Current Arm Angle: " + Math.toDegrees(getArmPosition()));
         
         //if we are about to overextend, instantly stop and go back to intake position.
         if (getArmAngleRadians() < ArmConstants.kLimits.high) {
@@ -435,7 +437,7 @@ public class ArmSubsystemNEO extends SubsystemBase {
             System.out.println("-----------------New Arm to Setpoint " + Math.toDegrees(sanitizedSetpoint) + " --------------");
             
         }
-        m_globalSetpoint = sanitizedSetpoint;
+        m_globalSetpoint = sanitizedSetpoint + armManualOffset;
     }
 
     public void UpdateAngleManually(double diff){
@@ -451,6 +453,7 @@ public class ArmSubsystemNEO extends SubsystemBase {
                     double setpoint = MathUtils.angleRadiansToScoringTarget(robotDrive.getPose()) + armManualOffset;
                     double sanitizedSetpoint = sanitizePositionSetpoint(setpoint);
                     System.out.println("-----------------Starting Arm to position " + setpoint + ", Sanitized = " + sanitizedSetpoint + " --------------");
+                    System.out.println("Setpoint = " + setpoint + ", offset = " + armManualOffset);
                     InitMotionProfile(sanitizedSetpoint);
                     manualControl = false;
                 },

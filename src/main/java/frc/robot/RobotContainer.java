@@ -395,7 +395,7 @@ public class RobotContainer {
 
                 new Trigger(() -> {
                         return m_driverController.getLeftTriggerAxis() > 0;
-                }).whileTrue(RobotCommandsFactory.DriveToTargetWithIntakeThenIdle(m_robotDrive, m_intake, m_Launcher, m_picam, () -> m_driverController.getLeftTriggerAxis()*1.5, 3.5));
+                }).whileTrue(RobotCommandsFactory.DriveToTargetWithIntakeThenIdle(m_robotDrive, m_intake, m_Launcher, m_picam, () -> m_driverController.getLeftTriggerAxis()*1.9, 3.5));
 
 
 
@@ -493,8 +493,10 @@ public class RobotContainer {
                 //LEFT - manually run kickup
                 new Trigger(() -> {
                         return m_actionController.getPOV() >220 && m_actionController.getPOV() < 340;
-                }).whileTrue( m_Launcher.RunShooterAndKickupForwardCommand().andThen(JoystickCommandsFactory
-                                .RumbleControllerTillCancel(m_actionController)));
+                }).whileTrue( m_Launcher.RunKickupForwardCommand());
+
+               // }).whileTrue( m_Launcher.RunShooterAndKickupForwardCommand().andThen(JoystickCommandsFactory
+                //                .RumbleControllerTillCancel(m_actionController)));
 
                 SmartDashboard.putData("Reset Arm Encoder", Commands.runOnce(()->m_Launcher.ResetArmEncoder()));
                 SmartDashboard.putData("Reset Odometry", (Commands.runOnce(() -> m_robotDrive.zeroHeading(), m_robotDrive)));

@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.4868603583361018,
-        "y": 6.305953381137532
+        "x": 2.462632146481894,
+        "y": 6.921221413268626
       },
       "isLocked": false,
       "linkedName": "DriveThruR1GoalEnd"
@@ -17,11 +17,11 @@
     {
       "anchor": {
         "x": 2.5446943201578716,
-        "y": 5.7420722533752775
+        "y": 6.6769522327471424
       },
       "prevControl": {
-        "x": 2.3856509251480045,
-        "y": 6.436079795236514
+        "x": 2.5174680849663087,
+        "y": 6.84644513351715
       },
       "nextControl": null,
       "isLocked": false,
@@ -39,7 +39,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 180.0,
+    "rotation": -160.0,
     "rotateFast": false
   },
   "reversed": false,
